@@ -1,10 +1,16 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <curl/curl.h>
+#include "curl.h"
+
+#define URL_LEN 1024
+#define DATA_LEN 1024
 
 struct curl_fetch_st {
     char* payload;
     size_t size;
 };
-
 
 /* callback for curl fetch */
 size_t curl_callback(void* contents, size_t size, size_t nmemb, void* userp) {
@@ -18,7 +24,7 @@ size_t curl_callback(void* contents, size_t size, size_t nmemb, void* userp) {
     /* check buffer */
     if (p->payload == NULL) {
         /* this isn't good */
-        debug("ERROR: Failed to expand buffer in curl_callback");
+        printf("ERROR: Failed to expand buffer in curl_callback");
 
         /* free buffer */
         free(p->payload);
@@ -40,9 +46,11 @@ size_t curl_callback(void* contents, size_t size, size_t nmemb, void* userp) {
     return realsize;
 }
 
-CRESULT fetchURL()
-{
-    HRESULT hr = E_UNEXPECTED;
+CRESULT fetchURL() {
+    CRESULT cr = E_UNEXPECTED;
+
+    return cr;
+
     CURL* curl;
     CURLcode rc;
     char url[URL_LEN];
@@ -51,8 +59,8 @@ CRESULT fetchURL()
     struct curl_fetch_st* fetch = &curl_fetch;
 
     // Prepare full url...
-    url = "https://localhost:8123/req";
-    debug("URL: %s\n", url);
+    strncpy(url, "https://localhost:8123/req", URL_LEN);
+    printf("URL: %s\n", url);
 
     // Prepare Headers...
     struct curl_slist* headers = NULL;
@@ -60,12 +68,12 @@ CRESULT fetchURL()
     headers = curl_slist_append(headers, "Content-Type: application/json");
 
     // Prepare input data...
-    sprintf_s((char *)data, DATA_LEN, "{\"user\":\"%S\",\"token\":\"%S\"}",
+    snprintf(data, DATA_LEN, "{\"user\":\"%s\",\"token\":\"%s\"}",
         "martin",
         "1234"
     );
 
-    debug("JSON: %s\n", data);
+    printf("JSON: %s\n", data);
 
     // Prepare payload for response...
     fetch->payload = (char*)calloc(1, sizeof(fetch->payload));
@@ -80,27 +88,27 @@ CRESULT fetchURL()
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_callback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)fetch);
         curl_easy_setopt(curl, CURLOPT_USERAGENT, "pam-websso");
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data, strlen(data));
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(data));
 
         /* Perform the request */
         if ((rc = curl_easy_perform(curl) ) == CURLE_OK) {
-            hr = S_OK;
+//             cr = S_OK;
         }
         else {
-            debug("curl_easy_perform() failed: %s\n",
+            printf("curl_easy_perform() failed: %s\n",
                 curl_easy_strerror(rc));
         }
 
         /* check payload */
          if (fetch->payload != NULL) {
-            Document document;
-            debug("CURL Returned: \n%s\n", fetch->payload);
+            printf("CURL Returned: \n%s\n", fetch->payload);
             free(fetch->payload);
          }
 
         /* always cleanup */
         curl_easy_cleanup(curl);
     }
-    return hr;
+
+//     return cr;
 }

