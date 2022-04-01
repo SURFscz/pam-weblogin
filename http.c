@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <curl/curl.h>
-#include "curl.h"
+#include "http.h"
 
 #define URL_LEN 1024
 #define DATA_LEN 1024

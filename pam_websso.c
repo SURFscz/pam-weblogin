@@ -4,7 +4,7 @@
 #include <security/pam_appl.h>
 #include <security/pam_modules.h>
 
-#include "curl.h"
+#include "http.h"
 
 /* expected hook */
 PAM_EXTERN int pam_sm_setcred( pam_handle_t *pamh, int flags, int argc, const char **argv ) {
