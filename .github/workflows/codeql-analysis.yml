@@ -39,10 +39,10 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-      
+    
     - name: Install libraries
       run: |
-        apt install libpam0g-dev libcurl4-nss-dev
+        sudo apt install libpam0g-dev libcurl4-nss-dev
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
