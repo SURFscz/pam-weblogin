@@ -10,6 +10,7 @@
 
 #define URL_LEN 1024
 #define DATA_LEN 1024
+#define RESULT_LEN 1024
 
 /* expected hook */
 PAM_EXTERN int pam_sm_setcred( pam_handle_t *pamh, int flags, int argc, const char **argv ) {
@@ -23,16 +24,28 @@ PAM_EXTERN int pam_sm_acct_mgmt(pam_handle_t *pamh, int flags, int argc, const c
 
 /* expected hook, this is where custom stuff happens */
 PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, const char **argv ) {
-    int retval;
-    char* result;
+    int uresult;
+    const char* username;
+
     char url[URL_LEN];
     char data[DATA_LEN];
+
+    FETCHR fresult;
+    char* req;
+    char* auth;
 
     json_char* json;
     json_value* value;
 
-    const char* pUsername;
-    retval = pam_get_user(pamh, &pUsername, "Username: ");
+    char* nonce;
+    char* pin;
+    char* challenge;
+    bool hot;
+
+    char* user;
+    char* auth_result;
+
+    uresult = pam_get_user(pamh, &username, "Username: ");
 
     // Prepare full url...
     strncpy(url, "http://localhost:5001/req", URL_LEN);
@@ -41,18 +54,16 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
     // Prepare input data...
     snprintf(data, DATA_LEN,
         "{\"user\":\"%s\"}",
-        "martin"
+        username
     );
 
-    result = fetchURL(url, data);
+    fresult = fetchURL(url, data, &req);
+    printf("req: %s\n", req);
+    // TODO inspect fresult
 
-    json = (json_char*) result;
+    json = (json_char*) req;
     value = json_parse(json, strlen(json));
-
-    char* nonce;
-    char* pin;
-    char* challenge;
-    bool hot;
+    free(req);
 
     nonce = value->u.object.values[0].value->u.string.ptr;
     pin = value->u.object.values[1].value->u.string.ptr;
@@ -61,7 +72,7 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
 
     printf("nonce: %s\n", nonce);
     printf("pin: %s\n", pin);
-    printf("challenge %s\n", challenge);
+    printf("challenge: %s\n", challenge);
     printf("hot: %s\n", hot ? "true" : "false");
 
     // Prepare full url...
@@ -74,12 +85,13 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
         "1234"
     );
 
-    result = fetchURL(url, data);
+    fresult = fetchURL(url, data, &auth);
+    printf("auth: %s\n", auth);
+    // TODO inspect fresult
 
-    char* user;
-    char* auth_result;
-    json = (json_char*) result;
+    json = (json_char*) auth;
     value = json_parse(json, strlen(json));
+    free(auth);
 
     user = value->u.object.values[0].value->u.string.ptr;
     auth_result = value->u.object.values[1].value->u.string.ptr;

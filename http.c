@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <curl/curl.h>
-#include "http.h"
 
+#include "http.h"
 
 struct curl_fetch_st {
     char* payload;
@@ -35,7 +35,7 @@ size_t curl_callback(void* contents, size_t size, size_t nmemb, void* userp) {
     memcpy(&(p->payload[p->size]), contents, realsize);
 
     /* set new buffer size */
-    p->size += realsize;
+    p->size += realsize + 1;
 
     /* ensure null termination */
     p->payload[p->size] = 0;
@@ -44,7 +44,8 @@ size_t curl_callback(void* contents, size_t size, size_t nmemb, void* userp) {
     return realsize;
 }
 
-char* fetchURL(char* url, char* data) {
+FETCHR fetchURL(const char* url, const char* data, char** result) {
+    FETCHR r = S_NOK;
     CURL* curl;
     CURLcode rc;
     struct curl_fetch_st curl_fetch;
@@ -76,19 +77,24 @@ char* fetchURL(char* url, char* data) {
 
         /* Perform the request */
         if ((rc = curl_easy_perform(curl) ) != CURLE_OK) {
-            printf("curl_easy_perform() failed: %s\n",
-                curl_easy_strerror(rc));
+            printf("curl_easy_perform() failed: %s\n", curl_easy_strerror(rc));
+            return r;
+        } else {
+            r = S_OK;
         }
 
         /* check payload */
          if (fetch->payload != NULL) {
             printf("CURL Returned: \n%s\n", fetch->payload);
-//             free(fetch->payload);
+            //strncpy(result, fetch->payload, fetch->size);
+            *result = fetch->payload;
+            // This means result needs to be freed outside!!
+            //free(fetch->payload);
          }
 
         /* always cleanup */
         curl_easy_cleanup(curl);
     }
 
-    return fetch->payload;
+    return r;
 }
