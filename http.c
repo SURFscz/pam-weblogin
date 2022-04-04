@@ -4,8 +4,6 @@
 #include <curl/curl.h>
 #include "http.h"
 
-#define URL_LEN 1024
-#define DATA_LEN 1024
 
 struct curl_fetch_st {
     char* payload;
@@ -46,32 +44,17 @@ size_t curl_callback(void* contents, size_t size, size_t nmemb, void* userp) {
     return realsize;
 }
 
-CRESULT fetchURL() {
-    CRESULT cr = E_UNEXPECTED;
-
-    return cr;
-
+char* fetchURL(char* url, char* data) {
     CURL* curl;
     CURLcode rc;
-    char url[URL_LEN];
-    char data[DATA_LEN];
     struct curl_fetch_st curl_fetch;
     struct curl_fetch_st* fetch = &curl_fetch;
 
-    // Prepare full url...
-    strncpy(url, "https://localhost:8123/req", URL_LEN);
-    printf("URL: %s\n", url);
 
     // Prepare Headers...
     struct curl_slist* headers = NULL;
     headers = curl_slist_append(headers, "Accept: application/json");
     headers = curl_slist_append(headers, "Content-Type: application/json");
-
-    // Prepare input data...
-    snprintf(data, DATA_LEN, "{\"user\":\"%s\",\"token\":\"%s\"}",
-        "martin",
-        "1234"
-    );
 
     printf("JSON: %s\n", data);
 
@@ -92,10 +75,7 @@ CRESULT fetchURL() {
         curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(data));
 
         /* Perform the request */
-        if ((rc = curl_easy_perform(curl) ) == CURLE_OK) {
-//             cr = S_OK;
-        }
-        else {
+        if ((rc = curl_easy_perform(curl) ) != CURLE_OK) {
             printf("curl_easy_perform() failed: %s\n",
                 curl_easy_strerror(rc));
         }
@@ -103,12 +83,12 @@ CRESULT fetchURL() {
         /* check payload */
          if (fetch->payload != NULL) {
             printf("CURL Returned: \n%s\n", fetch->payload);
-            free(fetch->payload);
+//             free(fetch->payload);
          }
 
         /* always cleanup */
         curl_easy_cleanup(curl);
     }
 
-//     return cr;
+    return fetch->payload;
 }
