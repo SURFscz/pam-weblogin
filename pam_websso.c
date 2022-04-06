@@ -93,19 +93,16 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
     msg.msg = challenge;
     msgp = &msg;
     rpin = NULL;
+    resp = NULL;
 
-    for (retry = 0; retry < 3; ++retry) {
-        resp = NULL;
-        pam_err = (*conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
-        if (resp != NULL) {
-            if (pam_err == PAM_SUCCESS)
-                rpin = resp->resp;
-            else
-                free(resp->resp);
-            free(resp);
-        }
+    pam_err = (*conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
+
+    if (resp != NULL) {
         if (pam_err == PAM_SUCCESS)
-            break;
+            rpin = resp->resp;
+        else
+            free(resp->resp);
+        free(resp);
     }
     if (pam_err == PAM_CONV_ERR)
         return (pam_err);
