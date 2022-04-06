@@ -57,7 +57,7 @@ FETCHR fetchURL(const char* url, const char* data, char** result) {
     headers = curl_slist_append(headers, "Accept: application/json");
     headers = curl_slist_append(headers, "Content-Type: application/json");
 
-    printf("JSON: %s\n", data);
+    printf("data: %s\n", data);
 
     // Prepare payload for response...
     fetch->payload = (char*)calloc(1, sizeof(fetch->payload));
@@ -85,11 +85,7 @@ FETCHR fetchURL(const char* url, const char* data, char** result) {
 
         /* check payload */
          if (fetch->payload != NULL) {
-            printf("CURL Returned: \n%s\n", fetch->payload);
-            //strncpy(result, fetch->payload, fetch->size);
             *result = fetch->payload;
-            // This means result needs to be freed outside!!
-            //free(fetch->payload);
          }
 
         /* always cleanup */

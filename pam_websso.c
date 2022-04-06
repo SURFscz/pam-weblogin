@@ -75,6 +75,46 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
     printf("challenge: %s\n", challenge);
     printf("hot: %s\n", hot ? "true" : "false");
 
+    // Pin Conversation
+    static char pin_prompt[] = "Pin:";
+    const void *ptr;
+    const struct pam_conv *conv;
+    struct pam_message msg;
+    const struct pam_message *msgp;
+    struct pam_response *resp;
+    char *rpin;
+    int pam_err, retry;
+
+    pam_err = pam_get_item(pamh, PAM_CONV, &ptr);
+    if (pam_err != PAM_SUCCESS)
+        return (PAM_SYSTEM_ERR);
+
+    conv = ptr;
+    msg.msg_style = PAM_PROMPT_ECHO_OFF;
+    msg.msg = pin_prompt;
+    msgp = &msg;
+    rpin = NULL;
+
+    for (retry = 0; retry < 3; ++retry) {
+        resp = NULL;
+        pam_err = (*conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
+        if (resp != NULL) {
+            if (pam_err == PAM_SUCCESS)
+                rpin = resp->resp;
+            else
+                free(resp->resp);
+            free(resp);
+        }
+        if (pam_err == PAM_SUCCESS)
+            break;
+    }
+    if (pam_err == PAM_CONV_ERR)
+        return (pam_err);
+    if (pam_err != PAM_SUCCESS)
+        return (PAM_AUTH_ERR);
+
+    printf("Pin: %s\n", rpin);
+
     // Prepare full url...
     strncpy(url, "http://localhost:5001/auth", URL_LEN);
     printf("\nURL: %s\n", url);
