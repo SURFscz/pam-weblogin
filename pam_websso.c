@@ -75,6 +75,10 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
     printf("challenge: %s\n", challenge);
     printf("hot: %s\n", hot ? "true" : "false");
 */
+
+    if (hot)
+        return PAM_SUCCESS;
+
     // Pin Conversation
     const void *ptr;
     const struct pam_conv *conv;
@@ -86,7 +90,7 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
 
     pam_err = pam_get_item(pamh, PAM_CONV, &ptr);
     if (pam_err != PAM_SUCCESS)
-        return (PAM_SYSTEM_ERR);
+        return PAM_SYSTEM_ERR;
 
     conv = ptr;
     msg.msg_style = PAM_PROMPT_ECHO_OFF;
@@ -105,9 +109,9 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
         free(resp);
     }
     if (pam_err == PAM_CONV_ERR)
-        return (pam_err);
+        return pam_err;
     if (pam_err != PAM_SUCCESS)
-        return (PAM_AUTH_ERR);
+        return PAM_AUTH_ERR;
 
     printf("Pin: %s\n", rpin);
     if (!strcmp(pin, rpin)) {
