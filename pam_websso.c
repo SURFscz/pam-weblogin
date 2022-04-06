@@ -69,12 +69,12 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
     pin = value->u.object.values[1].value->u.string.ptr;
     challenge = value->u.object.values[2].value->u.string.ptr;
     hot = value->u.object.values[3].value->u.boolean;
-
+/*
     printf("nonce: %s\n", nonce);
     printf("pin: %s\n", pin);
     printf("challenge: %s\n", challenge);
     printf("hot: %s\n", hot ? "true" : "false");
-
+*/
     // Pin Conversation
     const void *ptr;
     const struct pam_conv *conv;
@@ -110,7 +110,11 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
         return (PAM_AUTH_ERR);
 
     printf("Pin: %s\n", rpin);
-
+    if (!strcmp(pin, rpin)) {
+        printf("Pin matched!");
+    } else {
+        printf("Pin didn't match");
+    }
     // Prepare full url...
     strncpy(url, "http://localhost:5001/auth", URL_LEN);
     printf("\nURL: %s\n", url);
