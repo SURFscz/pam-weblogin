@@ -76,7 +76,6 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
     printf("hot: %s\n", hot ? "true" : "false");
 
     // Pin Conversation
-    static char pin_prompt[] = "Pin:";
     const void *ptr;
     const struct pam_conv *conv;
     struct pam_message msg;
@@ -91,7 +90,7 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
 
     conv = ptr;
     msg.msg_style = PAM_PROMPT_ECHO_OFF;
-    msg.msg = pin_prompt;
+    msg.msg = challenge;
     msgp = &msg;
     rpin = NULL;
 

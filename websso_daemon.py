@@ -15,7 +15,7 @@ def req():
     reply = {
       'nonce': '1234',
       'pin': '5678',
-      'challenge': f'Hello {user}',
+      'challenge': f'Hello {user}. To continue, visit http://example.com/login/1234 and enter pin:',
       'hot': False
     }
     response.data = json.dumps(reply)
