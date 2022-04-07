@@ -1,6 +1,6 @@
 typedef enum {
-  S_NOK,
-  S_OK
-} FETCHR;
+  P_NOK,
+  P_OK
+} RPOST;
 
-FETCHR fetchURL(const char* url, const char* data, char** result);
+RPOST postURL(const char* url, const char* data, char** result);

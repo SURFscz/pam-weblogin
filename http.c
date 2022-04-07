@@ -43,11 +43,14 @@ size_t curl_callback(void* contents, size_t size, size_t nmemb, void* userp) {
     /* return size */
     return realsize;
 }
+/*
+ * postURL POSTS data to URL url and returns the result
+ */
 
-FETCHR fetchURL(const char* url, const char* data, char** result) {
-    FETCHR r = S_NOK;
+RPOST postURL(const char* url, const char* data, char** result) {
+    RPOST rc = P_NOK;
     CURL* curl;
-    CURLcode rc;
+    CURLcode cc;
     struct curl_fetch_st curl_fetch;
     struct curl_fetch_st* fetch = &curl_fetch;
 
@@ -76,11 +79,11 @@ FETCHR fetchURL(const char* url, const char* data, char** result) {
         curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(data));
 
         /* Perform the request */
-        if ((rc = curl_easy_perform(curl) ) != CURLE_OK) {
-            printf("curl_easy_perform() failed: %s\n", curl_easy_strerror(rc));
-            return r;
+        if ((cc = curl_easy_perform(curl) ) != CURLE_OK) {
+            printf("curl_easy_perform() failed: %s\n", curl_easy_strerror(cc));
+            return rc;
         } else {
-            r = S_OK;
+            rc = P_OK;
         }
 
         /* check payload */
@@ -92,5 +95,5 @@ FETCHR fetchURL(const char* url, const char* data, char** result) {
         curl_easy_cleanup(curl);
     }
 
-    return r;
+    return rc;
 }

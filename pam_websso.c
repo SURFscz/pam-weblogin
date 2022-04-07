@@ -5,6 +5,8 @@
 #include <security/pam_appl.h>
 #include <security/pam_modules.h>
 
+#include "config.h"
+#include "utils.h"
 #include "http.h"
 #include "json.h"
 
@@ -24,23 +26,36 @@ PAM_EXTERN int pam_sm_acct_mgmt(pam_handle_t *pamh, int flags, int argc, const c
 
 /* expected hook, this is where custom stuff happens */
 PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, const char **argv ) {
+    RCONFIG cresult;
+//     const char filename[] = "pam-websso.conf";
+    const char* filename = "pam-websso.conf";
+    if (argc > 0) {
+      filename = argv[0];
+    }
+    printf("filename: %s\n", filename);
+
+    // Read configuration file
+    Config* cfg = malloc(sizeof(*cfg));
+    cresult = getConfig(filename, &cfg);
+    if (cresult == C_NOK) {
+      printf("Error reading conf\n");
+      return PAM_AUTH_ERR;
+    }
+    printf("config url: %s\n", cfg->url);
+
     int uresult;
     const char* username;
 
     char url[URL_LEN];
     char data[DATA_LEN];
 
-    FETCHR fresult;
+    RPOST presult;
     char* req;
     char* auth;
 
     json_char* json;
     json_value* value;
 
-    char* nonce;
-    char* pin;
-    char* challenge;
-    bool hot;
 
     char* user;
     char* auth_result;
@@ -48,8 +63,12 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
     uresult = pam_get_user(pamh, &username, "Username: ");
 
     // Prepare full url...
-    strncpy(url, "http://localhost:5001/req", URL_LEN);
-    printf("\nURL: %s\n", url);
+    snprintf(url, URL_LEN,
+             "%s/req",
+             cfg->url
+    );
+
+    printf("URL: %s\n", url);
 
     // Prepare input data...
     snprintf(data, DATA_LEN,
@@ -57,25 +76,27 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
         username
     );
 
-    fresult = fetchURL(url, data, &req);
+    presult = postURL(url, data, &req);
+    if (presult == P_NOK) {
+      printf("Error making request\n");
+      return PAM_AUTH_ERR;
+    }
     printf("req: %s\n", req);
-    // TODO inspect fresult
 
     json = (json_char*) req;
     value = json_parse(json, strlen(json));
     free(req);
 
-    nonce = value->u.object.values[0].value->u.string.ptr;
-    pin = value->u.object.values[1].value->u.string.ptr;
-    challenge = value->u.object.values[2].value->u.string.ptr;
-    hot = value->u.object.values[3].value->u.boolean;
+    char* nonce = getString(value, "nonce");
+    char* pin = getString(value, "pin");
+    char* challenge = getString(value, "challenge");
+    bool hot = getBool(value, "hot");
 /*
     printf("nonce: %s\n", nonce);
     printf("pin: %s\n", pin);
     printf("challenge: %s\n", challenge);
     printf("hot: %s\n", hot ? "true" : "false");
 */
-
     if (hot)
         return PAM_SUCCESS;
 
@@ -114,14 +135,18 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
         return PAM_AUTH_ERR;
 
     printf("Pin: %s\n", rpin);
-    if (!strcmp(pin, rpin)) {
-        printf("Pin matched!");
+    if (! strcmp(pin, rpin)) {
+        printf("Pin matched!\n");
     } else {
-        printf("Pin didn't match");
+        printf("Pin didn't match\n");
     }
+
     // Prepare full url...
-    strncpy(url, "http://localhost:5001/auth", URL_LEN);
-    printf("\nURL: %s\n", url);
+    snprintf(url, URL_LEN,
+             "%s/auth",
+             cfg->url
+    );
+    printf("URL: %s\n", url);
 
     // Prepare input data...
     snprintf(data, DATA_LEN,
@@ -129,9 +154,12 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
         "1234"
     );
 
-    fresult = fetchURL(url, data, &auth);
+    presult = postURL(url, data, &auth);
+    if (presult == P_NOK) {
+      printf("Error making request\n");
+      return PAM_AUTH_ERR;
+    }
     printf("auth: %s\n", auth);
-    // TODO inspect fresult
 
     json = (json_char*) auth;
     value = json_parse(json, strlen(json));
