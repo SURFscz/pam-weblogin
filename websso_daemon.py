@@ -93,6 +93,7 @@ def login(nonce):
             content += "<input name=action type=submit value=login>\n"
             content += "</body>\n</html>\n"
         else:
+            data = request.data
             user = this_auth['user']
             pin = this_auth['pin']
             content =  "<html>\n<body>\n"
@@ -102,12 +103,11 @@ def login(nonce):
             content += "</body>\n</html>\n"
     else:
         content = "<html>\n<body>\n"
-        content += "nonce niet gevonden\n"
+        content += "nonce not found\n"
         content += "</body>\n</html>\n"
 
     response = Response()
     response.data = content
-    Flask.request = None
 
     return response
 
