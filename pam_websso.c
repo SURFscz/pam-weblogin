@@ -151,7 +151,7 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
     // Prepare input data...
     snprintf(data, DATA_LEN,
         "{\"nonce\":\"%s\"}",
-        "1234"
+        nonce
     );
 
     presult = postURL(url, data, &auth);

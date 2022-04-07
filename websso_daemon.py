@@ -1,52 +1,115 @@
 #!/usr/bin/env python
 import json
+import random
 from flask import Flask, Response, request
 from threading import Timer
 
 app = Flask(__name__)
+
+auths = {}
 hots = {}
 
+chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+numbers = '1234567890'
+
+def pop_auth(nonce):
+    print(f"pop auth {nonce}")
+    auths.pop(nonce, None)
+
 def pop_hot(user):
-    print("pop hot {}".format(user))
+    print(f"pop hot {user}")
     hots.pop(user, None)
+
+def nonce(length=8):
+    return ''.join([str(random.choice(chars)) for i in range(length)])
+
+def pin(length=4):
+    return ''.join([str(random.choice(numbers)) for i in range(length)])
 
 @app.route('/req', methods=['POST'])
 def req():
     data = json.loads(request.data)
-    response = Response()
-    response.headers['Content-Type'] = "application/json"
-    user = data['user']
+    user = data.get('user')
+
     print(f'/req {user}')
 
-    reply = {
-      'nonce': '1234',
-      'pin': '5678',
-      'challenge': f'Hello {user}. To continue, visit http://example.com/login/1234 and enter pin:',
+    new_nonce = nonce()
+    new_pin = pin()
+
+    auths[new_nonce] = {
+      'nonce': new_nonce,
+      'pin': new_pin,
+      'challenge': f"Hello {user}. To continue, visit http://localhost:5001/login/{new_nonce} and enter pin:",
       'hot': hots.get(user, False)
     }
-    response.data = json.dumps(reply)
 
-    hots[user] = True;
-    Timer(60, pop_hot, [user]).start()
+    response = Response()
+    response.headers['Content-Type'] = "application/json"
+    response.data = json.dumps(auths[new_nonce])
+
+    auths[new_nonce]['user'] = user
+    Timer(60, pop_auth, [new_nonce]).start()
 
     return response
 
 @app.route('/auth', methods=['POST'])
 def auth():
     data = json.loads(request.data)
-    response = Response()
-    response.headers['Content-Type'] = "application/json"
-    nonce = data['nonce']
+    nonce = data.get('nonce')
     print(f'/auth {nonce}')
 
-    reply = {
-      'uid': 'user',
-      'result': 'SUCCESS'
-    }
+    this_auth = auths.get(nonce)
+    if this_auth:
+        user = this_auth.get('user')
+        reply = {
+            'uid': user,
+            'result': 'SUCCESS'
+        }
+        hots[user] = True;
+        Timer(5, pop_hot, [user]).start()
+    else:
+        reply = {
+            'uid': None,
+            'result': 'FAIL'
+        }
+
+    response = Response()
+    response.headers['Content-Type'] = "application/json"
     response.data = json.dumps(reply)
+
 
     return response
 
+@app.route('/login/<nonce>', methods=['GET', 'POST'])
+def login(nonce):
+    print(f'/login {nonce}')
+
+    this_auth = auths.get(nonce)
+    if this_auth:
+        if request.method == 'GET':
+            user = this_auth.get('user')
+            content =  "<html>\n<body>\n<form method=POST>\n"
+            content += f"Please authorize SSH login for user {user}<br />\n"
+            content += "<input name=action type=submit value=login>\n"
+            content += "</body>\n</html>\n"
+        else:
+            user = this_auth['user']
+            pin = this_auth['pin']
+            content =  "<html>\n<body>\n"
+            content += f"{nonce}/{user} successfully authenticated<br />\n"
+            content += f"PIN: {pin}<br />\n"
+            content += "This window may be closed\n"
+            content += "</body>\n</html>\n"
+    else:
+        content = "<html>\n<body>\n"
+        content += "nonce niet gevonden\n"
+        content += "</body>\n</html>\n"
+
+    response = Response()
+    response.data = content
+    Flask.request = None
+
+    return response
 
 if __name__ == "__main__":
     app.run(host='127.0.0.1', port=5001, debug=False)
