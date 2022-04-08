@@ -28,7 +28,7 @@ Install pamtester to test the module
 ```
 $ pamtester websso martin authenticate
 Authenticate
-config: /home/martin/Projects/SURF/ScienceCollaborationZone/pam-websso-c/pam-websso.conf
+config: /etc/pam-websso.conf
 config 'url' -> 'http://localhost:5001'
 cfg->url: http://localhost:5001
 http URL: http://localhost:5001/req
