@@ -43,12 +43,12 @@ size_t curl_callback(void* contents, size_t size, size_t nmemb, void* userp) {
     /* return size */
     return realsize;
 }
+
 /*
  * postURL POSTS data to URL url and returns the result
  */
-
-RPOST postURL(const char* url, const char* data, char** result) {
-    RPOST rc = P_NOK;
+int postURL(const char* url, const char* data, char** result) {
+    int rc = 0;
     CURL* curl;
     CURLcode cc;
     struct curl_fetch_st curl_fetch;
@@ -60,7 +60,8 @@ RPOST postURL(const char* url, const char* data, char** result) {
     headers = curl_slist_append(headers, "Accept: application/json");
     headers = curl_slist_append(headers, "Content-Type: application/json");
 
-    printf("data: %s\n", data);
+    printf("http URL: %s\n", url);
+    printf("http data: %s\n", data);
 
     // Prepare payload for response...
     fetch->payload = (char*)calloc(1, sizeof(fetch->payload));
@@ -83,7 +84,7 @@ RPOST postURL(const char* url, const char* data, char** result) {
             printf("curl_easy_perform() failed: %s\n", curl_easy_strerror(cc));
             return rc;
         } else {
-            rc = P_OK;
+            rc = 1;
         }
 
         /* check payload */

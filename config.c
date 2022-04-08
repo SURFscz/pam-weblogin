@@ -14,15 +14,16 @@
  * url = http://test.example.com/test
  */
 
-RCONFIG getConfig(const char* filename, Config** cfgp) {
-  RCONFIG rc= C_NOK;
-  FILE* fp ;
-  char line[MAXLINE];
-  char key[MAXLINE/2];
-  char val[MAXLINE/2];
+int getConfig(const char* filename, Config** cfgp) {
+    int rc = 0;
+    FILE* fp ;
+    char line[MAXLINE];
+    char key[MAXLINE/2];
+    char val[MAXLINE/2];
 
-//   printf("Opening %s\n", filename);
-  if ((fp = fopen(filename, "r")) != NULL) {
+    printf("config: %s\n", filename);
+
+    if ((fp = fopen(filename, "r")) != NULL) {
     while (! feof(fp)){
       memset(line, 0, MAXLINE);
       fgets(line, MAXLINE, fp);
@@ -58,13 +59,13 @@ RCONFIG getConfig(const char* filename, Config** cfgp) {
         char* trimmed_val = strtok(val, "\r\n\t ");
         (*cfgp)->url = malloc(strlen(trimmed_val));
         strcpy((*cfgp)->url, trimmed_val);
-        printf("'%s' -> '%s'\n", trimmed_key, trimmed_val);
+        printf("config '%s' -> '%s'\n", trimmed_key, trimmed_val);
       } else {
         (*cfgp)->url = NULL;
       }
 
       if ((*cfgp)->url) {
-        rc = C_OK;
+        rc = 1;
       } else {
         printf("Error reading config\n");
       }
