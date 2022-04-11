@@ -7,23 +7,17 @@
 
 char* trim(char s[]) {
   int i=0, j=0;
-
   char trim[MAXLINE]="\0";
-
   for (i=strlen(s)-1; s[i]==' ' || s[i]=='\n'; i--) {
       s[i]='\0';
   }
-
   for(i=0; s[i]==' '; i++);
-
   while (s[i]!='\0') {
       trim[j]=s[i];
       i++;
       j++;
   }
-
   strcpy(s,trim);
-
   return s;
 }
 
@@ -41,8 +35,8 @@ int getConfig(const char* filename, Config** cfgp) {
     int rc = 0;
     FILE* fp ;
     char line[MAXLINE];
-    char key[MAXLINE/2];
-    char val[MAXLINE/2];
+    char key[MAXLINE];
+    char val[MAXLINE];
 
     (*cfgp)->url = NULL;
     (*cfgp)->token = NULL;
@@ -52,8 +46,8 @@ int getConfig(const char* filename, Config** cfgp) {
     if ((fp = fopen(filename, "r")) != NULL) {
     while (! feof(fp)){
       memset(line, 0, MAXLINE);
-      memset(key, 0, MAXLINE/2);
-      memset(val, 0, MAXLINE/2);
+      memset(key, 0, MAXLINE);
+      memset(val, 0, MAXLINE);
       fgets(line, MAXLINE, fp);
 
       char* trimmed_line = trim(line);
@@ -70,32 +64,37 @@ int getConfig(const char* filename, Config** cfgp) {
 
       int len = strlen(trimmed_line);
 
+      // Prepare (trim) key and val
       strncpy(key, trimmed_line, pos - trimmed_line);
       char* trimmed_key = trim(key);
 
       strncpy(val, pos+1, trimmed_line + len - pos);
       char* trimmed_val = trim(val);
 
+      // Check for url config
       if (! strcmp(trimmed_key, "url")) {
         (*cfgp)->url = malloc(strlen(trimmed_val));
         strcpy((*cfgp)->url, trimmed_val);
-        printf("config '%s' -> '%s'\n", trimmed_key, trimmed_val);
+//         printf("config '%s' -> '%s'\n", trimmed_key, trimmed_val);
       }
 
+      // Check for token config
       if (! strcmp(trimmed_key, "token")) {
         (*cfgp)->token = malloc(strlen(trimmed_val));
         strcpy((*cfgp)->token, trimmed_val);
-        printf("config '%s' -> '%s'\n", trimmed_key, trimmed_val);
+//         printf("config '%s' -> '%s'\n", trimmed_key, trimmed_val);
       }
     }
 
-    if ((*cfgp)->url) {
+    // Fail if either url or token is unset
+    if ((*cfgp)->url && (*cfgp)->token) {
       rc = 1;
     } else {
       printf("Error reading config\n");
     }
 
-  } else {
+
+    } else {
       printf("Error reading config\n");
   }
 

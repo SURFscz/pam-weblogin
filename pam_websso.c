@@ -39,10 +39,10 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
         printf("Error reading conf\n");
         return PAM_AUTH_ERR;
     }
-    printf("cfg->url: %s\n", cfg->url);
-    printf("cfg->token: %s\n", cfg->token);
+    printf("cfg->url: '%s'\n", cfg->url);
+    printf("cfg->token: '%s'\n", cfg->token);
 
-    // Read username if necessary (TODO: Test)
+    // Read username if necessary
     const char* username;
     int uresult = pam_get_user(pamh, &username, "Username: ");
 
@@ -168,6 +168,5 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
         return PAM_AUTH_ERR;
     }
 
-    printf("End\n");
     return PAM_SUCCESS;
 }

@@ -18,7 +18,6 @@ size_t curl_callback(void* contents, size_t size, size_t nmemb, void* userp) {
     /* expand buffer */
     p->payload = (char*)realloc(p->payload, p->size + realsize + 1);
 
-
     /* check buffer */
     if (p->payload == NULL) {
         /* this isn't good */
@@ -84,12 +83,13 @@ int postURL(const char* url, const char* token, const char* data, char** result)
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(data));
 
-        /* Perform the request */
+        // Perform the request
         if ((cc = curl_easy_perform(curl)) != CURLE_OK) {
             printf("curl_easy_perform() failed: %s\n", curl_easy_strerror(cc));
             return rc;
         }
 
+        // Check response
         if ((cc = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code)) != CURLE_OK || response_code != 200) {
             printf("Invalid response\n");
             return rc;
@@ -97,12 +97,12 @@ int postURL(const char* url, const char* token, const char* data, char** result)
 
         rc = 1;
 
-        /* check payload */
+        // Assign payload
          if (fetch->payload != NULL) {
             *result = fetch->payload;
          }
 
-        /* always cleanup */
+        // always cleanup
         curl_easy_cleanup(curl);
     }
 
