@@ -1,4 +1,5 @@
 # pam-websso-c
+
 PAM WebSSO module in C
 
 ## Installation
@@ -111,3 +112,13 @@ URL=https://websso.exp.sram.lab.surf.nl
 ~~~
 
 This file will be used during **make test** and takes this URL for contacting the websso service.
+
+## Local development
+
+Instead of installing all required libraries and components on your local computer, you can use **Docker** and develop & test in a container.
+
+To facilitate this method of working a script is added, running this script is building and starting this container:
+
+~~~
+./work.sh
+~~~
