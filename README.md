@@ -10,7 +10,6 @@ sudo apt-get install autoconf
 sudo apt-get install shtool
 sudo apt-get install libcurl4-gnutls-dev
 sudo apt-get install libgcrypt20 libgcrypt20-dev
-sudo apt-get install libldap2-dev
 ~~~
 
 On Fedora/Redhat/CentOS you will need:
@@ -24,24 +23,26 @@ sudo yum install libgcrypt libgcrypt-devel
 
 ## shtool
 
-Configure needs shtool in order to be able to install shared libraries
+Configure needs **shtool** in order to be able to install shared libraries
 
 ~~~
 ln -s /usr/bin/shtool .
 ~~~
 ## autoconf
 
-Make sure youy have recent files **config.guess** and **config.sub**.
+Make sure you have recent files **config.guess** and **config.sub**.
 This is required for configure to correctly match your system.
 
 Refer: https://www.gnu.org/software/gettext/manual/html_node/config_002eguess.html
+
+You can download these components from:
 
 ~~~
 $ wget -O config.guess 'https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD'
 $ wget -O config.sub 'https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD'
 ~~~
 
-Now run autoconf & configure:
+Run autoconf & configure:
 
 ~~~
 autconf 
@@ -65,7 +66,7 @@ auth required pam_websso.so /etc/pam-websso.conf
 ~~~
 
 Note:
-Command **make install** does exactly that
+Command **make install** does exactly that !
 ## Testing
 
 Add pam-websso.conf configuration file to ```/etc/pam-websso.conf```
@@ -97,3 +98,16 @@ user: martin
 auth_result: SUCCESS
 pamtester: successfully authenticated
 ~~~
+
+Note:
+Command **make test** does exactly that !
+
+## Environment setting
+
+You can prepare a local file **.env** that contains a constant like this:
+
+~~~
+URL=https://websso.exp.sram.lab.surf.nl
+~~~
+
+This file will be used during **make test** and takes this URL for contacting the websso service.
