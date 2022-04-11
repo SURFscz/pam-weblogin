@@ -1,0 +1,6 @@
+@SYMPREFIX@pam_sm_open_session
+@SYMPREFIX@pam_sm_close_session
+@SYMPREFIX@pam_sm_acct_mgmt
+@SYMPREFIX@pam_sm_authenticate
+@SYMPREFIX@pam_sm_setcred
+@SYMPREFIX@pam_sm_chauthtok

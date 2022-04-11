@@ -5,7 +5,7 @@ RUN apt install -y openssh-server
 RUN echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config
 RUN mkdir /run/sshd
 
-RUN apt install -y build-essential make golang libpam-dev pamtester vim ca-certificates git sudo rsyslog sudo libcurl4-openssl-dev
+RUN apt install -y build-essential make golang libpam-dev pamtester vim ca-certificates git sudo rsyslog sudo libcurl4-openssl-dev autoconf shtool
 
 RUN sed -i '/imklog/s/^/#/' /etc/rsyslog.conf
 RUN sed -i 's/^ChallengeResponseAuthentication no$/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config

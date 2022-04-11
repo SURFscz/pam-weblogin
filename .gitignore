@@ -58,3 +58,11 @@ dkms.conf
 
 # local environment
 .env
+
+# Configure files
+Makefile
+autom4te.cache/
+config.log
+config.status
+configure
+pam_websso.syms

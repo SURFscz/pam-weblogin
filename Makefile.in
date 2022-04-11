@@ -1,0 +1,55 @@
+#!make
+
+-include .env
+
+URL ?= "http://localhost:5001"
+
+CC = @CC@
+LDFLAGS = @LDFLAGS@
+CPPFLAGS = @CPPFLAGS@ @DEFS@ -std=c99
+CFLAGS = @CFLAGS@
+LIBS = @LIBS@
+SHOBJFLAGS = @SHOBJFLAGS@
+SHOBJLDFLAGS = @SHOBJLDFLAGS@
+
+PREFIX = @prefix@
+prefix = $(PREFIX)
+exec_prefix = @exec_prefix@
+libdir = @libdir@
+security_dir = $(libdir)/security
+
+all: pam_websso.@SHOBJEXT@
+
+SOURCES := $(wildcard *.c)
+OBJECTS := $(patsubst %.c,%.o,$(SOURCES))
+
+%.c: %.h
+	touch "$@"
+
+%.o: %.c
+	$(CC) $(SHOBJFLAGS) $(CFLAGS) $(CPPFLAGS) $< -o "$@"
+
+%.@SHOBJEXT@: $(OBJECTS)
+	$(CC) $(SHOBJFLAGS) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(SHOBJLDFLAGS) -o "$@" $^ $(LIBS)
+	@WEAKENSYMS@ "$@"
+	@REMOVESYMS@ "$@"
+
+clean:
+	rm -f *.o
+	rm -f pam_websso.@SHOBJEXT@
+	rm -f Makefile pam_websso.syms config.log config.status configure
+	rm -rf autom4te.cache
+
+install: pam_websso.@SHOBJEXT@
+	sudo rm -f "$(DESTDIR)$(security_dir)/pam_websso.@SHOBJEXT@"
+	sudo mkdir -p "$(DESTDIR)$(security_dir)"
+	sudo cp pam_websso.@SHOBJEXT@ "$(DESTDIR)$(security_dir)/pam_websso.@SHOBJEXT@"
+	sudo chmod 755 "$(DESTDIR)$(security_dir)/pam_websso.@SHOBJEXT@"
+	sudo chown root:root "$(DESTDIR)$(security_dir)/pam_websso.@SHOBJEXT@"
+
+test: install
+	echo "auth required pam_websso.so /etc/pam-websso.conf" | sudo tee "/etc/pam.d/websso"
+	echo "url=${URL}" | sudo tee "/etc/pam-websso.conf"
+	pamtester websso $(id -u -n) websso authenticate
+
+.PHONY: all clean distclean install
