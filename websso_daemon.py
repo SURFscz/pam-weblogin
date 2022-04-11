@@ -3,8 +3,11 @@
 import os
 import json
 import random
+import logging
 from flask import Flask, Response, request
 from threading import Timer
+
+logging.getLogger('werkzeug').setLevel(logging.ERROR)
 
 app = Flask(__name__)
 
@@ -43,7 +46,6 @@ def req():
 
     data = json.loads(request.data)
     user = data.get('user')
-    print(f'/req {user}')
 
     new_nonce = nonce()
     new_pin = pin()
@@ -64,6 +66,7 @@ def req():
     auths[new_nonce]['user'] = user
     Timer(60, pop_auth, [new_nonce]).start()
 
+    print(f'/req <- {data}\n -> {response.data.decode()}')
     return response
 
 @app.route('/auth', methods=['POST'])
@@ -73,7 +76,6 @@ def auth():
 
     data = json.loads(request.data)
     nonce = data.get('nonce')
-    print(f'/auth {nonce}')
 
     this_auth = auths.get(nonce)
     if this_auth:
@@ -94,7 +96,7 @@ def auth():
     response.headers['Content-Type'] = "application/json"
     response.data = json.dumps(reply)
 
-
+    print(f'/auth <- {data}\n -> {response.data.decode()}')
     return response
 
 @app.route('/login/<nonce>', methods=['GET', 'POST'])
