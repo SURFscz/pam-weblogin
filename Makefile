@@ -1,3 +1,9 @@
+#!make
+
+-include .env
+
+URL ?= "http://localhost:5001"
+
 module:
 	gcc -fPIC -fno-stack-protector -c *.c
 	ld -x --shared -lcurl -lpam -lm -lc -o pam_websso.so *.o
@@ -9,3 +15,8 @@ install: module
 clean:
 	-rm -f *.o
 	-rm -f *.so
+
+test: install
+	echo "auth required pam_websso.so /etc/pam-websso.conf" | sudo tee "/etc/pam.d/websso"
+	echo "url=${URL}" | sudo tee "/etc/pam-websso.conf"
+	pamtester websso $(id -u -n) websso authenticate
