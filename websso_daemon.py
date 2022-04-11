@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+
+import os
 import json
 import random
 from flask import Flask, Response, request
@@ -36,10 +38,12 @@ def req():
     new_nonce = nonce()
     new_pin = pin()
 
+    url = os.environ.get("URL", "http://localhost:5001")
+
     auths[new_nonce] = {
       'nonce': new_nonce,
       'pin': new_pin,
-      'challenge': f"Hello {user}. To continue, visit http://localhost:5001/login/{new_nonce} and enter pin:",
+      'challenge': f"Hello {user}. To continue, visit {url}/login/{new_nonce} and enter pin:",
       'hot': hots.get(user, False)
     }
 
@@ -112,4 +116,4 @@ def login(nonce):
     return response
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=5001, debug=False)
+    app.run(host='0.0.0.0', port=5001, debug=False)
