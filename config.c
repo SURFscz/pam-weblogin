@@ -5,6 +5,29 @@
 
 #define MAXLINE 1024
 
+char* trim(char s[]) {
+  int i=0, j=0;
+
+  char trim[MAXLINE]="\0";
+
+  for (i=strlen(s)-1; s[i]==' ' || s[i]=='\n'; i--) {
+      s[i]='\0';
+  }
+
+  for(i=0; s[i]==' '; i++);
+
+  while (s[i]!='\0') {
+      trim[j]=s[i];
+      i++;
+      j++;
+  }
+
+  strcpy(s,trim);
+
+  return s;
+}
+
+
 /*
  * getConfig reads config file
  * key value pairs are separated by =, whitespace is removed
@@ -21,54 +44,55 @@ int getConfig(const char* filename, Config** cfgp) {
     char key[MAXLINE/2];
     char val[MAXLINE/2];
 
+    (*cfgp)->url = NULL;
+    (*cfgp)->token = NULL;
+
     printf("config: %s\n", filename);
 
     if ((fp = fopen(filename, "r")) != NULL) {
     while (! feof(fp)){
       memset(line, 0, MAXLINE);
+      memset(key, 0, MAXLINE/2);
+      memset(val, 0, MAXLINE/2);
       fgets(line, MAXLINE, fp);
 
-      // Find first character of the line
-      char* trimmed_line = line;
-      while (trimmed_line[0] == ' ') {
-          trimmed_line++;
-      }
+      char* trimmed_line = trim(line);
 
       // Line starts with a # comment
       if (trimmed_line[0] == '#') {
         continue;
       }
 
-      char* pos = strchr(line, '=');
+      // Line contains = token
+      char* pos = strchr(trimmed_line, '=');
       if (pos == NULL)
         continue;
 
-      int len = strlen(line);
-      int offset = 1;
-      if (line[len - 1] == '\n')
-        offset = 2;
+      int len = strlen(trimmed_line);
 
-      memset(key, 0, MAXLINE/2);
-      memset(val, 0, MAXLINE/2);
+      strncpy(key, trimmed_line, pos - trimmed_line);
+      char* trimmed_key = trim(key);
 
-      strncpy(key, line, pos - line);
-      char* trimmed_key = strtok(key, "\r\n\t ");
+      strncpy(val, pos+1, trimmed_line + len - pos);
+      char* trimmed_val = trim(val);
 
       if (! strcmp(trimmed_key, "url")) {
-        strncpy(val, pos+1, line + len - offset - pos);
-        char* trimmed_val = strtok(val, "\r\n\t ");
         (*cfgp)->url = malloc(strlen(trimmed_val));
         strcpy((*cfgp)->url, trimmed_val);
         printf("config '%s' -> '%s'\n", trimmed_key, trimmed_val);
-      } else {
-        (*cfgp)->url = NULL;
       }
 
-      if ((*cfgp)->url) {
-        rc = 1;
-      } else {
-        printf("Error reading config\n");
+      if (! strcmp(trimmed_key, "token")) {
+        (*cfgp)->token = malloc(strlen(trimmed_val));
+        strcpy((*cfgp)->token, trimmed_val);
+        printf("config '%s' -> '%s'\n", trimmed_key, trimmed_val);
       }
+    }
+
+    if ((*cfgp)->url) {
+      rc = 1;
+    } else {
+      printf("Error reading config\n");
     }
 
   } else {

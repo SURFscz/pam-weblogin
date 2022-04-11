@@ -47,18 +47,23 @@ size_t curl_callback(void* contents, size_t size, size_t nmemb, void* userp) {
 /*
  * postURL POSTS data to URL url and returns the result
  */
-int postURL(const char* url, const char* data, char** result) {
+int postURL(const char* url, const char* token, const char* data, char** result) {
     int rc = 0;
     CURL* curl;
     CURLcode cc;
+    long response_code;
     struct curl_fetch_st curl_fetch;
     struct curl_fetch_st* fetch = &curl_fetch;
 
-
     // Prepare Headers...
     struct curl_slist* headers = NULL;
+    char* auth_header = "Authorization: ";
+    char* authorization = malloc(strlen(token)+strlen(auth_header));
+    sprintf(authorization, "%s%s", auth_header, token);
     headers = curl_slist_append(headers, "Accept: application/json");
     headers = curl_slist_append(headers, "Content-Type: application/json");
+    headers = curl_slist_append(headers, authorization);
+    free(authorization);
 
     printf("http URL: %s\n", url);
     printf("http data: %s\n", data);
@@ -80,12 +85,17 @@ int postURL(const char* url, const char* data, char** result) {
         curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(data));
 
         /* Perform the request */
-        if ((cc = curl_easy_perform(curl) ) != CURLE_OK) {
+        if ((cc = curl_easy_perform(curl)) != CURLE_OK) {
             printf("curl_easy_perform() failed: %s\n", curl_easy_strerror(cc));
             return rc;
-        } else {
-            rc = 1;
         }
+
+        if ((cc = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code)) != CURLE_OK || response_code != 200) {
+            printf("Invalid response\n");
+            return rc;
+        }
+
+        rc = 1;
 
         /* check payload */
          if (fetch->payload != NULL) {

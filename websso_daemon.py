@@ -28,11 +28,21 @@ def nonce(length=8):
 def pin(length=4):
     return ''.join([str(random.choice(numbers)) for i in range(length)])
 
+def authorized(headers):
+    #print(f"headers:\n{headers}")
+    auth = headers.get("Authorization")
+    if "client:verysecret" in auth:
+        return True
+    else:
+        return False
+
 @app.route('/req', methods=['POST'])
 def req():
+    if not authorized(request.headers):
+        return Response(response="Unauthorized", status=401)
+
     data = json.loads(request.data)
     user = data.get('user')
-
     print(f'/req {user}')
 
     new_nonce = nonce()
@@ -58,6 +68,9 @@ def req():
 
 @app.route('/auth', methods=['POST'])
 def auth():
+    if not authorized(request.headers):
+        return Response(response="Unauthorized", status=401)
+
     data = json.loads(request.data)
     nonce = data.get('nonce')
     print(f'/auth {nonce}')

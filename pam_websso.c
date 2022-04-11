@@ -40,6 +40,7 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
         return PAM_AUTH_ERR;
     }
     printf("cfg->url: %s\n", cfg->url);
+    printf("cfg->token: %s\n", cfg->token);
 
     // Read username if necessary (TODO: Test)
     const char* username;
@@ -61,7 +62,7 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
 
     // Request auth nonce/challenge
     char* req;
-    if (! postURL(url, data, &req)) {
+    if (! postURL(url, cfg->token, data, &req)) {
         printf("Error making request\n");
         return PAM_AUTH_ERR;
     }
@@ -125,6 +126,7 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
         return PAM_AUTH_ERR;
     }
 
+
     // Prepare full auth url...
     snprintf(url, URL_LEN,
         "%s/auth",
@@ -139,7 +141,7 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
 
     // Request auth result
     char* auth;
-    if (! postURL(url, data, &auth)) {
+    if (! postURL(url, cfg->token, data, &auth)) {
         printf("Error making request\n");
         return PAM_AUTH_ERR;
     }
@@ -166,5 +168,6 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
         return PAM_AUTH_ERR;
     }
 
+    printf("End\n");
     return PAM_SUCCESS;
 }
