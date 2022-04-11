@@ -22,6 +22,13 @@ sudo yum install libcurl curl-devel
 sudo yum install libgcrypt libgcrypt-devel
 ~~~
 
+## shtool
+
+Configure needs shtool in order to be able to install shared libraries
+
+~~~
+ln -s /usr/bin/shtool .
+~~~
 ## autoconf
 
 Make sure youy have recent files **config.guess** and **config.sub**.
@@ -34,13 +41,22 @@ $ wget -O config.guess 'https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob
 $ wget -O config.sub 'https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD'
 ~~~
 
-
-Dependancies: libpam and libcurl. Install the dev packages for these libraries, then
+Now run autoconf & configure:
 
 ~~~
-$ make
-$ make install
+autconf 
+./configure
 ~~~
+
+And now you can build the module:
+
+~~~
+make
+~~~
+
+## Install
+
+The module needs to be installed in the system, directory of pam. **/etc/pam.d**
 
 Add this file to ```/etc/pam.d/websso```
 
@@ -48,14 +64,16 @@ Add this file to ```/etc/pam.d/websso```
 auth required pam_websso.so /etc/pam-websso.conf
 ~~~
 
+Note:
+Command **make install** does exactly that
+## Testing
+
 Add pam-websso.conf configuration file to ```/etc/pam-websso.conf```
 
 ~~~
 url = http://localhost:5001
 ~~~
 
-
-## Testing
 Create python virtualenv, pip install Flask and run websso-daemon.py as a stub server on localhost:5001
 
 Install pamtester to test the module

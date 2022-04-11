@@ -66,3 +66,4 @@ config.log
 config.status
 configure
 pam_websso.syms
+shtool

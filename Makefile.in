@@ -8,7 +8,7 @@ CC = @CC@
 LDFLAGS = @LDFLAGS@
 CPPFLAGS = @CPPFLAGS@ @DEFS@ -std=c99
 CFLAGS = @CFLAGS@
-LIBS = @LIBS@
+LIBS = @LIBS@ -lm -lcurl
 SHOBJFLAGS = @SHOBJFLAGS@
 SHOBJLDFLAGS = @SHOBJLDFLAGS@
 
@@ -27,12 +27,13 @@ OBJECTS := $(patsubst %.c,%.o,$(SOURCES))
 	touch "$@"
 
 %.o: %.c
-	$(CC) $(SHOBJFLAGS) $(CFLAGS) $(CPPFLAGS) $< -o "$@"
+	$(CC) $(SHOBJFLAGS) $(CFLAGS) $(CPPFLAGS) -c $< -o "$@"
 
 %.@SHOBJEXT@: $(OBJECTS)
 	$(CC) $(SHOBJFLAGS) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(SHOBJLDFLAGS) -o "$@" $^ $(LIBS)
 	@WEAKENSYMS@ "$@"
 	@REMOVESYMS@ "$@"
+	@chmod 644 pam_websso.so
 
 clean:
 	rm -f *.o
@@ -44,11 +45,10 @@ install: pam_websso.@SHOBJEXT@
 	sudo rm -f "$(DESTDIR)$(security_dir)/pam_websso.@SHOBJEXT@"
 	sudo mkdir -p "$(DESTDIR)$(security_dir)"
 	sudo cp pam_websso.@SHOBJEXT@ "$(DESTDIR)$(security_dir)/pam_websso.@SHOBJEXT@"
-	sudo chmod 755 "$(DESTDIR)$(security_dir)/pam_websso.@SHOBJEXT@"
 	sudo chown root:root "$(DESTDIR)$(security_dir)/pam_websso.@SHOBJEXT@"
 
 test: install
-	echo "auth required pam_websso.so /etc/pam-websso.conf" | sudo tee "/etc/pam.d/websso"
+	echo "auth required $(DESTDIR)$(security_dir)/pam_websso.so /etc/pam-websso.conf" | sudo tee "/etc/pam.d/websso"
 	echo "url=${URL}" | sudo tee "/etc/pam-websso.conf"
 	pamtester websso $(id -u -n) websso authenticate
 
