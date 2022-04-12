@@ -68,15 +68,13 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
     // Prepare full req url...
     char url[URL_LEN];
     snprintf(url, URL_LEN,
-        "%s/req",
-        cfg->url
+        "%s/req", cfg->url
     );
 
     // Prepare req input data...
     char data[DATA_LEN];
     snprintf(data, DATA_LEN,
-        "{\"user\":\"%s\"}",
-        username
+        "{\"user\":\"%s\"}", username
     );
 
     // Request auth nonce/challenge
@@ -154,8 +152,7 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
     */
         // Prepare full auth url...
         snprintf(url, URL_LEN,
-            "%s/auth",
-            cfg->url
+            "%s/auth", cfg->url
         );
 
         // Prepare auth input data...
@@ -186,13 +183,12 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
         printf("auth_result: %s\n", auth_result);
         printf("auth_msg: %s\n", auth_msg);
     */
-    /*
         // Check auth conditions
-        if (!user || strcmp(username, user)) {
+        if (!auth_result) {
             (*conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
             return PAM_AUTH_ERR;
         }
-    */
+
         // Inform the user about the auth result
         msg.msg = auth_msg;
         (*conv->conv)(1, &msgp, &resp, conv->appdata_ptr);

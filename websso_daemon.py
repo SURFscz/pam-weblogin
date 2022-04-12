@@ -32,7 +32,6 @@ def pin(length=4):
     return ''.join([str(random.choice(numbers)) for i in range(length)])
 
 def authorized(headers):
-    #print(f"headers:\n{headers}")
     auth = headers.get("Authorization")
     if "client:verysecret" in auth:
         return True
@@ -45,16 +44,12 @@ def req():
         return Response(response="Unauthorized", status=401)
 
     data = json.loads(request.data)
+
     user = data.get('user')
-
     new_nonce = nonce()
-    #new_pin = pin()
-
     url = os.environ.get("URL", "http://localhost:5001")
-
     auths[new_nonce] = {
       'nonce': new_nonce,
-      #'pin': new_pin,
       'challenge': f"Hello {user}. To continue, visit {url}/login/{new_nonce} and enter pin",
       'hot': hots.get(user, False)
     }
@@ -79,19 +74,12 @@ def auth():
     nonce = data.get('nonce')
     rpin = data.get('rpin')
 
-    reply = {
-        'uid': None,
-        'result': 'FAIL',
-        'msg': 'Authentication failed'
-    }
-
     this_auth = auths.get(nonce)
     if this_auth:
         user = this_auth.get('user')
         pin = this_auth.get('pin')
         if rpin == pin:
             reply = {
-                #'uid': user,
                 'result': 'SUCCESS',
                 'msg': 'Authenticated'
             }
@@ -99,15 +87,13 @@ def auth():
             Timer(60, pop_hot, [user]).start()
         else:
             reply = {
-                #'uid': user,
                 'result': 'FAIL',
                 'msg': 'Pin failed'
             }
 
     else:
         reply = {
-            #'uid': None,
-            'result': 'FAIL',
+            'result': None,
             'msg': 'Authentication failed'
         }
 
