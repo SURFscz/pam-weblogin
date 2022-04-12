@@ -84,6 +84,7 @@ def auth():
                 'msg': 'Authenticated'
             }
             hots[user] = True;
+            pop_auth(nonce)
             Timer(60, pop_hot, [user]).start()
         else:
             reply = {
