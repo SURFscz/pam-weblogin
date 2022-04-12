@@ -55,7 +55,7 @@ def req():
     auths[new_nonce] = {
       'nonce': new_nonce,
       #'pin': new_pin,
-      'challenge': f"Hello {user}. To continue, visit {url}/login/{new_nonce} and enter pin:",
+      'challenge': f"Hello {user}. To continue, visit {url}/login/{new_nonce} and enter pin",
       'hot': hots.get(user, False)
     }
 
@@ -96,7 +96,7 @@ def auth():
                 'msg': 'Authenticated'
             }
             hots[user] = True;
-            Timer(5, pop_hot, [user]).start()
+            Timer(60, pop_hot, [user]).start()
         else:
             reply = {
                 'uid': user,

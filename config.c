@@ -84,6 +84,13 @@ int getConfig(const char* filename, Config** cfgp) {
         strcpy((*cfgp)->token, trimmed_val);
 //         printf("config '%s' -> '%s'\n", trimmed_key, trimmed_val);
       }
+
+      (*cfgp)->retries = 1;
+      // Check for retries config
+      if (! strcmp(trimmed_key, "retries")) {
+        (*cfgp)->retries = atoi(trimmed_val);
+//         printf("config '%s' -> '%s'\n", trimmed_key, trimmed_val);
+      }
     }
 
     // Fail if either url or token is unset

@@ -59,6 +59,7 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
 /*
     printf("cfg->url: '%s'\n", cfg->url);
     printf("cfg->token: '%s'\n", cfg->token);
+    printf("cfg->retries: '%d'\n", cfg->retries);
 */
     // Read username
     const char *username;
@@ -113,90 +114,94 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
     }
 
     // Pin challenge Conversation
-    msg.msg_style = PAM_PROMPT_ECHO_OFF;
     msg.msg = challenge;
-
-    pam_err = (*conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
-    if (pam_err != PAM_SUCCESS) {
-        return PAM_AUTH_ERR;
-    }
-
-    // From here we will only inform
-    msg.msg_style = PAM_TEXT_INFO;
-
-    char* rpin = NULL;
-    if (resp != NULL) {
-        if (pam_err == PAM_SUCCESS)
-            rpin = resp->resp;
-        else
-            free(resp->resp);
-        free(resp);
-    }
-    if (pam_err == PAM_CONV_ERR)
-        return pam_err;
-    if (pam_err != PAM_SUCCESS)
-        return PAM_AUTH_ERR;
-
-/*
-    printf("Pin: %s\n", rpin);
-    if (! strcmp(pin, rpin)) {
-        printf("Pin matched!\n");
-    } else {
-//         printf("Pin didn't match\n");
-        msg.msg = "Pin didn't match";
-        (*conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
-        return PAM_AUTH_ERR;
-    }
-*/
-    // Prepare full auth url...
-    snprintf(url, URL_LEN,
-        "%s/auth",
-        cfg->url
-    );
-
-    // Prepare auth input data...
-    snprintf(data, DATA_LEN,
-        "{\"nonce\":\"%s\",\"rpin\":\"%s\"}", nonce, rpin
-    );
-
-    // Request auth result
-    char* auth;
-    if (! postURL(url, cfg->token, data, &auth)) {
-//         printf("Error making request\n");
-        msg.msg = "Error making request";
-        (*conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
-        return PAM_SYSTEM_ERR;
-    }
-//     printf("auth: %s\n", auth);
-
-    // Parse auth result
-    json = (json_char*) auth;
-    value = json_parse(json, strlen(json));
-    free(auth);
-
-    char *user = getString(value, "uid");
-    char *auth_result = getString(value, "result");
-    char *auth_msg = getString(value, "msg");
-/*
-    printf("user: %s\n", user);
-    printf("auth_result: %s\n", auth_result);
-    printf("auth_msg: %s\n", auth_msg);
-*/
-    // Check auth conditions
-    if (!user || strcmp(username, user)) {
-//         printf("User didn't match\n");
-//         msg.msg = "User didn't match";
-        (*conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
-        return PAM_AUTH_ERR;
-    }
-
-    // Inform the user about the auth result
-    msg.msg = auth_msg;
     (*conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
 
-    if (strcmp(auth_result, "SUCCESS")) {
-        return PAM_AUTH_ERR;
+    for (int retry = 0; retry < cfg->retries; ++retry) {
+        msg.msg_style = PAM_PROMPT_ECHO_OFF;
+        msg.msg = "pin: ";
+        pam_err = (*conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
+        if (pam_err != PAM_SUCCESS) {
+            return PAM_AUTH_ERR;
+        }
+
+        // From here we will only inform
+        msg.msg_style = PAM_TEXT_INFO;
+
+        char* rpin = NULL;
+        if (resp != NULL) {
+            if (pam_err == PAM_SUCCESS)
+                rpin = resp->resp;
+            else
+                free(resp->resp);
+            free(resp);
+        }
+        if (pam_err == PAM_CONV_ERR)
+            return pam_err;
+        if (pam_err != PAM_SUCCESS)
+            return PAM_AUTH_ERR;
+
+    /*
+        printf("Pin: %s\n", rpin);
+        if (! strcmp(pin, rpin)) {
+            printf("Pin matched!\n");
+        } else {
+    //         printf("Pin didn't match\n");
+            msg.msg = "Pin didn't match";
+            (*conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
+            return PAM_AUTH_ERR;
+        }
+    */
+        // Prepare full auth url...
+        snprintf(url, URL_LEN,
+            "%s/auth",
+            cfg->url
+        );
+
+        // Prepare auth input data...
+        snprintf(data, DATA_LEN,
+            "{\"nonce\":\"%s\",\"rpin\":\"%s\"}", nonce, rpin
+        );
+
+        // Request auth result
+        char* auth;
+        if (! postURL(url, cfg->token, data, &auth)) {
+    //         printf("Error making request\n");
+            msg.msg = "Error making request";
+            (*conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
+            return PAM_SYSTEM_ERR;
+        }
+    //     printf("auth: %s\n", auth);
+
+        // Parse auth result
+        json = (json_char*) auth;
+        value = json_parse(json, strlen(json));
+        free(auth);
+
+        char *user = getString(value, "uid");
+        char *auth_result = getString(value, "result");
+        char *auth_msg = getString(value, "msg");
+    /*
+        printf("user: %s\n", user);
+        printf("auth_result: %s\n", auth_result);
+        printf("auth_msg: %s\n", auth_msg);
+    */
+        // Check auth conditions
+        if (!user || strcmp(username, user)) {
+    //         printf("User didn't match\n");
+    //         msg.msg = "User didn't match";
+            (*conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
+            return PAM_AUTH_ERR;
+        }
+
+        // Inform the user about the auth result
+        msg.msg = auth_msg;
+        (*conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
+
+        if (!strcmp(auth_result, "SUCCESS")) {
+            return PAM_SUCCESS;
+        }
     }
 
-    return PAM_SUCCESS;
+    return PAM_AUTH_ERR;
 }
