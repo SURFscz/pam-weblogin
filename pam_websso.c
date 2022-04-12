@@ -178,7 +178,7 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
         value = json_parse(json, strlen(json));
         free(auth);
 
-        char *user = getString(value, "uid");
+//         char *user = getString(value, "uid");
         char *auth_result = getString(value, "result");
         char *auth_msg = getString(value, "msg");
     /*
@@ -186,14 +186,13 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
         printf("auth_result: %s\n", auth_result);
         printf("auth_msg: %s\n", auth_msg);
     */
+    /*
         // Check auth conditions
         if (!user || strcmp(username, user)) {
-    //         printf("User didn't match\n");
-    //         msg.msg = "User didn't match";
             (*conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
             return PAM_AUTH_ERR;
         }
-
+    */
         // Inform the user about the auth result
         msg.msg = auth_msg;
         (*conv->conv)(1, &msgp, &resp, conv->appdata_ptr);

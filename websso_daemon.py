@@ -91,7 +91,7 @@ def auth():
         pin = this_auth.get('pin')
         if rpin == pin:
             reply = {
-                'uid': user,
+                #'uid': user,
                 'result': 'SUCCESS',
                 'msg': 'Authenticated'
             }
@@ -99,14 +99,14 @@ def auth():
             Timer(60, pop_hot, [user]).start()
         else:
             reply = {
-                'uid': user,
+                #'uid': user,
                 'result': 'FAIL',
                 'msg': 'Pin failed'
             }
 
     else:
         reply = {
-            'uid': None,
+            #'uid': None,
             'result': 'FAIL',
             'msg': 'Authentication failed'
         }
