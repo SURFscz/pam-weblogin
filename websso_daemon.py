@@ -48,13 +48,13 @@ def req():
     user = data.get('user')
 
     new_nonce = nonce()
-    new_pin = pin()
+    #new_pin = pin()
 
     url = os.environ.get("URL", "http://localhost:5001")
 
     auths[new_nonce] = {
       'nonce': new_nonce,
-      'pin': new_pin,
+      #'pin': new_pin,
       'challenge': f"Hello {user}. To continue, visit {url}/login/{new_nonce} and enter pin:",
       'hot': hots.get(user, False)
     }
@@ -64,6 +64,7 @@ def req():
     response.data = json.dumps(auths[new_nonce])
 
     auths[new_nonce]['user'] = user
+    auths[new_nonce]['pin'] = pin()
     Timer(60, pop_auth, [new_nonce]).start()
 
     print(f'/req <- {data}\n -> {response.data.decode()}')
@@ -76,21 +77,40 @@ def auth():
 
     data = json.loads(request.data)
     nonce = data.get('nonce')
+    rpin = data.get('rpin')
+
+    reply = {
+        'uid': None,
+        'result': 'FAIL',
+        'msg': 'Authentication failed'
+    }
 
     this_auth = auths.get(nonce)
     if this_auth:
         user = this_auth.get('user')
-        reply = {
-            'uid': user,
-            'result': 'SUCCESS'
-        }
-        hots[user] = True;
-        Timer(5, pop_hot, [user]).start()
+        pin = this_auth.get('pin')
+        if rpin == pin:
+            reply = {
+                'uid': user,
+                'result': 'SUCCESS',
+                'msg': 'Authenticated'
+            }
+            hots[user] = True;
+            Timer(5, pop_hot, [user]).start()
+        else:
+            reply = {
+                'uid': user,
+                'result': 'FAIL',
+                'msg': 'Pin failed'
+            }
+
     else:
         reply = {
             'uid': None,
-            'result': 'FAIL'
+            'result': 'FAIL',
+            'msg': 'Authentication failed'
         }
+
 
     response = Response()
     response.headers['Content-Type'] = "application/json"

@@ -41,7 +41,7 @@ int getConfig(const char* filename, Config** cfgp) {
     (*cfgp)->url = NULL;
     (*cfgp)->token = NULL;
 
-    printf("config: %s\n", filename);
+//     printf("config: %s\n", filename);
 
     if ((fp = fopen(filename, "r")) != NULL) {
     while (! feof(fp)){
@@ -90,12 +90,12 @@ int getConfig(const char* filename, Config** cfgp) {
     if ((*cfgp)->url && (*cfgp)->token) {
       rc = 1;
     } else {
-      printf("Error reading config\n");
+//       printf("Error reading config\n");
     }
 
 
     } else {
-      printf("Error reading config\n");
+//       printf("Error reading config\n");
   }
 
   return rc;
