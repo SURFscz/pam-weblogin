@@ -34,7 +34,7 @@ size_t curl_callback(void* contents, size_t size, size_t nmemb, void* userp) {
     memcpy(&(p->payload[p->size]), contents, realsize);
 
     /* set new buffer size */
-    p->size += realsize + 1;
+    p->size += realsize;
 
     /* ensure null termination */
     p->payload[p->size] = 0;

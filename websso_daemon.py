@@ -58,11 +58,13 @@ def req():
     response.headers['Content-Type'] = "application/json"
     response.data = json.dumps(auths[new_nonce])
 
+    new_pin = pin()
     auths[new_nonce]['user'] = user
-    auths[new_nonce]['pin'] = pin()
+    auths[new_nonce]['pin'] = new_pin
     Timer(60, pop_auth, [new_nonce]).start()
 
     print(f'/req <- {data}\n -> {response.data.decode()}')
+    print(f'  pin: {new_pin}')
     return response
 
 @app.route('/auth', methods=['POST'])

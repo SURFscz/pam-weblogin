@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <syslog.h>
+
 #include <security/pam_appl.h>
 #include <security/pam_modules.h>
 
@@ -14,30 +16,19 @@
 #define DATA_LEN 1024
 
 /* expected hook */
-PAM_EXTERN int pam_sm_setcred( pam_handle_t *pamh, int flags, int argc, const char **argv ) {
-    printf("Setcred\n");
+PAM_EXTERN int pam_sm_setcred( pam_handle_t *pamh, int flags, int argc, const char *argv[] ) {
+    //printf("Setcred\n");
     return PAM_SUCCESS;
 }
 
-PAM_EXTERN int pam_sm_acct_mgmt(pam_handle_t *pamh, int flags, int argc, const char **argv) {
-    printf("Acct mgmt\n");
+PAM_EXTERN int pam_sm_acct_mgmt(pam_handle_t *pamh, int flags, int argc, const char *argv[]) {
+    //printf("Acct mgmt\n");
     return PAM_SUCCESS;
 }
 
 /* expected hook, this is where custom stuff happens */
-PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, const char **argv ) {
-//     printf("Authenticate\n");
-    // Prepare Conversation(s)
-    const void *ptr;
-    const struct pam_conv *conv;
-    int pam_err;
-    struct pam_response* resp = NULL;
-
-    struct pam_message msg;
-    const struct pam_message *msgp;
-    msgp = &msg;
-    msg.msg_style = PAM_TEXT_INFO;
-
+PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const char *argv[] ) {
+    log_message(LOG_INFO, pamh, "Start of pam_websso");
 
     const char *filename = "/etc/pam-websso.conf";
     if (argc > 0) {
@@ -47,20 +38,16 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
     // Read configuration file
     Config *cfg = malloc(sizeof(*cfg));
     if (! getConfig(filename, &cfg)) {
-//         printf("Error reading conf\n");
-        pam_err = pam_get_item(pamh, PAM_CONV, &ptr);
-        if (pam_err != PAM_SUCCESS)
-            return PAM_SYSTEM_ERR;
-        conv = ptr;
-        msg.msg = "Error reading conf";
-        (conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
+        log_message(LOG_ERR, pamh, "Error reading conf");
+        conv_info(pamh, "Error reading conf");
         return PAM_SYSTEM_ERR;
     }
 /*
-    printf("cfg->url: '%s'\n", cfg->url);
-    printf("cfg->token: '%s'\n", cfg->token);
-    printf("cfg->retries: '%d'\n", cfg->retries);
+    log_message(LOG_INFO, pamh, "cfg->url: '%s'\n", cfg->url);
+    log_message(LOG_INFO, pamh, "cfg->token: '%s'\n", cfg->token);
+    log_message(LOG_INFO, pamh, "cfg->retries: '%d'\n", cfg->retries);
 */
+
     // Read username
     const char *username;
     int uresult = pam_get_user(pamh, &username, "Username: ");
@@ -80,92 +67,39 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
     // Request auth nonce/challenge
     char *req;
     if (! postURL(url, cfg->token, data, &req)) {
-//         printf("Error making request\n");
-//         msg.msg_style = PAM_TEXT_INFO;
-        msg.msg = "Error making request";
-        pam_err = pam_get_item(pamh, PAM_CONV, &ptr);
-        if (pam_err != PAM_SUCCESS)
-            return PAM_SYSTEM_ERR;
-        conv = ptr;
-        (conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
+        log_message(LOG_ERR, pamh, "Error making request");
+        conv_info(pamh, "Could not contact auth server");
         return PAM_SYSTEM_ERR;
     }
 
-//     printf("req: %s\n", req);
+    //log_message(LOG_INFO, pamh, "req: %s", req);
 
     // Parse response
     json_char *json = (json_char*) req;
     json_value *value = json_parse(json, strlen(json));
     free(req);
 
-    char *nonce = getString(value, "nonce");
-//     char *pin = getString(value, "pin");
-    char *challenge = getString(value, "challenge");
-    bool hot = getBool(value, "hot");
+    char *nonce = getString(pamh, value, "nonce");
+    char *challenge = getString(pamh, value, "challenge");
+    bool hot = getBool(pamh, value, "hot");
+    free(value);
 /*
-    printf("nonce: %s\n", nonce);
-    printf("pin: %s\n", pin);
-    printf("challenge: %s\n", challenge);
-    printf("hot: %s\n", hot ? "true" : "false");
+    log_message(LOG_INFO, pamh, "nonce: %s\n", nonce);
+    log_message(LOG_INFO, pamh, "challenge: %s\n", challenge);
+    log_message(LOG_INFO, pamh, "hot: %s\n", hot ? "true" : "false");
 */
     if (hot) {
-//         msg.msg_style = PAM_TEXT_INFO;
-        msg.msg = "You are hot!";
-        pam_err = pam_get_item(pamh, PAM_CONV, &ptr);
-        if (pam_err != PAM_SUCCESS)
-            return PAM_SYSTEM_ERR;
-        conv = ptr;
-        (conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
+        conv_info(pamh, "You were hot!");
         return PAM_SUCCESS;
     }
 
     // Pin challenge Conversation
-    msg.msg = challenge;
-    pam_err = pam_get_item(pamh, PAM_CONV, &ptr);
-    if (pam_err != PAM_SUCCESS)
-        return PAM_SYSTEM_ERR;
-    conv = ptr;
-    (conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
+    conv_info(pamh, challenge);
+    free(challenge);
 
     for (int retry = 0; retry < cfg->retries; ++retry) {
-        msg.msg_style = PAM_PROMPT_ECHO_OFF;
-        msg.msg = "pin: ";
-        pam_err = pam_get_item(pamh, PAM_CONV, &ptr);
-        if (pam_err != PAM_SUCCESS)
-            return PAM_SYSTEM_ERR;
-        conv = ptr;
-        pam_err = (conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
-        if (pam_err != PAM_SUCCESS) {
-            return PAM_AUTH_ERR;
-        }
+        char *rpin = conv_read(pamh, "Pin: ", PAM_PROMPT_ECHO_OFF);
 
-        // From here we will only inform
-        msg.msg_style = PAM_TEXT_INFO;
-
-        char* rpin = NULL;
-        if (resp != NULL) {
-            if (pam_err == PAM_SUCCESS)
-                rpin = resp->resp;
-            else
-                free(resp->resp);
-            free(resp);
-        }
-        if (pam_err == PAM_CONV_ERR)
-            return pam_err;
-        if (pam_err != PAM_SUCCESS)
-            return PAM_AUTH_ERR;
-
-    /*
-        printf("Pin: %s\n", rpin);
-        if (! strcmp(pin, rpin)) {
-            printf("Pin matched!\n");
-        } else {
-    //         printf("Pin didn't match\n");
-            msg.msg = "Pin didn't match";
-            (conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
-            return PAM_AUTH_ERR;
-        }
-    */
         // Prepare full auth url...
         snprintf(url, URL_LEN,
             "%s/auth", cfg->url
@@ -179,52 +113,40 @@ PAM_EXTERN int pam_sm_authenticate( pam_handle_t *pamh, int flags,int argc, cons
         // Request auth result
         char* auth;
         if (! postURL(url, cfg->token, data, &auth)) {
-    //         printf("Error making request\n");
-            msg.msg = "Error making request";
-            pam_err = pam_get_item(pamh, PAM_CONV, &ptr);
-            if (pam_err != PAM_SUCCESS)
-                return PAM_SYSTEM_ERR;
-            conv = ptr;
-            (conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
+            log_message(LOG_ERR, pamh, "Error making request");
+            conv_info(pamh, "Could not contact auth server");
             return PAM_SYSTEM_ERR;
         }
-    //     printf("auth: %s\n", auth);
+        //log_message(LOG_INFO, pamh, "auth: %s\n", auth);
 
         // Parse auth result
         json = (json_char*) auth;
         value = json_parse(json, strlen(json));
         free(auth);
 
-//         char *user = getString(value, "uid");
-        char *auth_result = getString(value, "result");
-        char *auth_msg = getString(value, "msg");
-    /*
-        printf("user: %s\n", user);
-        printf("auth_result: %s\n", auth_result);
-        printf("auth_msg: %s\n", auth_msg);
-    */
+        char *auth_result = getString(pamh, value, "result");
+        char *auth_msg = getString(pamh, value, "msg");
+
+	conv_info(pamh, auth_msg);
+
+        //log_message(LOG_INFO, pamh, "auth_result: %s\n", auth_result);
+        //log_message(LOG_INFO, pamh, "auth_msg: %s\n", auth_msg);
+
         // Check auth conditions
         if (!auth_result) {
-            pam_err = pam_get_item(pamh, PAM_CONV, &ptr);
-            if (pam_err != PAM_SUCCESS)
-                return PAM_SYSTEM_ERR;
-            conv = ptr;
-            (conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
+	    conv_info(pamh, auth_msg);
             return PAM_AUTH_ERR;
         }
-
-        // Inform the user about the auth result
-        msg.msg = auth_msg;
-        pam_err = pam_get_item(pamh, PAM_CONV, &ptr);
-        if (pam_err != PAM_SUCCESS)
-            return PAM_SYSTEM_ERR;
-        conv = ptr;
-        (conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
 
         if (!strcmp(auth_result, "SUCCESS")) {
             return PAM_SUCCESS;
         }
+
+        free(value);
+        free(auth_result);
+        free(auth_msg);
     }
 
-    return PAM_AUTH_ERR;
+    free(nonce);
+    return PAM_SUCCESS;
 }

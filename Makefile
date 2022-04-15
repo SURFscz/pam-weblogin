@@ -6,7 +6,7 @@ URL ?= "http://localhost:5001"
 
 module:
 	gcc -fPIC -fno-stack-protector -c *.c
-	ld -x --shared -lcurl -lpam -lm -lc -o pam_websso.so *.o
+	gcc -shared -o pam_websso.so *.o -lcurl -lpam -lm
 	chmod 644 pam_websso.so
 
 install: module
