@@ -97,6 +97,8 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
     conv_info(pamh, challenge);
     free(challenge);
 
+    int retval = PAM_AUTH_ERR;
+
     for (int retry = 0; retry < cfg->retries; ++retry) {
         char *rpin = conv_read(pamh, "Pin: ", PAM_PROMPT_ECHO_OFF);
 
@@ -126,27 +128,31 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
 
         char *auth_result = getString(pamh, value, "result");
         char *auth_msg = getString(pamh, value, "msg");
+        free(value);
 
-	conv_info(pamh, auth_msg);
+        conv_info(pamh, auth_msg);
 
         //log_message(LOG_INFO, pamh, "auth_result: %s\n", auth_result);
         //log_message(LOG_INFO, pamh, "auth_msg: %s\n", auth_msg);
 
         // Check auth conditions
         if (!auth_result) {
-	    conv_info(pamh, auth_msg);
-            return PAM_AUTH_ERR;
+            free(auth_result);
+            free(auth_msg);
+            break;
         }
 
         if (!strcmp(auth_result, "SUCCESS")) {
-            return PAM_SUCCESS;
+            free(auth_result);
+            free(auth_msg);
+            retval = PAM_SUCCESS;
+            break;
         }
 
-        free(value);
         free(auth_result);
         free(auth_msg);
     }
 
     free(nonce);
-    return PAM_SUCCESS;
+    return retval;
 }
