@@ -96,7 +96,7 @@ Config * getConfig(pam_handle_t *pamh, const char* filename) {
       cfg->retries = 1;
       // Check for retries config
       if (! strcmp(key, "retries")) {
-        cfg->retries = atoi(val);
+        cfg->retries = abs(atoi(val));
       }
     }
   }

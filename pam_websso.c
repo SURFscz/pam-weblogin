@@ -97,7 +97,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
 
     int retval = PAM_AUTH_ERR;
 
-    for (int retry = 0; retry < cfg->retries; ++retry) {
+    for (int retry = 0; (retry < cfg->retries) && (retval != PAM_SUCCESS); ++retry) {
         char *rpin = conv_read(pamh, "Pin: ", PAM_PROMPT_ECHO_OFF);
 
         // Prepare full auth url...
@@ -118,6 +118,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
             freeConfig(cfg);
             return PAM_SYSTEM_ERR;
         }
+
         log_message(LOG_INFO, pamh, "auth: %s\n", auth);
 
         // Parse auth result
@@ -134,19 +135,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
         log_message(LOG_INFO, pamh, "auth_result: %s\n", auth_result);
         log_message(LOG_INFO, pamh, "auth_msg: %s\n", auth_msg);
 
-        // Check auth conditions
-        if (!auth_result) {
-            free(auth_result);
-            free(auth_msg);
-            break;
-        }
-
-        if (!strcmp(auth_result, "SUCCESS")) {
-            free(auth_result);
-            free(auth_msg);
-            retval = PAM_SUCCESS;
-            break;
-        }
+        retval = (auth_result && !strcmp(auth_result, "SUCCESS")) ? PAM_SUCCESS : PAM_AUTH_ERR;
 
         free(auth_result);
         free(auth_msg);
