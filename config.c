@@ -101,16 +101,17 @@ Config * getConfig(pam_handle_t *pamh, const char* filename) {
     }
   }
 
-  // Fail if either url or token is unset
+  // Success if both url and token are set !
   if (cfg->url && cfg->token) {
     return cfg;
   }
 
+  // Fail if either url or token is unset
   if (! cfg->url)
     log_message(LOG_ERR, pamh, "Missing 'url' in configuration !");
 
   if (! cfg->token)
-    log_message(LOG_ERR, pamh, "Missing 'url' in configuration !");
+    log_message(LOG_ERR, pamh, "Missing 'token' in configuration !");
 
   freeConfig(cfg);
   return NULL;
