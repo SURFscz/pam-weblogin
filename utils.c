@@ -56,7 +56,7 @@ char *getString(pam_handle_t *pamh, json_value* value, const char* name) {
   return key->u.string.ptr;
 }
 
-bool getBool(pam_handle_t *pamh, json_value* value, const char* name) {
+int getBool(pam_handle_t *pamh, json_value* value, const char* name) {
   json_value* key = findKey(pamh, value, name);
   if (key == NULL) {
     return false;

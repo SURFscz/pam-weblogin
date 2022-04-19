@@ -10,15 +10,18 @@ $ make install
 ```
 
 Add this file to ```/etc/pam.d/websso```
+
 ```
 auth required pam_websso.so /etc/pam-websso.conf
 ```
 
 Add pam-websso.conf configuration file to ```/etc/pam-websso.conf```
+
 ```
 url = http://localhost:5001
+token = Bearer client:verysecret
+retries = 3
 ```
-
 
 ## Testing
 Create python virtualenv, pip install Flask and run websso-daemon.py as a stub server on localhost:5001

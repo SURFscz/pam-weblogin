@@ -2,13 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include <syslog.h>
 
 #include <security/pam_appl.h>
 #include <security/pam_modules.h>
 
-#include "config.h"
 #include "utils.h"
+#include "config.h"
 #include "http.h"
 #include "json.h"
 
@@ -30,27 +29,25 @@ PAM_EXTERN int pam_sm_acct_mgmt(pam_handle_t *pamh, int flags, int argc, const c
 PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const char *argv[] ) {
     log_message(LOG_INFO, pamh, "Start of pam_websso");
 
-    const char *filename = "/etc/pam-websso.conf";
-    if (argc > 0) {
-        filename = argv[0];
+    // Read username
+    const char *username;
+    if (pam_get_user(pamh, &username, "Username: ") != PAM_SUCCESS) {
+        log_message(LOG_ERR, pamh, "Error getting user");
+        return PAM_SYSTEM_ERR;
     }
 
     // Read configuration file
-    Config *cfg = malloc(sizeof(*cfg));
-    if (! getConfig(filename, &cfg)) {
-        log_message(LOG_ERR, pamh, "Error reading conf");
+    Config *cfg = NULL;
+    if (! (cfg = getConfig(pamh, (argc > 0) ? argv[0] : "/etc/pam-websso.conf"))) {
         conv_info(pamh, "Error reading conf");
         return PAM_SYSTEM_ERR;
     }
-/*
+
+    /*
     log_message(LOG_INFO, pamh, "cfg->url: '%s'\n", cfg->url);
     log_message(LOG_INFO, pamh, "cfg->token: '%s'\n", cfg->token);
     log_message(LOG_INFO, pamh, "cfg->retries: '%d'\n", cfg->retries);
-*/
-
-    // Read username
-    const char *username;
-    int uresult = pam_get_user(pamh, &username, "Username: ");
+    */
 
     // Prepare full req url...
     char url[URL_LEN];
@@ -69,10 +66,11 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
     if (! postURL(url, cfg->token, data, &req)) {
         log_message(LOG_ERR, pamh, "Error making request");
         conv_info(pamh, "Could not contact auth server");
+        freeConfig(cfg);
         return PAM_SYSTEM_ERR;
     }
 
-    //log_message(LOG_INFO, pamh, "req: %s", req);
+    log_message(LOG_INFO, pamh, "req: %s", req);
 
     // Parse response
     json_char *json = (json_char*) req;
@@ -90,6 +88,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
 */
     if (hot) {
         conv_info(pamh, "You were hot!");
+        freeConfig(cfg);
         return PAM_SUCCESS;
     }
 
@@ -117,9 +116,10 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
         if (! postURL(url, cfg->token, data, &auth)) {
             log_message(LOG_ERR, pamh, "Error making request");
             conv_info(pamh, "Could not contact auth server");
+            freeConfig(cfg);
             return PAM_SYSTEM_ERR;
         }
-        //log_message(LOG_INFO, pamh, "auth: %s\n", auth);
+        log_message(LOG_INFO, pamh, "auth: %s\n", auth);
 
         // Parse auth result
         json = (json_char*) auth;
@@ -132,8 +132,8 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
 
         conv_info(pamh, auth_msg);
 
-        //log_message(LOG_INFO, pamh, "auth_result: %s\n", auth_result);
-        //log_message(LOG_INFO, pamh, "auth_msg: %s\n", auth_msg);
+        log_message(LOG_INFO, pamh, "auth_result: %s\n", auth_result);
+        log_message(LOG_INFO, pamh, "auth_msg: %s\n", auth_msg);
 
         // Check auth conditions
         if (!auth_result) {
@@ -154,5 +154,6 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
     }
 
     free(nonce);
+    freeConfig(cfg);
     return retval;
 }

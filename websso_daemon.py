@@ -7,7 +7,7 @@ import logging
 from flask import Flask, Response, request
 from threading import Timer
 
-logging.getLogger('werkzeug').setLevel(logging.ERROR)
+logging.getLogger('werkzeug').setLevel(logging.DEBUG)
 
 app = Flask(__name__)
 
@@ -18,11 +18,11 @@ chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
 numbers = '1234567890'
 
 def pop_auth(nonce):
-    print(f"pop auth {nonce}")
+    logging.debug(f"pop auth {nonce}")
     auths.pop(nonce, None)
 
 def pop_hot(user):
-    print(f"pop hot {user}")
+    logging.debug(f"pop hot {user}")
     hots.pop(user, None)
 
 def nonce(length=8):
@@ -63,8 +63,9 @@ def req():
     auths[new_nonce]['pin'] = new_pin
     Timer(60, pop_auth, [new_nonce]).start()
 
-    print(f'/req <- {data}\n -> {response.data.decode()}')
-    print(f'  pin: {new_pin}')
+    logging.debug(f'/req <- {data}\n -> {response.data.decode()}')
+    logging.debug(f'  pin: {new_pin}')
+
     return response
 
 @app.route('/auth', methods=['POST'])
@@ -105,12 +106,13 @@ def auth():
     response.headers['Content-Type'] = "application/json"
     response.data = json.dumps(reply)
 
-    print(f'/auth <- {data}\n -> {response.data.decode()}')
+    logging.debug(f'/auth <- {data}\n -> {response.data.decode()}')
+
     return response
 
 @app.route('/login/<nonce>', methods=['GET', 'POST'])
 def login(nonce):
-    print(f'/login {nonce}')
+    logging.info(f'/login {nonce}')
 
     this_auth = auths.get(nonce)
     if this_auth:

@@ -1,26 +1,38 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+
+#include "utils.h"
 #include "config.h"
 
 #define MAXLINE 1024
 
-char* trim(char s[]) {
-  int i=0, j=0;
-  char trim[MAXLINE]="\0";
-  for (i=strlen(s)-1; s[i]==' ' || s[i]=='\n'; i--) {
-      s[i]='\0';
-  }
-  for(i=0; s[i]==' '; i++);
-  while (s[i]!='\0') {
-      trim[j]=s[i];
-      i++;
-      j++;
-  }
-  strcpy(s,trim);
+char * trim(char *s) {
+
+  while (isspace(*(s+strlen(s)-1)))
+    *(s+strlen(s)-1) = '\0';
+
+  while (isspace(*s))
+    s++;
+
   return s;
 }
 
+/*
+ * gefreeConfig frees dynamic allocatoed memory
+ */
+
+void freeConfig(Config *cfg) {
+  if (cfg) {
+    if (cfg->url)
+      free(cfg->url);
+    if (cfg->token)
+      free(cfg->token);
+
+    free(cfg);
+  }
+}
 
 /*
  * getConfig reads config file
@@ -29,81 +41,77 @@ char* trim(char s[]) {
  *
  * # The url to connect to
  * url = http://test.example.com/test
+ * token = Bearer client:verysecret
  */
 
-int getConfig(const char* filename, Config** cfgp) {
-    int rc = 0;
-    FILE* fp ;
-    char line[MAXLINE];
-    char key[MAXLINE];
-    char val[MAXLINE];
+Config * getConfig(pam_handle_t *pamh, const char* filename) {
+  int rc = 0;
+  int lineno = 0;
+  FILE *fp = NULL;
 
-    (*cfgp)->url = NULL;
-    (*cfgp)->token = NULL;
+  Config *cfg = malloc(sizeof(Config));
 
-//     printf("config: %s\n", filename);
+  cfg->url = NULL;
+  cfg->token = NULL;
 
-    if ((fp = fopen(filename, "r")) != NULL) {
-    while (! feof(fp)){
-      memset(line, 0, MAXLINE);
-      memset(key, 0, MAXLINE);
-      memset(val, 0, MAXLINE);
-      fgets(line, MAXLINE, fp);
+  if ((fp = fopen(filename, "r")) != NULL) {
+    char buffer[MAXLINE];
 
-      char* trimmed_line = trim(line);
+    while (! feof(fp)) {
+      memset(buffer, 0, MAXLINE);
+
+      fgets(buffer, MAXLINE, fp);
+
+      lineno++;
+
+      char *key = trim(buffer);
 
       // Line starts with a # comment
-      if (trimmed_line[0] == '#') {
+      if (key[0] == '#') {
         continue;
       }
 
       // Line contains = token
-      char* pos = strchr(trimmed_line, '=');
-      if (pos == NULL)
+      char* val = strchr(key, '=');
+      if (val == NULL) {
+        log_message(LOG_ERR, pamh, "Configuration line: %d: missing '=' symbol, skipping line", lineno);
         continue;
+      }
 
-      int len = strlen(trimmed_line);
+      *val++ = '\0';
 
-      // Prepare (trim) key and val
-      strncpy(key, trimmed_line, pos - trimmed_line);
-      char* trimmed_key = trim(key);
-
-      strncpy(val, pos+1, trimmed_line + len - pos);
-      char* trimmed_val = trim(val);
+      val = trim(val);
+      key = trim(key);
 
       // Check for url config
-      if (! strcmp(trimmed_key, "url")) {
-        (*cfgp)->url = malloc(strlen(trimmed_val));
-        strcpy((*cfgp)->url, trimmed_val);
-//         printf("config '%s' -> '%s'\n", trimmed_key, trimmed_val);
+      if (! strcmp(key, "url")) {
+        cfg->url = strdup(val);
       }
 
       // Check for token config
-      if (! strcmp(trimmed_key, "token")) {
-        (*cfgp)->token = malloc(strlen(trimmed_val));
-        strcpy((*cfgp)->token, trimmed_val);
-//         printf("config '%s' -> '%s'\n", trimmed_key, trimmed_val);
+      if (! strcmp(key, "token")) {
+        cfg->token = strdup(val);
       }
 
-      (*cfgp)->retries = 1;
+      cfg->retries = 1;
       // Check for retries config
-      if (! strcmp(trimmed_key, "retries")) {
-        (*cfgp)->retries = atoi(trimmed_val);
-//         printf("config '%s' -> '%s'\n", trimmed_key, trimmed_val);
+      if (! strcmp(key, "retries")) {
+        cfg->retries = atoi(val);
       }
     }
-
-    // Fail if either url or token is unset
-    if ((*cfgp)->url && (*cfgp)->token) {
-      rc = 1;
-    } else {
-//       printf("Error reading config\n");
-    }
-
-
-    } else {
-//       printf("Error reading config\n");
   }
 
-  return rc;
+  // Fail if either url or token is unset
+  if (cfg->url && cfg->token) {
+    return cfg;
+  }
+
+  if (! cfg->url)
+    log_message(LOG_ERR, pamh, "Missing 'url' in configuration !");
+
+  if (! cfg->token)
+    log_message(LOG_ERR, pamh, "Missing 'url' in configuration !");
+
+  freeConfig(cfg);
+  return NULL;
 }
