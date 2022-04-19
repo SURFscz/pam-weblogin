@@ -109,7 +109,8 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
         snprintf(data, DATA_LEN,
             "{\"nonce\":\"%s\",\"rpin\":\"%s\"}", nonce, rpin
         );
-
+        free(rpin);
+        
         // Request auth result
         char* auth;
         if (! postURL(url, cfg->token, data, &auth)) {
