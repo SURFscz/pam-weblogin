@@ -115,8 +115,8 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
         if (! postURL(url, cfg->token, data, &auth)) {
             log_message(LOG_ERR, pamh, "Error making request");
             conv_info(pamh, "Could not contact auth server");
-            freeConfig(cfg);
-            return PAM_SYSTEM_ERR;
+            retval = PAM_SYSTEM_ERR;
+            break;
         }
 
         log_message(LOG_INFO, pamh, "auth: %s\n", auth);
