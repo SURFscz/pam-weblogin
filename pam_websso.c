@@ -76,15 +76,15 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
 
     char *nonce = getString(pamh, value, "nonce");
     char *challenge = getString(pamh, value, "challenge");
-    bool hot = getBool(pamh, value, "hot");
+    bool cached = getBool(pamh, value, "cached");
     free(value);
 /*
     log_message(LOG_INFO, pamh, "nonce: %s\n", nonce);
     log_message(LOG_INFO, pamh, "challenge: %s\n", challenge);
-    log_message(LOG_INFO, pamh, "hot: %s\n", hot ? "true" : "false");
+    log_message(LOG_INFO, pamh, "cached: %s\n", cached ? "true" : "false");
 */
-    if (hot) {
-        conv_info(pamh, "You were hot!");
+    if (cached) {
+        conv_info(pamh, "You were cached!");
         freeConfig(cfg);
         return PAM_SUCCESS;
     }
@@ -94,19 +94,22 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
     free(challenge);
 
     int retval = PAM_AUTH_ERR;
+    bool timeout = false;
 
-    for (int retry = 0; (retry < cfg->retries) && (retval != PAM_SUCCESS); ++retry) {
+    for (int retry = 0; (retry < cfg->retries) &&
+                        (retval != PAM_SUCCESS) &&
+                        ! timeout; ++retry) {
         char *rpin = conv_read(pamh, "Pin: ", PAM_PROMPT_ECHO_OFF);
 
         // Prepare URL...
-        char *url = NULL;       
+        char *url = NULL;
         asprintf(&url, "%s/auth", cfg->url);
 
         // Prepare auth input data...
         char *data = NULL;
         asprintf(&data, "{\"nonce\":\"%s\",\"rpin\":\"%s\"}", nonce, rpin);
         free(rpin);
- 
+
         // Request auth result
         char *auth = NULL;
         int rc = postURL(url, cfg->token, data, &auth);
@@ -137,6 +140,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
         log_message(LOG_INFO, pamh, "auth_msg: %s\n", auth_msg);
 
         retval = (auth_result && !strcmp(auth_result, "SUCCESS")) ? PAM_SUCCESS : PAM_AUTH_ERR;
+        timeout = auth_result ? false : true;
 
         free(auth_result);
         free(auth_msg);

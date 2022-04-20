@@ -7,12 +7,13 @@ import logging
 from flask import Flask, Response, request
 from threading import Timer
 
-logging.getLogger('werkzeug').setLevel(logging.DEBUG)
+logging.getLogger().setLevel(logging.DEBUG)
+logging.getLogger('werkzeug').setLevel(logging.ERROR)
 
 app = Flask(__name__)
 
 auths = {}
-hots = {}
+cached = {}
 
 chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
 numbers = '1234567890'
@@ -21,9 +22,9 @@ def pop_auth(nonce):
     logging.debug(f"pop auth {nonce}")
     auths.pop(nonce, None)
 
-def pop_hot(user):
-    logging.debug(f"pop hot {user}")
-    hots.pop(user, None)
+def pop_cached(user):
+    logging.debug(f"pop cached {user}")
+    cached.pop(user, None)
 
 def nonce(length=8):
     return ''.join([str(random.choice(chars)) for i in range(length)])
@@ -51,7 +52,7 @@ def req():
     auths[new_nonce] = {
       'nonce': new_nonce,
       'challenge': f"Hello {user}. To continue, visit {url}/login/{new_nonce} and enter pin",
-      'hot': hots.get(user, False)
+      'cached': cached.get(user, False)
     }
 
     response = Response()
@@ -63,8 +64,9 @@ def req():
     auths[new_nonce]['pin'] = new_pin
     Timer(60, pop_auth, [new_nonce]).start()
 
-    logging.debug(f'/req <- {data}\n -> {response.data.decode()}')
-    logging.debug(f'  pin: {new_pin}')
+    logging.debug(f'/req <- {data}\n'
+                  f' -> {response.data.decode()}\n'
+                  f'  pin: {new_pin}')
 
     return response
 
@@ -86,15 +88,14 @@ def auth():
                 'result': 'SUCCESS',
                 'msg': 'Authenticated'
             }
-            hots[user] = True;
+            cached[user] = True;
             pop_auth(nonce)
-            Timer(60, pop_hot, [user]).start()
+            Timer(60, pop_cached, [user]).start()
         else:
             reply = {
                 'result': 'FAIL',
                 'msg': 'Pin failed'
             }
-
     else:
         reply = {
             'result': None,
