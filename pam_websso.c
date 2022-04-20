@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include <security/pam_appl.h>
 #include <security/pam_modules.h>
@@ -9,9 +10,6 @@
 #include "config.h"
 #include "http.h"
 #include "json.h"
-
-#define URL_LEN 1024
-#define DATA_LEN 1024
 
 /* expected hook */
 PAM_EXTERN int pam_sm_setcred( pam_handle_t *pamh, int flags, int argc, const char *argv[] ) {
@@ -49,20 +47,20 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
     */
 
     // Prepare full req url...
-    char url[URL_LEN];
-    snprintf(url, URL_LEN,
-        "%s/req", cfg->url
-    );
+    char *url = NULL;
+    asprintf(&url, "%s/req", cfg->url);
 
     // Prepare req input data...
-    char data[DATA_LEN];
-    snprintf(data, DATA_LEN,
-        "{\"user\":\"%s\"}", username
-    );
+    char *data = NULL;
+    asprintf(&data, "{\"user\":\"%s\"}", username);
 
     // Request auth nonce/challenge
-    char *req;
-    if (! postURL(url, cfg->token, data, &req)) {
+    char *req = NULL;
+    int rc = postURL(url, cfg->token, data, &req);
+    free(url);
+    free(data);
+
+    if (!rc) {
         log_message(LOG_ERR, pamh, "Error making request");
         conv_info(pamh, "Could not contact auth server");
         freeConfig(cfg);
@@ -100,20 +98,22 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
     for (int retry = 0; (retry < cfg->retries) && (retval != PAM_SUCCESS); ++retry) {
         char *rpin = conv_read(pamh, "Pin: ", PAM_PROMPT_ECHO_OFF);
 
-        // Prepare full auth url...
-        snprintf(url, URL_LEN,
-            "%s/auth", cfg->url
-        );
+        // Prepare URL...
+        char *url = NULL;       
+        asprintf(&url, "%s/auth", cfg->url);
 
         // Prepare auth input data...
-        snprintf(data, DATA_LEN,
-            "{\"nonce\":\"%s\",\"rpin\":\"%s\"}", nonce, rpin
-        );
+        char *data = NULL;
+        asprintf(&data, "{\"nonce\":\"%s\",\"rpin\":\"%s\"}", nonce, rpin);
         free(rpin);
-        
+ 
         // Request auth result
-        char* auth;
-        if (! postURL(url, cfg->token, data, &auth)) {
+        char *auth = NULL;
+        int rc = postURL(url, cfg->token, data, &auth);
+        free(url);
+        free(data);
+
+        if (!rc) {
             log_message(LOG_ERR, pamh, "Error making request");
             conv_info(pamh, "Could not contact auth server");
             retval = PAM_SYSTEM_ERR;

@@ -9,6 +9,8 @@
 #include "utils.h"
 #include "json.h"
 
+extern int asprintf(char **restrict strp, const char *restrict fmt, ...);
+
 void log_message(int priority, pam_handle_t *pamh,
                         const char *format, ...) {
   char *service = NULL;
@@ -121,4 +123,3 @@ void conv_info(pam_handle_t *pamh, const char* text) {
   }
   free(resp);
 }
-

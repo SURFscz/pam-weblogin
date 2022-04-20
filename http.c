@@ -3,6 +3,7 @@
 #include <string.h>
 #include <curl/curl.h>
 
+#include "utils.h"
 #include "http.h"
 
 struct curl_fetch_st {
@@ -56,9 +57,9 @@ int postURL(const char* url, const char* token, const char* data, char** result)
 
     // Prepare Headers...
     struct curl_slist* headers = NULL;
-    char* auth_header = "Authorization: ";
-    char* authorization = malloc(strlen(token)+strlen(auth_header));
-    sprintf(authorization, "%s%s", auth_header, token);
+    char* authorization = NULL;
+
+    asprintf(&authorization, "Authorization: %s", token);
     headers = curl_slist_append(headers, "Accept: application/json");
     headers = curl_slist_append(headers, "Content-Type: application/json");
     headers = curl_slist_append(headers, authorization);

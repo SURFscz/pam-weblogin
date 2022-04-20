@@ -1,14 +1,21 @@
 #ifndef _UTILS_H
 #define _UTILS_H
 
+#define _GNU_SOURCE
+#include <stdio.h>
 #include <stdbool.h>
-
-#include "json.h"
-#include <security/pam_appl.h>
-#include <security/pam_modules.h>
 #include <syslog.h>
 
+#include <security/pam_appl.h>
+#include <security/pam_modules.h>
+
+#include "json.h"
+
 #define PAM_CONST const
+
+#ifndef asprintf
+extern int asprintf(char **restrict strp, const char *restrict fmt, ...);
+#endif
 
 void log_message(int priority, pam_handle_t *pamh,
                         const char *format, ...);
