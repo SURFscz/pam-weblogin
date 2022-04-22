@@ -98,7 +98,7 @@ def auth():
             }
     else:
         reply = {
-            'result': None,
+            'result': 'TIMEOUT',
             'msg': 'Authentication failed'
         }
 

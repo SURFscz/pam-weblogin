@@ -139,8 +139,10 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
         log_message(LOG_INFO, pamh, "auth_result: %s\n", auth_result);
         log_message(LOG_INFO, pamh, "auth_msg: %s\n", auth_msg);
 
-        retval = (auth_result && !strcmp(auth_result, "SUCCESS")) ? PAM_SUCCESS : PAM_AUTH_ERR;
-        timeout = auth_result ? false : true;
+        if (auth_result) {
+            retval = (!strcmp(auth_result, "SUCCESS")) ? PAM_SUCCESS : PAM_AUTH_ERR;
+            timeout = (!strcmp(auth_result, "TIMEOUT"));
+        }
 
         free(auth_result);
         free(auth_msg);
