@@ -20,7 +20,7 @@ void log_message(int priority, pam_handle_t *pamh,
     service = "";
 
   char logname[80];
-  snprintf(logname, sizeof(logname), "qrapp (%s)", service);
+  snprintf(logname, sizeof(logname), "websso (%s)", service);
 
   va_list args;
   va_start(args, format);
@@ -90,7 +90,7 @@ char *conv_read(pam_handle_t *pamh,const char *text,int echocode) {
   char *ret = NULL;
   if (retval != PAM_SUCCESS || resp == NULL || resp->resp == NULL ||
       *resp->resp == '\000') {
-    log_message(LOG_ERR, pamh, "Did not receive verification code from user");
+    log_message(LOG_ERR, pamh, "Did not receive input from user");
     if (retval == PAM_SUCCESS && resp && resp->resp) {
       ret = resp->resp;
     }

@@ -39,13 +39,12 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
         conv_info(pamh, "Error reading conf");
         return PAM_SYSTEM_ERR;
     }
-
-    /*
+/*
     log_message(LOG_INFO, pamh, "cfg->url: '%s'\n", cfg->url);
     log_message(LOG_INFO, pamh, "cfg->token: '%s'\n", cfg->token);
+    log_message(LOG_INFO, pamh, "cfg->attribute: '%s'\n", cfg->attribute);
     log_message(LOG_INFO, pamh, "cfg->retries: '%d'\n", cfg->retries);
-    */
-
+*/
     // Prepare full req url...
     char *url = NULL;
     asprintf(&url, "%s/req", cfg->url);
@@ -86,6 +85,8 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
     if (cached) {
         conv_info(pamh, "You were cached!");
         freeConfig(cfg);
+        free(nonce);
+        free(challenge);
         return PAM_SUCCESS;
     }
 
@@ -96,9 +97,10 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
     int retval = PAM_AUTH_ERR;
     bool timeout = false;
 
+
     for (int retry = 0; (retry < cfg->retries) &&
                         (retval != PAM_SUCCESS) &&
-                        ! timeout; ++retry) {
+                        !timeout; ++retry) {
         char *rpin = conv_read(pamh, "Pin: ", PAM_PROMPT_ECHO_OFF);
 
         // Prepare URL...
@@ -140,8 +142,8 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
         log_message(LOG_INFO, pamh, "auth_msg: %s\n", auth_msg);
 
         if (auth_result) {
-            retval = (!strcmp(auth_result, "SUCCESS")) ? PAM_SUCCESS : PAM_AUTH_ERR;
-            timeout = (!strcmp(auth_result, "TIMEOUT"));
+            retval = !strcmp(auth_result, "SUCCESS") ? PAM_SUCCESS : PAM_AUTH_ERR;
+            timeout = !strcmp(auth_result, "TIMEOUT");
         }
 
         free(auth_result);
