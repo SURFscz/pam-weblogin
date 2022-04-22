@@ -18,19 +18,24 @@ cached = {}
 chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
 numbers = '1234567890'
 
+
 def pop_auth(nonce):
     logging.debug(f"pop auth {nonce}")
     auths.pop(nonce, None)
+
 
 def pop_cached(user):
     logging.debug(f"pop cached {user}")
     cached.pop(user, None)
 
+
 def nonce(length=8):
     return ''.join([str(random.choice(chars)) for i in range(length)])
 
+
 def pin(length=4):
     return ''.join([str(random.choice(numbers)) for i in range(length)])
+
 
 def authorized(headers):
     auth = headers.get("Authorization")
@@ -38,6 +43,7 @@ def authorized(headers):
         return True
     else:
         return False
+
 
 @app.route('/req', methods=['POST'])
 def req():
@@ -47,11 +53,13 @@ def req():
     data = json.loads(request.data)
 
     user = data.get('user')
+    attribute = data.get('attribute')
     new_nonce = nonce()
     url = os.environ.get("URL", "http://localhost:5001")
     auths[new_nonce] = {
       'nonce': new_nonce,
-      'challenge': f"Hello {user}. To continue, visit {url}/login/{new_nonce} and enter pin",
+      'challenge': f'Hello {user}. To continue, '
+                   f'visit {url}/login/{new_nonce} and enter pin',
       'cached': cached.get(user, False)
     }
 
@@ -61,6 +69,7 @@ def req():
 
     new_pin = pin()
     auths[new_nonce]['user'] = user
+    auths[new_nonce]['attribute'] = attribute
     auths[new_nonce]['pin'] = new_pin
     Timer(60, pop_auth, [new_nonce]).start()
 
@@ -69,6 +78,7 @@ def req():
                   f'  pin: {new_pin}')
 
     return response
+
 
 @app.route('/auth', methods=['POST'])
 def auth():
@@ -82,13 +92,14 @@ def auth():
     this_auth = auths.get(nonce)
     if this_auth:
         user = this_auth.get('user')
+        attribute = this_auth.get('attribute')
         pin = this_auth.get('pin')
         if rpin == pin:
             reply = {
                 'result': 'SUCCESS',
-                'msg': 'Authenticated'
+                'msg': f'Authenticated on attribute {attribute}'
             }
-            cached[user] = True;
+            cached[user] = True
             pop_auth(nonce)
             Timer(60, pop_cached, [user]).start()
         else:
@@ -102,7 +113,6 @@ def auth():
             'msg': 'Authentication failed'
         }
 
-
     response = Response()
     response.headers['Content-Type'] = "application/json"
     response.data = json.dumps(reply)
@@ -110,6 +120,7 @@ def auth():
     logging.debug(f'/auth <- {data}\n -> {response.data.decode()}')
 
     return response
+
 
 @app.route('/login/<nonce>', methods=['GET', 'POST'])
 def login(nonce):
@@ -124,7 +135,7 @@ def login(nonce):
             content += "<input name=action type=submit value=login>\n"
             content += "</body>\n</html>\n"
         else:
-            data = request.data
+            request.data
             user = this_auth['user']
             pin = this_auth['pin']
             content =  "<html>\n<body>\n"
@@ -141,6 +152,7 @@ def login(nonce):
     response.data = content
 
     return response
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5001, debug=False)

@@ -52,7 +52,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
 
     // Prepare req input data...
     char *data = NULL;
-    asprintf(&data, "{\"user\":\"%s\"}", username);
+    asprintf(&data, "{\"user\":\"%s\",\"attribute\":\"%s\"}", username, cfg->attribute);
 
     // Request auth nonce/challenge
     char *req = NULL;

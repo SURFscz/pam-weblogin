@@ -9,7 +9,6 @@
 #define MAXLINE 1024
 
 char * trim(char *s) {
-
   while (isspace(*(s+strlen(s)-1)))
     *(s+strlen(s)-1) = '\0';
 
@@ -29,6 +28,8 @@ void freeConfig(Config *cfg) {
       free(cfg->url);
     if (cfg->token)
       free(cfg->token);
+    if (cfg->attribute)
+      free(cfg->attribute);
 
     free(cfg);
   }
@@ -93,6 +94,11 @@ Config * getConfig(pam_handle_t *pamh, const char* filename) {
         cfg->token = strdup(val);
       }
 
+      // Check for token config
+      if (! strcmp(key, "attribute")) {
+        cfg->attribute = strdup(val);
+      }
+
       cfg->retries = 1;
       // Check for retries config
       if (! strcmp(key, "retries")) {
@@ -112,6 +118,9 @@ Config * getConfig(pam_handle_t *pamh, const char* filename) {
 
   if (! cfg->token)
     log_message(LOG_ERR, pamh, "Missing 'token' in configuration !");
+
+  if (! cfg->attribute)
+    log_message(LOG_ERR, pamh, "Missing 'attribute' in configuration !");
 
   freeConfig(cfg);
   return NULL;

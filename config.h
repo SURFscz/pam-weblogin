@@ -2,8 +2,9 @@
 #define _CONFIG_H
 
 typedef struct {
-  char* url;
-  char* token;
+  char *url;
+  char *token;
+  char *attribute;
   unsigned int retries;
 } Config;
 
