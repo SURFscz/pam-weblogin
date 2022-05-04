@@ -4,7 +4,7 @@
 
 The Pam-WebSSO system is meant for the case in which a server admins want to allow users to log in to their server based on authentication in a web browser.  This can be used in place of or in addition to regular means of terminal-based authentication, such as ssh public keys or username/password.  It can also be used to enable use of advanced multi-factor authentication methods which would otherwise be unavailable or hard to use on terminal-based systems.
 
-Functionally, the user connects to the system in the regular fashion.  The system than shows a url the the users needs to visit in their web browser; this web site can implement any form of authentication desired.  Once the user is authenticated, their can continue logging in the the terminal by entering the pin code presented by the web site.
+Functionally, the user connects to the system in the regular fashion.  The system then shows an url that the user needs to visit in their web browser; this web site can implement any form of authentication desired.  On succesful authentication, a pin code is presented to the user, the user finalizes the login procedure by entering this pin code at the terminal prompt.
 
 ## Overview
 The picture below gives a schematic overview of the PAM-WebSSO protocol:
