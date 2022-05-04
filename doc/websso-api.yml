@@ -131,7 +131,7 @@ paths:
                 properties:
                   result:
                     type: string
-                    description: status of the request; should be "OK"
+                    description: status of the request; should be "SUCCES" when the user has succesfully authenticated
                     enum:
                       - SUCCESS
                       - FAIL
