@@ -48,7 +48,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
 */
     // Prepare full req url...
     char *url = NULL;
-    asprintf(&url, "%s/req", cfg->url);
+    asprintf(&url, "%s/start", cfg->url);
 
     // Prepare req input data...
     char *data = NULL;
@@ -107,7 +107,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
 
         // Prepare URL...
         char *url = NULL;
-        asprintf(&url, "%s/auth", cfg->url);
+        asprintf(&url, "%s/check-pin", cfg->url);
 
         // Prepare auth input data...
         char *data = NULL;
