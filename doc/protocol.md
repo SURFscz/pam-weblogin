@@ -26,7 +26,7 @@ The flow is as follows (more details below):
 1. Based on the status code, the pam module allows the user to log in, or denies access.
 
 ## API description
-The WebSSO server need to implement two API endpoints and a user interface: the request endpoint, the authentication endpoint and the authentication UI.
+The WebSSO server needs to implement two API endpoints and a user interface: the request endpoint, the authentication endpoint and the authentication UI.
 
 Authentication to the API is managed via a bearer token.
 
@@ -64,9 +64,9 @@ Reponse:
 
 ### Authentication UI
 The authentication UI corresponds to the challenge url in the response above.
-It should allow the user to log in, and when they have logged in, show a PIN number to be entered in their terminal.
+It should allow the user to log in, on succesful authenticiation, show a PIN number that the user needs to enter in their terminal.
 
-How authentication is managed, is implementation dependent.  The server could simply have a local database, could implement social logins (Google, Apple) or use external authentication from an identity federation based on OpenID Connect or SAML2.
+How authentication is managed, is implementation dependent. The server could simply have a local database, could implement social logins (Google, Apple) or use external authentication from an identity federation based on OIDC or SAML2.
 
 ### Check pin endpoint
 To check an entered pin, send a request to the `/check-pin` endpoint with the following members:
