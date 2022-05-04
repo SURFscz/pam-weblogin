@@ -2,9 +2,9 @@
 
 ## Functional
 
-The Pam-WebSSO system is meant for the case in which a server admins want to allow users to log in to their server based on authentication in a web browser.  This can be used in place of or in addition to regular means of terminal-based authentication, such as ssh public keys or username/password.  It can also be used to enable use of advanced multi-factor authentication methods which would otherwise be unavailable or hard to use on terminal-based systems.
+The Pam-WebSSO system is meant for the case in which a server admin wants to allow users to log in to their server based on authentication in a web browser.  This can be used in place of or in addition to regular means of terminal-based authentication, such as ssh public keys or username/password.  It can also be used to enable use of advanced multi-factor authentication methods which would otherwise be unavailable or hard to use on terminal-based systems.
 
-Functionally, the user connects to the system in the regular fashion.  The system then shows an url that the user needs to visit in their web browser; this web site can implement any form of authentication desired.  On succesful authentication, a pin code is presented to the user, the user finalizes the login procedure by entering this pin code at the terminal prompt.
+Functionally, the user connects to the system in the regular fashion.  The system then shows a url that the user needs to visit in their web browser; this web site can implement any form of authentication desired.  On succesful authentication, a pin code is presented to the user, the user finalizes the login procedure by entering this pin code at the terminal prompt.
 
 ## Overview
 The picture below gives a schematic overview of the PAM-WebSSO protocol:
@@ -12,12 +12,12 @@ The picture below gives a schematic overview of the PAM-WebSSO protocol:
 ![Flow overview](flow.svg "Technical design")
 
 The flow is as follows (more details below):
-1. User logs in to a terminal application (e.g., using ssh)
+1. User logs in to a terminal application (e.g. using ssh)
 1. SSH starts PAM-WebSSO module
 1. Pam-WebSSO initiates a backend call to the WebSSO-server (e.g., `https://websso.server/req` endpoint).  It sends the incoming `username` and receives a `session_id`, a `challenge_url` and a `sso_freshness`.
 1. based on the `sso_freshness`, the PAM module can decide to accept the connection right away
-1. If not, the pam module presents the `challenge_url` to the user and prompt for a pin
-1. The user copies the `challenge_url` (e.g., `https://websso.server/login/session`) to their browser.
+1. If not, the pam module presents the `challenge_url` to the user and prompts for a pin
+1. The user copies the `challenge_url` (e.g. `https://websso.server/login/session`) to their browser.
 1. The WebSSO-server asks the user to log in (using local accounts, OIDC, etc).
 1. If the user has successfully authenticated, the WebSSO server checks if the known (registered) username of this user matches the username that was provided to the `/req` endpoint.
 1. If everything checks out, the WebSSO-server generates a pin and presents it to the user.
