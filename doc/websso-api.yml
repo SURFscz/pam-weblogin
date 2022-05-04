@@ -1,0 +1,203 @@
+---
+openapi: 3.1.0
+info:
+  title: PAM-WebSSO
+  version: '1.0'
+  summary: PAM-WebSSO API
+  contact:
+    name: SRAM Management
+    url: 'https://surf.nl/sram'
+    email: sram-beheer@surf.nl
+  license:
+    name: Apache 2
+    identifier: Apache-2.0
+  description: |-
+    The Pam-WebSSO system is meant for the case in which a server admins want to allow users to log in to their server based on authentication in a web browser.  This can be used in place of or in addition to regular means of terminal-based authentication, such as ssh public keys or username/password.  It can also be used to enable use of advanced multi-factor authentication methods which would otherwise be unavailable or hard to use on terminal-based systems.
+
+    Functionally, the user connects to the system in the regular fashion.  The system than shows a url the the users needs to visit in their web browser; this web site can implement any form of authentication desired.  Once the user is authenticated, their can continue logging in the the terminal by entering the pin code presented by the web site.
+servers:
+  - url: 'http://localhost:3000/pam-websso'
+    description: websso
+paths:
+  /start:
+    parameters: []
+    post:
+      summary: Start new WebSSO request
+      operationId: post-req
+      responses:
+        '200':
+          description: Successful call
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    description: status of the request; should be "OK"
+                    enum:
+                      - OK
+                  session_id:
+                    type: string
+                    description: id to refer to this authentication session
+                    example: 39277014-1824-4F7A-93EE-8E2FBAA1E816
+                  challenge:
+                    type: string
+                    description: challenge to show to the user in the terminal
+                    example: 'To continue, please visit https://localhost:3000/pam-websso/login/39277014-1824-4F7A-93EE-8E2FBAA1E816 and enter pin below'
+                  cached:
+                    type: boolean
+                    description: whether or not the user has already authenticated recently
+                required:
+                  - result
+                  - session_id
+                  - challenge
+                  - cached
+              examples:
+                example:
+                  value:
+                    result: OK
+                    session_id: 39277014-1824-4F7A-93EE-8E2FBAA1E816
+                    challenge: 'To continue, please visit https://localhost:3000/pam-websso/login/39277014-1824-4F7A-93EE-8E2FBAA1E816 and enter pin below'
+                    cached: false
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    enum:
+                      - Permission denied
+                required:
+                  - result
+              examples:
+                example:
+                  value:
+                    result: Permission denied
+      description: Initiate a new WebSSO request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                  example: jan.klaassen@uni-harderwijk.nl
+                  description: Identifier of user initiating the authentication process
+                attribute:
+                  type: string
+                  example: email
+                  description: |-
+                    Identifier of an authentication attribute or claim from the WebSSO login
+                    When the use logs in to the web interface, this is the name of the attribute or claim that should match the `user_id` that the user uses to login to the pam module (e.g., the ssh username or UNIX login name)
+                cache_duration:
+                  type: number
+                  description: |-
+                    Number of seconds to allow previous logins without new authentication.
+                    If the user has successfully authenticated within the specified time frame, the response will have `cached` set to `true`.
+                  default: 60
+                  example: 300
+                  minimum: 0
+              required:
+                - user_id
+                - attribute
+          application/xml:
+            schema:
+              type: object
+              properties:
+                user:
+                  type: string
+                attribute:
+                  type: string
+      parameters: []
+      tags:
+        - websso
+  /check-pin:
+    parameters: []
+    post:
+      summary: Verify an entered pin
+      operationId: post-auth
+      responses:
+        '200':
+          description: Successful call
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    description: status of the request; should be "OK"
+                    enum:
+                      - SUCCESS
+                      - FAIL
+                      - TIMEOUT
+                  debug_msg:
+                    type: string
+                    description: Debug message to explain what happened.  Not meant to be shown to the end user.
+                    example: Authenticated on attribute 'email'
+                required:
+                  - result
+                  - debug_msg
+              examples:
+                example-1:
+                  value:
+                    result: SUCCESS
+                    debug_msg: Authenticated on attribute 'email'
+        '401':
+          description: Client is unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    enum:
+                      - FAIL
+                      - TIMEOUT
+                      - SUCCESS
+                required:
+                  - result
+      description: Verify an entered pin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                session_id:
+                  type: string
+                  example: 39277014-1824-4F7A-93EE-8E2FBAA1E816
+                  description: 'Session identifier, as returned by the call to `/start`'
+                pin:
+                  type: string
+                  example: '1234'
+                  description: Pin as entered on the termina by the user
+              required:
+                - session_id
+                - pin
+          application/xml:
+            schema:
+              type: object
+              properties:
+                user:
+                  type: string
+                attribute:
+                  type: string
+      parameters: []
+      tags:
+        - websso
+components:
+  schemas: {}
+  securitySchemes:
+    bearer_token:
+      type: http
+      scheme: bearer
+      description: Service API key
+tags:
+  - name: websso
