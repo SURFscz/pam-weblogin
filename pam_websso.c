@@ -43,6 +43,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
     log_message(LOG_INFO, pamh, "cfg->url: '%s'\n", cfg->url);
     log_message(LOG_INFO, pamh, "cfg->token: '%s'\n", cfg->token);
     log_message(LOG_INFO, pamh, "cfg->attribute: '%s'\n", cfg->attribute);
+    log_message(LOG_INFO, pamh, "cfg->cache_duration: '%s'\n", cfg->cache_duration);
     log_message(LOG_INFO, pamh, "cfg->retries: '%d'\n", cfg->retries);
 */
     // Prepare full req url...
@@ -51,9 +52,10 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
 
     // Prepare req input data...
     char *data = NULL;
-    asprintf(&data, "{\"user\":\"%s\",\"attribute\":\"%s\"}", username, cfg->attribute);
+    asprintf(&data, "{\"user\":\"%s\",\"attribute\":\"%s\",\"cache_duration\":\"%d\"}",
+                      username, cfg->attribute, cfg->cache_duration);
 
-    // Request auth nonce/challenge
+    // Request auth session_id/challenge
     char *req = NULL;
     int rc = postURL(url, cfg->token, data, &req);
     free(url);
@@ -73,19 +75,19 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
     json_value *value = json_parse(json, strlen(json));
     free(req);
 
-    char *nonce = getString(pamh, value, "nonce");
+    char *session_id = getString(pamh, value, "session_id");
     char *challenge = getString(pamh, value, "challenge");
     bool cached = getBool(pamh, value, "cached");
     free(value);
 /*
-    log_message(LOG_INFO, pamh, "nonce: %s\n", nonce);
+    log_message(LOG_INFO, pamh, "session_id: %s\n", session_id);
     log_message(LOG_INFO, pamh, "challenge: %s\n", challenge);
     log_message(LOG_INFO, pamh, "cached: %s\n", cached ? "true" : "false");
 */
     if (cached) {
         conv_info(pamh, "You were cached!");
         freeConfig(cfg);
-        free(nonce);
+        free(session_id);
         free(challenge);
         return PAM_SUCCESS;
     }
@@ -109,7 +111,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
 
         // Prepare auth input data...
         char *data = NULL;
-        asprintf(&data, "{\"nonce\":\"%s\",\"rpin\":\"%s\"}", nonce, rpin);
+        asprintf(&data, "{\"session_id\":\"%s\",\"rpin\":\"%s\"}", session_id, rpin);
         free(rpin);
 
         // Request auth result
@@ -150,7 +152,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
         free(auth_msg);
     }
 
-    free(nonce);
+    free(session_id);
     freeConfig(cfg);
     return retval;
 }

@@ -12,6 +12,8 @@ logging.getLogger('werkzeug').setLevel(logging.ERROR)
 
 app = Flask(__name__)
 
+TIMEOUT = 60
+
 auths = {}
 cached = {}
 
@@ -19,9 +21,9 @@ chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
 numbers = '1234567890'
 
 
-def pop_auth(nonce):
-    logging.debug(f"pop auth {nonce}")
-    auths.pop(nonce, None)
+def pop_auth(session_id):
+    logging.debug(f"pop auth {session_id}")
+    auths.pop(session_id, None)
 
 
 def pop_cached(user):
@@ -29,7 +31,7 @@ def pop_cached(user):
     cached.pop(user, None)
 
 
-def nonce(length=8):
+def session_id(length=8):
     return ''.join([str(random.choice(chars)) for i in range(length)])
 
 
@@ -54,24 +56,26 @@ def req():
 
     user = data.get('user')
     attribute = data.get('attribute')
-    new_nonce = nonce()
+    cache_duration = data.get('cache_duration')
+    new_session_id = session_id()
     url = os.environ.get("URL", "http://localhost:5001")
-    auths[new_nonce] = {
-      'nonce': new_nonce,
+    auths[new_session_id] = {
+      'session_id': new_session_id,
       'challenge': f'Hello {user}. To continue, '
-                   f'visit {url}/login/{new_nonce} and enter pin',
+                   f'visit {url}/login/{new_session_id} and enter pin',
       'cached': cached.get(user, False)
     }
 
     response = Response()
     response.headers['Content-Type'] = "application/json"
-    response.data = json.dumps(auths[new_nonce])
+    response.data = json.dumps(auths[new_session_id])
 
     new_pin = pin()
-    auths[new_nonce]['user'] = user
-    auths[new_nonce]['attribute'] = attribute
-    auths[new_nonce]['pin'] = new_pin
-    Timer(60, pop_auth, [new_nonce]).start()
+    auths[new_session_id]['user'] = user
+    auths[new_session_id]['attribute'] = attribute
+    auths[new_session_id]['pin'] = new_pin
+    auths[new_session_id]['cache_duration'] = cache_duration
+    Timer(TIMEOUT, pop_auth, [new_session_id]).start()
 
     logging.debug(f'/req <- {data}\n'
                   f' -> {response.data.decode()}\n'
@@ -86,22 +90,23 @@ def auth():
         return Response(response="Unauthorized", status=401)
 
     data = json.loads(request.data)
-    nonce = data.get('nonce')
+    session_id = data.get('session_id')
     rpin = data.get('rpin')
 
-    this_auth = auths.get(nonce)
+    this_auth = auths.get(session_id)
     if this_auth:
         user = this_auth.get('user')
         attribute = this_auth.get('attribute')
         pin = this_auth.get('pin')
+        cache_duration = this_auth.get('cache_duration')
         if rpin == pin:
             reply = {
                 'result': 'SUCCESS',
                 'msg': f'Authenticated on attribute {attribute}'
             }
             cached[user] = True
-            pop_auth(nonce)
-            Timer(60, pop_cached, [user]).start()
+            pop_auth(session_id)
+            Timer(int(cache_duration), pop_cached, [user]).start()
         else:
             reply = {
                 'result': 'FAIL',
@@ -122,11 +127,11 @@ def auth():
     return response
 
 
-@app.route('/login/<nonce>', methods=['GET', 'POST'])
-def login(nonce):
-    logging.info(f'/login {nonce}')
+@app.route('/login/<session_id>', methods=['GET', 'POST'])
+def login(session_id):
+    logging.info(f'/login {session_id}')
 
-    this_auth = auths.get(nonce)
+    this_auth = auths.get(session_id)
     if this_auth:
         if request.method == 'GET':
             user = this_auth.get('user')
@@ -139,13 +144,13 @@ def login(nonce):
             user = this_auth['user']
             pin = this_auth['pin']
             content =  "<html>\n<body>\n"
-            content += f"{nonce}/{user} successfully authenticated<br />\n"
+            content += f"{session_id}/{user} successfully authenticated<br />\n"
             content += f"PIN: {pin}<br />\n"
             content += "This window may be closed\n"
             content += "</body>\n</html>\n"
     else:
         content = "<html>\n<body>\n"
-        content += "nonce not found\n"
+        content += "session_id not found\n"
         content += "</body>\n</html>\n"
 
     response = Response()

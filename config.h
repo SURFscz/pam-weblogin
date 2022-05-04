@@ -5,6 +5,7 @@ typedef struct {
   char *url;
   char *token;
   char *attribute;
+  unsigned int cache_duration;
   unsigned int retries;
 } Config;
 

@@ -55,6 +55,7 @@ Config * getConfig(pam_handle_t *pamh, const char* filename) {
   cfg->url = NULL;
   cfg->token = NULL;
   cfg->attribute = NULL;
+  cfg->cache_duration = 60;
   cfg->retries = 1;
 
   if ((fp = fopen(filename, "r")) != NULL) {
@@ -102,6 +103,12 @@ Config * getConfig(pam_handle_t *pamh, const char* filename) {
       if (! strcmp(key, "attribute")) {
         cfg->attribute = strdup(val);
         log_message(LOG_DEBUG, pamh, "attribute: %s", cfg->attribute);
+      }
+
+      // Check for chace_duration config
+      if (! strcmp(key, "cache_duration")) {
+        cfg->cache_duration = abs(atoi(val));
+        log_message(LOG_DEBUG, pamh, "cache_duration: %d", cfg->cache_duration);
       }
 
       // Check for retries config
