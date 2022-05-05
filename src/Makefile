@@ -4,13 +4,27 @@
 
 URL ?= "http://localhost:5001"
 
-CC ?= gcc
+# override default variable, bt leave it alone if set in environment
+ifeq ($(origin CC),default)
+CC = gcc
+endif
 
 CFLAGS ?= -O0 -ggdb3
-CFLAGS += -std=c17 -ftree-vrp
-CFLAGS += -Wall -Wextra -Wshadow -Wpedantic -Wformat=2 -Wformat-overflow=2 -Wformat-truncation=2 -Wuninitialized
+CFLAGS += -std=c17
+CFLAGS += -Wall -Wextra -Wshadow -Wpedantic -Wuninitialized -Wformat=2
 #CFLAGS += -Werror
-CFLAGS += -fanalyzer -fstack-protector-strong
+CFLAGS += -fstack-protector-strong
+
+# gcc only
+ifeq "$(findstring gcc,$(CC))" "gcc"
+CFLAGS += -Wformat-overflow=2 -Wformat-truncation=2
+CFLAGS += -ftree-vrp -fanalyzer
+endif
+#
+# clang only
+ifeq "$(findstring clang,$(CC))" "clang"
+CFLAGS += -Weverything
+endif
 
 SOURCES := config.c http.c json.c utils.c pam_websso.c
 OBJS := $(SOURCES:%.c=%.o)
