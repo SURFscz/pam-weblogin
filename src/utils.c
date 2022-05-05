@@ -1,4 +1,7 @@
-#define _GNU_SOURCE
+#include "defs.h"
+#include "utils.h"
+#include "json.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -6,8 +9,6 @@
 #include <syslog.h>
 #include <stdarg.h>
 
-#include "utils.h"
-#include "json.h"
 
 extern int asprintf(char **restrict strp, const char *restrict fmt, ...);
 
@@ -35,13 +36,11 @@ void log_message(int priority, pam_handle_t *pamh,
   }
 }
 
-json_value *findKey(pam_handle_t *pamh, json_value* value, const char* name) {
+json_value *findKey(json_value* value, const char* name) {
   if (value == NULL) {
-    //log_message(LOG_INFO, pamh, "JSON value was NULL");
     return NULL;
   }
-  char *object_name;
-  for (int x = 0; x < value->u.object.length; x++) {
+  for (unsigned x = 0; x < value->u.object.length; x++) {
     //log_message(LOG_INFO, pamh, "object[%d].name = %s\n", x, value->u.object.values[x].name);
     if (!strcmp(value->u.object.values[x].name, name)) {
       return value->u.object.values[x].value;
@@ -50,16 +49,16 @@ json_value *findKey(pam_handle_t *pamh, json_value* value, const char* name) {
   return NULL;
 }
 
-char *getString(pam_handle_t *pamh, json_value* value, const char* name) {
-  json_value *key = findKey(pamh, value, name);
+char *getString(json_value* value, const char* name) {
+  json_value *key = findKey(value, name);
   if (key == NULL) {
     return "";
   }
   return key->u.string.ptr;
 }
 
-bool getBool(pam_handle_t *pamh, json_value* value, const char* name) {
-  json_value* key = findKey(pamh, value, name);
+bool getBool(json_value* value, const char* name) {
+  json_value* key = findKey(value, name);
   if (key == NULL) {
     return false;
   }

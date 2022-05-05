@@ -12,18 +12,18 @@
 #include "json.h"
 
 /* expected hook */
-PAM_EXTERN int pam_sm_setcred( pam_handle_t *pamh, int flags, int argc, const char *argv[] ) {
+PAM_EXTERN int pam_sm_setcred(UNUSED pam_handle_t *pamh, UNUSED int flags, UNUSED int argc, UNUSED const char *argv[] ) {
     //printf("Setcred\n");
     return PAM_SUCCESS;
 }
 
-PAM_EXTERN int pam_sm_acct_mgmt(pam_handle_t *pamh, int flags, int argc, const char *argv[]) {
+PAM_EXTERN int pam_sm_acct_mgmt(UNUSED pam_handle_t *pamh, UNUSED int flags, UNUSED int argc, UNUSED const char *argv[]) {
     //printf("Acct mgmt\n");
     return PAM_SUCCESS;
 }
 
 /* expected hook, this is where custom stuff happens */
-PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const char *argv[] ) {
+PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int argc, const char *argv[] ) {
     log_message(LOG_INFO, pamh, "Start of pam_websso");
 
     // Read username
@@ -75,9 +75,9 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
     json_value *value = json_parse(json, strlen(json));
     free(req);
 
-    char *session_id = getString(pamh, value, "session_id");
-    char *challenge = getString(pamh, value, "challenge");
-    bool cached = getBool(pamh, value, "cached");
+    char *session_id = getString(value, "session_id");
+    char *challenge = getString(value, "challenge");
+    bool cached = getBool(value, "cached");
     free(value);
 /*
     log_message(LOG_INFO, pamh, "session_id: %s\n", session_id);
@@ -100,23 +100,21 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
     bool timeout = false;
 
 
-    for (int retry = 0; (retry < cfg->retries) &&
+    for (unsigned retry = 0; (retry < cfg->retries) &&
                         (retval != PAM_SUCCESS) &&
                         !timeout; ++retry) {
         char *rpin = conv_read(pamh, "Pin: ", PAM_PROMPT_ECHO_OFF);
 
         // Prepare URL...
-        char *url = NULL;
         asprintf(&url, "%s/check-pin", cfg->url);
 
         // Prepare auth input data...
-        char *data = NULL;
         asprintf(&data, "{\"session_id\":\"%s\",\"rpin\":\"%s\"}", session_id, rpin);
         free(rpin);
 
         // Request auth result
         char *auth = NULL;
-        int rc = postURL(url, cfg->token, data, &auth);
+        rc = postURL(url, cfg->token, data, &auth);
         free(url);
         free(data);
 
@@ -134,8 +132,8 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags,int argc, const
         value = json_parse(json, strlen(json));
         free(auth);
 
-        char *auth_result = getString(pamh, value, "result");
-        char *auth_msg = getString(pamh, value, "msg");
+        char *auth_result = getString(value, "result");
+        char *auth_msg = getString(value, "msg");
         free(value);
 
         conv_info(pamh, auth_msg);

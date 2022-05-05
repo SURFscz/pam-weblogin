@@ -1,6 +1,10 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
+#include "defs.h"
+
+#include <security/pam_appl.h>
+
 typedef struct {
   char *url;
   char *token;

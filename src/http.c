@@ -1,10 +1,11 @@
+#include "defs.h"
+#include "utils.h"
+#include "http.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <curl/curl.h>
-
-#include "utils.h"
-#include "http.h"
 
 struct curl_fetch_st {
     char* payload;
@@ -55,6 +56,9 @@ int postURL(const char* url, const char* token, const char* data, char** result)
     struct curl_fetch_st curl_fetch;
     struct curl_fetch_st* fetch = &curl_fetch;
 
+    /* default return value */
+    *result = NULL;
+
     // Prepare Headers...
     struct curl_slist* headers = NULL;
     char* authorization = NULL;
@@ -68,13 +72,14 @@ int postURL(const char* url, const char* token, const char* data, char** result)
     printf("http URL: %s\n", url);
     printf("http data: %s\n", data);
 */
-    // Prepare payload for response...
-    fetch->payload = (char*)calloc(1, sizeof(fetch->payload));
-    fetch->size = 0;
 
     // Prepare API request...
     curl = curl_easy_init();
     if (curl) {
+        // Prepare payload for response...
+        fetch->payload = (char*)calloc(1, sizeof(fetch->payload));
+        fetch->size = 0;
+
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
@@ -86,26 +91,28 @@ int postURL(const char* url, const char* token, const char* data, char** result)
 
         // Perform the request
         if ((cc = curl_easy_perform(curl)) != CURLE_OK) {
-//             printf("curl_easy_perform() failed: %s\n", curl_easy_strerror(cc));
-            return rc;
+            //printf("curl_easy_perform() failed: %s\n", curl_easy_strerror(cc));
+            goto cleanup;
         }
 
         // Check response
         if ((cc = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code)) != CURLE_OK || response_code != 200) {
-//             printf("Invalid response\n");
-            return rc;
+            //printf("Invalid response\n");
+            goto cleanup;
         }
-
-        rc = 1;
 
         // Assign payload
          if (fetch->payload != NULL) {
+            rc = 1;
             *result = fetch->payload;
          }
-
-        // always cleanup
-        curl_easy_cleanup(curl);
     }
 
+cleanup:
+    if (curl)
+        curl_easy_cleanup(curl);
+    if (rc==0 && fetch->payload) {
+        free(fetch->payload);
+    }
     return rc;
 }

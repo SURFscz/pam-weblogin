@@ -1,10 +1,12 @@
+#include "defs.h"
+#include "utils.h"
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
-#include "utils.h"
-#include "config.h"
 
 #define MAXLINE 1024
 
@@ -19,7 +21,7 @@ char * trim(char *s) {
 }
 
 /*
- * gefreeConfig frees dynamic allocatoed memory
+ * freeConfig frees dynamic allocated memory
  */
 
 void freeConfig(Config *cfg) {
@@ -46,11 +48,14 @@ void freeConfig(Config *cfg) {
  */
 
 Config * getConfig(pam_handle_t *pamh, const char* filename) {
-  int rc = 0;
   int lineno = 0;
   FILE *fp = NULL;
 
   Config *cfg = malloc(sizeof(Config));
+  if (cfg==NULL) {
+    log_message(LOG_ERR, pamh, "Can't allocate memory");
+    return NULL;
+  }
 
   cfg->url = NULL;
   cfg->token = NULL;
@@ -117,6 +122,7 @@ Config * getConfig(pam_handle_t *pamh, const char* filename) {
         log_message(LOG_DEBUG, pamh, "retries: %d", cfg->retries);
       }
     }
+    fclose(fp);
   }
 
   // Success if both url and token are set !
