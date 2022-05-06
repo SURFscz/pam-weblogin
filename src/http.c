@@ -13,7 +13,7 @@ struct curl_fetch_st {
 };
 
 /* callback for curl fetch */
-size_t curl_callback(void* contents, size_t size, size_t nmemb, void* userp) {
+static size_t curl_callback(void* contents, size_t size, size_t nmemb, void* userp) {
     size_t realsize = size * nmemb;                            /* calculate buffer size */
     struct curl_fetch_st* p = (struct curl_fetch_st*) userp;   /* cast pointer to fetch struct */
 

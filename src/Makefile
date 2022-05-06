@@ -11,7 +11,7 @@ endif
 
 CFLAGS ?= -O0 -ggdb3
 CFLAGS += -std=c17
-CFLAGS += -Wall -Wextra -Wshadow -Wpedantic -Wuninitialized -Wformat=2
+CFLAGS += -Wall -Wextra -Wshadow -Wpedantic -Wuninitialized -Wformat=2 -Wno-unknown-pragmas
 #CFLAGS += -Werror
 CFLAGS += -fstack-protector-strong
 
@@ -23,7 +23,8 @@ endif
 #
 # clang only
 ifneq "$(findstring clang,$(CC))" ""
-CFLAGS += -Weverything -Wno-padded -Wno-reserved-macro-identifier -Wno-reserved-identifier
+CFLAGS += -Weverything
+CFLAGS += -Wno-declaration-after-statement -Wno-disabled-macro-expansion
 endif
 
 SOURCES := config.c http.c json.c utils.c pam_websso.c

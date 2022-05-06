@@ -10,7 +10,7 @@
 
 #define MAXLINE 1024
 
-char * trim(char *s) {
+static char * trim(char *s) {
   while (isspace(*(s+strlen(s)-1)))
     *(s+strlen(s)-1) = '\0';
 
@@ -110,15 +110,15 @@ Config * getConfig(pam_handle_t *pamh, const char* filename) {
         log_message(LOG_DEBUG, pamh, "attribute: %s", cfg->attribute);
       }
 
-      // Check for chace_duration config
+      // Check for cache_duration config
       if (! strcmp(key, "cache_duration")) {
-        cfg->cache_duration = abs(atoi(val));
+        cfg->cache_duration = (unsigned) abs(atoi(val));
         log_message(LOG_DEBUG, pamh, "cache_duration: %d", cfg->cache_duration);
       }
 
       // Check for retries config
       if (! strcmp(key, "retries")) {
-        cfg->retries = abs(atoi(val));
+        cfg->retries = (unsigned) abs(atoi(val));
         log_message(LOG_DEBUG, pamh, "retries: %d", cfg->retries);
       }
     }

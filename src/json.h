@@ -28,8 +28,13 @@
  * SUCH DAMAGE.
  */
 
-#ifndef _JSON_H
-#define _JSON_H
+#ifndef JSON_H
+#define JSON_H
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wreserved-macro-identifier"
+#pragma clang diagnostic ignored "-Wreserved-identifier"
+#pragma clang diagnostic ignored "-Wpadded"
 
 #ifndef json_char
    #define json_char char
@@ -285,4 +290,5 @@ void json_value_free_ex (json_settings * settings,
    } /* extern "C" */
 #endif
 
+#pragma clang diagnostic pop
 #endif
