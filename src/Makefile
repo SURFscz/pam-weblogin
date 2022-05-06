@@ -16,14 +16,14 @@ CFLAGS += -Wall -Wextra -Wshadow -Wpedantic -Wuninitialized -Wformat=2
 CFLAGS += -fstack-protector-strong
 
 # gcc only
-ifeq "$(findstring gcc,$(CC))" "gcc"
+ifneq "$(findstring gcc,$(CC))" ""
 CFLAGS += -Wformat-overflow=2 -Wformat-truncation=2
 CFLAGS += -ftree-vrp -fanalyzer
 endif
 #
 # clang only
-ifeq "$(findstring clang,$(CC))" "clang"
-CFLAGS += -Weverything
+ifneq "$(findstring clang,$(CC))" ""
+CFLAGS += -Weverything -Wno-padded -Wno-reserved-macro-identifier -Wno-reserved-identifier
 endif
 
 SOURCES := config.c http.c json.c utils.c pam_websso.c
