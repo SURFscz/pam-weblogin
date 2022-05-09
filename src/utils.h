@@ -18,16 +18,14 @@
 extern int asprintf(char **restrict strp, const char *restrict fmt, ...);
 #endif
 
-void log_message(int priority, pam_handle_t *pamh,
-                        const char *format, ...);
+void log_message(int priority, pam_handle_t *pamh, const char *format, ...);
 
 // JSON helpers
-json_value *findKey(json_value* value, const char* name);
-char *getString(json_value*, const char* name);
-bool getBool(json_value* value, const char* name);
+json_value *findKey(json_value *value, const char *name);
+char *getString(json_value *, const char *name);
+bool getBool(json_value *value, const char *name);
 
-char *conv_read(pam_handle_t *pamh,const char *text,int echocode);
-void conv_info(pam_handle_t *pamh, const char* text);
-
+char *conv_read(pam_handle_t *pamh, const char *text, int echocode);
+void conv_info(pam_handle_t *pamh, const char *text);
 
 #endif

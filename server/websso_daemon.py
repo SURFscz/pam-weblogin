@@ -60,10 +60,10 @@ def req():
     new_session_id = session_id()
     url = os.environ.get("URL", "http://localhost:5001")
     auths[new_session_id] = {
-      'session_id': new_session_id,
-      'challenge': f'Hello {user}. To continue, '
-                   f'visit {url}/pam-websso/login/{new_session_id} and enter pin',
-      'cached': cached.get(user, False)
+        'session_id': new_session_id,
+        'challenge': f'Hello {user}. To continue, '
+                     f'visit {url}/pam-websso/login/{new_session_id} and enter pin',
+        'cached': cached.get(user, False)
     }
 
     response = Response()
@@ -135,7 +135,7 @@ def login(session_id):
     if this_auth:
         if request.method == 'GET':
             user = this_auth.get('user')
-            content =  "<html>\n<body>\n<form method=POST>\n"
+            content = "<html>\n<body>\n<form method=POST>\n"
             content += f"Please authorize SSH login for user {user}<br />\n"
             content += "<input name=action type=submit value=login>\n"
             content += "</body>\n</html>\n"
@@ -143,7 +143,7 @@ def login(session_id):
             request.data
             user = this_auth['user']
             pin = this_auth['pin']
-            content =  "<html>\n<body>\n"
+            content = "<html>\n<body>\n"
             content += f"{session_id}/{user} successfully authenticated<br />\n"
             content += f"PIN: {pin}<br />\n"
             content += "This window may be closed\n"
