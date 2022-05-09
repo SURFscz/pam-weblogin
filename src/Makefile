@@ -12,7 +12,7 @@ endif
 CFLAGS ?= -O0 -ggdb3
 CFLAGS += -std=c17
 CFLAGS += -Wall -Wextra -Wshadow -Wpedantic -Wuninitialized -Wformat=2 -Wno-unknown-pragmas
-#CFLAGS += -Werror
+CFLAGS += -Werror
 CFLAGS += -fstack-protector-strong
 
 # gcc only
