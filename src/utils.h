@@ -10,7 +10,7 @@
 #include <security/pam_appl.h>
 #include <security/pam_modules.h>
 
-#include "json.h"
+#include <json.h>
 
 #define PAM_CONST const
 

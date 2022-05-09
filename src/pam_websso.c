@@ -6,10 +6,11 @@
 #include <security/pam_appl.h>
 #include <security/pam_modules.h>
 
+#include <json.h>
+
 #include "utils.h"
 #include "config.h"
 #include "http.h"
-#include "json.h"
 
 /* expected hook */
 PAM_EXTERN int pam_sm_setcred(UNUSED pam_handle_t *pamh, UNUSED int flags, UNUSED int argc, UNUSED const char *argv[] ) {

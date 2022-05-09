@@ -1,6 +1,7 @@
 #include "defs.h"
 #include "utils.h"
-#include "json.h"
+
+#include <json.h>
 
 #include <stdio.h>
 #include <stdlib.h>
