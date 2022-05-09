@@ -40,7 +40,7 @@ jobs:
 
       - name: Install compiler
         run: |
-          apt-get install --yes ${{matrix.compiler}}-${{matrix.version}}
+          sudo apt-get install --yes ${{matrix.compiler}}-${{matrix.version}}
 
       - name: Show compiler version
         run: ${{matrix.compiler}}-${{matrix.version}} --version
