@@ -1,0 +1,70 @@
+---
+
+name: Builds
+
+on:
+  # Triggers the workflow on push or pull request events
+  push:
+  pull_request:
+  release:
+    tags:
+      - 'v*'
+    types: [published]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  Build:
+    name: Test builing
+    if: always()
+
+    runs-on: ubuntu-20.04
+
+    # Test different compilers
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+        version: [7, 8, 9, 10, 11]
+        include:
+          - compiler: clang
+            version: 12
+          - compiler: clang
+            version: 13
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up GCC
+        uses: egor-tensin/setup-gcc@v1
+        with:
+          platform: x64
+          version: ${{ matrix.gcc-version }}
+          cc: 1
+        if: ${{ matrix.compiler }} == 'gcc'
+
+      - name: Set up Clang
+        uses: egor-tensin/setup-clang@v1
+        with:
+          version: latest
+          platform: x64
+          cc: 1
+        if: ${{ matrix.compiler }} == 'clang'
+
+      - name: Show compiler version
+        run: cc --version
+
+      - name: Test make clean
+        run: |
+          make clean
+          make clean
+          rm -rf json-parser/
+          make clean
+
+      - name: Test compilation
+        env:
+          CC: cc
+        run: |
+          make all
