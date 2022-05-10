@@ -49,13 +49,10 @@ LDFLAGS += -L../json-parser
 all: pam_websso.so
 
 # dependencies
-config.c: config.h utils.h
-http.c: http.h utils.h
-utils.c: utils.h
-pam_websso.c: config.h http.h utils.h
-
-%.o: %.c %.h
-	$(CC) $(CFLAGS) -c -o $@ $<
+config.o: config.c config.h utils.h defs.h
+http.o: http.c http.h utils.h defs.h
+utils.o: utils.c utils.h defs.h
+pam_websso.o: pam_websso.c config.h http.h utils.h defs.h
 
 pam_websso.so: $(OBJS)
 	$(CC) $(LDFLAGS) -shared -o $@ *.o -lcurl -lpam -lm -ljsonparser
