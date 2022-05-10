@@ -41,7 +41,7 @@ jobs:
     steps:
       - name: Housekeeping
         run: |
-          sudo apt purge man-db
+          sudo apt-get purge man-db
 
       - name: Install gcc
         run: |
