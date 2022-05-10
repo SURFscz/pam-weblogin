@@ -55,13 +55,17 @@ jobs:
         run: |
           sudo add-apt-repository --yes --update ppa:ubuntu-toolchain-r/test
           sudo apt-get install --yes gcc-${{matrix.version}}
-        if: runner.os == 'Linux' and matrix.compiler == 'gcc'
+        if:
+          - runner.os == 'Linux'
+          - matrix.compiler == 'gcc'
 
       - name: Install clang
         run: |
           wget https://apt.llvm.org/llvm.sh
           sudo bash ./llvm.sh ${{ matrix.version }}
-        if: runner.os == 'Linux' and matrix.compiler == 'clang'
+        if:
+          - runner.os == 'Linux'
+          - matrix.compiler == 'clang'
 
       - name: Show compiler version
         run: ${{matrix.compiler}}-${{matrix.version}} --version
