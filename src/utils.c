@@ -10,7 +10,6 @@
 #include <syslog.h>
 #include <stdarg.h>
 
-extern int asprintf(char **restrict strp, const char *restrict fmt, ...);
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wformat-nonliteral"
