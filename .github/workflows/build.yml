@@ -40,7 +40,7 @@ jobs:
 
       - name: Add llvm repository
         run: |
-          sudo add-apt-repository --yes --update "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-${{matrix.version}}"
+          sudo add-apt-repository --yes "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-${{matrix.version}}"
           sudo cat /etc/apt/sources.list
         if: ${{ matrix.compiler == 'clang' }}
 
