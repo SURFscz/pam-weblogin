@@ -41,6 +41,10 @@ void log_message(int priority, pam_handle_t *pamh, const char *format, ...)
 	}
 }
 
+/* TODO: NB these are the dangerous functions. These take user-provided input and return them to the system.
+ *       Do extra sanitation and validation here.  We can't just rely on libjson-parsser
+ *       Might make sense to isolate them in a separate file.
+ */
 json_value *findKey(json_value *value, const char *name)
 {
 	if (value == NULL)
@@ -82,6 +86,8 @@ bool getBool(json_value *value, const char *name)
 	}
 	return key->u.boolean;
 }
+
+/* TODO: end of danger zone */
 
 /* TODO: not really utils; move to own pam file */
 static int converse(pam_handle_t *pamh, int nargs,
