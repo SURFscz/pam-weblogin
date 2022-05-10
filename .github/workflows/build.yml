@@ -23,17 +23,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-20.10, compiler: gcc,   version:  7 }
-          - { os: ubuntu-20.10, compiler: gcc,   version:  8 }
-          - { os: ubuntu-20.10, compiler: gcc,   version:  9 }
-          - { os: ubuntu-20.10, compiler: gcc,   version: 10 }
-          - { os: ubuntu-20.10, compiler: gcc,   version: 11 }
-          - { os: ubuntu-20.10, compiler: clang, version:  9 }
-          - { os: ubuntu-20.10, compiler: clang, version: 10 }
-          - { os: ubuntu-20.10, compiler: clang, version: 11 }
-          - { os: ubuntu-20.10, compiler: clang, version: 12 }
-          - { os: ubuntu-20.10, compiler: clang, version: 13 }
-          - { os: ubuntu-20.10, compiler: clang, version: 14 }
+          - { os: ubuntu-latest, compiler: gcc,   version:  7 }
+          #- { os: ubuntu-20.10, compiler: gcc,   version:  8 }
+          #- { os: ubuntu-20.10, compiler: gcc,   version:  9 }
+          - { os: ubuntu-latest, compiler: gcc,   version: 10 }
+          - { os: ubuntu-latest, compiler: gcc,   version: 11 }
+          - { os: ubuntu-latest, compiler: clang, version:  9 }
+          #- { os: ubuntu-20.10, compiler: clang, version: 10 }
+          #- { os: ubuntu-20.10, compiler: clang, version: 11 }
+          - { os: ubuntu-latest, compiler: clang, version: 12 }
+          - { os: ubuntu-latest, compiler: clang, version: 13 }
+          - { os: ubuntu-latest, compiler: clang, version: 14 }
           - { os: macos-10.15,  compiler: native             }
           - { os: macos-11,     compiler: native             }
           - { os: macos-12,     compiler: native             }
