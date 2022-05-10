@@ -39,10 +39,8 @@ jobs:
         if: ${{ matrix.compiler }} == 'gcc'
 
       - name: Add llvm repository
-        run: >
-          sudo add-apt-repository --yes --update
-            "deb http://apt.llvm.org/$(lsb_release -cs)/
-            llvm-toolchain-(lsb_release --cs)-${{matrix.version}}"
+        run: |
+          sudo add-apt-repository --yes --update "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release --cs)-${{matrix.version}}"
         if: ${{ matrix.compiler }} == "clang"
 
       - name: Install compiler
