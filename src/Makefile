@@ -31,7 +31,7 @@ endif
 ifneq "$(shell $(CC) --version | grep clang)" ""
   CFLAGS += -Weverything
   CFLAGS += -Wno-declaration-after-statement -Wno-disabled-macro-expansion
-  CFLAGS += -Wno-reserved-id-macro -Wno-padded
+  CFLAGS += -Wno-reserved-id-macro -Wno-padded -Wno-poison-system-directories
 
   ifeq "$(shell expr '$(CC_MAJOR)' '>=' '13')" "1"
     CFLAGS += -Wno-reserved-identifier
@@ -42,7 +42,6 @@ SOURCES := config.c http.c utils.c pam_websso.c
 OBJS := $(SOURCES:%.c=%.o)
 
 CFLAGS += -I../json-parser
-LDFLAGS += -L../json-parser
 
 # default target
 .PHONY: all
@@ -54,8 +53,8 @@ http.o: http.c http.h utils.h defs.h
 utils.o: utils.c utils.h defs.h
 pam_websso.o: pam_websso.c config.h http.h utils.h defs.h
 
-pam_websso.so: $(OBJS)
-	$(CC) $(LDFLAGS) -shared -o $@ *.o -lcurl -lpam -lm -ljsonparser
+pam_websso.so: $(OBJS) ../json-parser/libjsonparser.a
+	$(CC) $(LDFLAGS) -shared -o $@ $^ -lcurl -lpam -lm
 	chmod 644 $@
 
 .PHONY: install
