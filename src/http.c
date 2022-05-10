@@ -114,6 +114,14 @@ int postURL(const char *url, const char *token, const char *data, char **result)
 			rc = 1;
 			*result = fetch->payload;
 		}
+
+		// Check response
+		if ((cc = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code)) != CURLE_OK || response_code != 201)
+		{
+			//printf("Invalid response: %ld, %s\n", response_code, *result);
+			goto cleanup;
+		}
+
 	}
 
 cleanup:
