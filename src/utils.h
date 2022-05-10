@@ -21,7 +21,7 @@ extern int asprintf(char **restrict strp, const char *restrict fmt, ...);
 void log_message(int priority, pam_handle_t *pamh, const char *format, ...)
      __attribute__ ((format (printf, 3, 4)));
 
-// JSON helpers
+/* JSON helpers */
 json_value *findKey(json_value *value, const char *name);
 char *getString(json_value *, const char *name);
 bool getBool(json_value *value, const char *name);
