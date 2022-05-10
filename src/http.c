@@ -63,7 +63,7 @@ int postURL(const char *url, const char *token, const char *data, char **result)
 	/* default return value */
 	*result = NULL;
 
-	// Prepare Headers...
+	/* Prepare Headers... */
 	struct curl_slist *headers = NULL;
 	char *authorization = NULL;
 
@@ -77,11 +77,11 @@ int postURL(const char *url, const char *token, const char *data, char **result)
 		printf("http data: %s\n", data);
 	*/
 
-	// Prepare API request...
+	/* Prepare API request... */
 	curl = curl_easy_init();
 	if (curl)
 	{
-		// Prepare payload for response...
+		/* Prepare payload for response... */
 		fetch->payload = (char *)calloc(1, sizeof(fetch->payload));
 		fetch->size = 0;
 
@@ -94,21 +94,21 @@ int postURL(const char *url, const char *token, const char *data, char **result)
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(data));
 
-		// Perform the request
+		/* Perform the request */
 		if ((cc = curl_easy_perform(curl)) != CURLE_OK)
 		{
 			// printf("curl_easy_perform() failed: %s\n", curl_easy_strerror(cc));
 			goto cleanup;
 		}
 
-		// Check response
+		/* Check response */
 		if ((cc = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code)) != CURLE_OK || response_code != 200)
 		{
 			// printf("Invalid response\n");
 			goto cleanup;
 		}
 
-		// Assign payload
+		/* Assign payload */
 		if (fetch->payload != NULL)
 		{
 			rc = 1;

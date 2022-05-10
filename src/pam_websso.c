@@ -100,7 +100,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		return PAM_SUCCESS;
 	}
 
-	// Pin challenge Conversation
+	/* Pin challenge Conversation */
 	conv_info(pamh, challenge);
 	free(challenge);
 
@@ -114,14 +114,14 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	{
 		char *rpin = conv_read(pamh, "Pin: ", PAM_PROMPT_ECHO_OFF);
 
-		// Prepare URL...
+		/* Prepare URL... */
 		asprintf(&url, "%s/check-pin", cfg->url);
 
-		// Prepare auth input data...
+		/* Prepare auth input data... */
 		asprintf(&data, "{\"session_id\":\"%s\",\"rpin\":\"%s\"}", session_id, rpin);
 		free(rpin);
 
-		// Request auth result
+		/* Request auth result */
 		char *auth = NULL;
 		rc = postURL(url, cfg->token, data, &auth);
 		free(url);
@@ -137,7 +137,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 
 		log_message(LOG_INFO, pamh, "auth: %s\n", auth);
 
-		// Parse auth result
+		/* Parse auth result */
 		json = (json_char *)auth;
 		value = json_parse(json, strlen(json));
 		free(auth);

@@ -31,7 +31,7 @@ void log_message(int priority, pam_handle_t *pamh, const char *format, ...)
 
 	if (priority == LOG_EMERG)
 	{
-		// Something really bad happened. There is no way we can proceed safely.
+		/* Something really bad happened. There is no way we can proceed safely. */
 		exit(1);
 	}
 }
@@ -119,7 +119,7 @@ char *conv_read(pam_handle_t *pamh, const char *text, int echocode)
 		ret = resp->resp;
 	}
 
-	// Deallocate temporary storage
+	/* Deallocate temporary storage */
 	if (resp)
 	{
 		if (!ret)
