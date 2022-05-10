@@ -47,7 +47,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt-get install --yes libpam0g-dev
+          sudo apt-get install --yes libpam0g-dev libcurl4-dev
 
       - name: Checkout
         uses: actions/checkout@v3
