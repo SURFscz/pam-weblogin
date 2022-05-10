@@ -122,14 +122,14 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 							 !timeout;
 		 ++retry)
 	{
-		char *rpin = conv_read(pamh, "Pin: ", PAM_PROMPT_ECHO_OFF);
+		char *pin = conv_read(pamh, "Pin: ", PAM_PROMPT_ECHO_OFF);
 
 		/* Prepare URL... */
 		asprintf(&url, "%s/check-pin", cfg->url);
 
 		/* Prepare auth input data... */
-		asprintf(&data, "{\"session_id\":\"%s\",\"pin\":\"%s\"}", session_id, rpin);
-		free(rpin);
+		asprintf(&data, "{\"session_id\":\"%s\",\"pin\":\"%s\"}", session_id, pin);
+		free(pin);
 
 		/* Request auth result */
 		char *auth = NULL;
