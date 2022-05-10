@@ -81,13 +81,13 @@ Config *getConfig(pam_handle_t *pamh, const char *filename)
 
 			char *key = trim(buffer);
 
-			// Line starts with a # comment
+			/* Line starts with a # comment */
 			if (key[0] == '#')
 			{
 				continue;
 			}
 
-			// Line contains = token
+			/* Line contains = token */
 			char *val = strchr(key, '=');
 			if (val == NULL)
 			{
@@ -100,35 +100,35 @@ Config *getConfig(pam_handle_t *pamh, const char *filename)
 			val = trim(val);
 			key = trim(key);
 
-			// Check for url config
+			/* Check for url config */
 			if (!strcmp(key, "url"))
 			{
 				cfg->url = strdup(val);
 				log_message(LOG_DEBUG, pamh, "url: %s", cfg->url);
 			}
 
-			// Check for token config
+			/* Check for token config */
 			if (!strcmp(key, "token"))
 			{
 				cfg->token = strdup(val);
 				log_message(LOG_DEBUG, pamh, "token: %s", cfg->token);
 			}
 
-			// Check for token config
+			/* Check for token config */
 			if (!strcmp(key, "attribute"))
 			{
 				cfg->attribute = strdup(val);
 				log_message(LOG_DEBUG, pamh, "attribute: %s", cfg->attribute);
 			}
 
-			// Check for cache_duration config
+			/* Check for cache_duration config */
 			if (!strcmp(key, "cache_duration"))
 			{
 				cfg->cache_duration = (unsigned)abs(atoi(val));
 				log_message(LOG_DEBUG, pamh, "cache_duration: %d", cfg->cache_duration);
 			}
 
-			// Check for retries config
+			/* Check for retries config */
 			if (!strcmp(key, "retries"))
 			{
 				cfg->retries = (unsigned)abs(atoi(val));
@@ -138,7 +138,7 @@ Config *getConfig(pam_handle_t *pamh, const char *filename)
 		fclose(fp);
 	}
 
-	// Success if both url and token are set !
+	/* Success if url, token and attribute are set */
 	if (cfg->url && cfg->token && cfg->attribute)
 	{
 		return cfg;

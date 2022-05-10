@@ -9,11 +9,8 @@
 #include <string.h>
 #include <syslog.h>
 #include <stdarg.h>
+#include <errno.h>
 
-extern int asprintf(char **restrict strp, const char *restrict fmt, ...);
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wformat-nonliteral"
 void log_message(int priority, pam_handle_t *pamh, const char *format, ...)
 {
 	char *service = NULL;
@@ -34,11 +31,10 @@ void log_message(int priority, pam_handle_t *pamh, const char *format, ...)
 
 	if (priority == LOG_EMERG)
 	{
-		// Something really bad happened. There is no way we can proceed safely.
+		/* Something really bad happened. There is no way we can proceed safely. */
 		exit(1);
 	}
 }
-#pragma clang diagnostic pop
 
 json_value *findKey(json_value *value, const char *name)
 {
@@ -92,9 +88,17 @@ static int converse(pam_handle_t *pamh, int nargs,
 
 char *conv_read(pam_handle_t *pamh, const char *text, int echocode)
 {
+	/* note: on MacOS, pam_message.msg is a non-const char*, so we need to copy it */
+	char * pam_msg = strdup(text);
+	if (pam_msg==NULL)
+	{
+		return NULL;
+	}
+
 	PAM_CONST struct pam_message msg = {
 		.msg_style = echocode,
-		.msg = text};
+		.msg = pam_msg
+	};
 
 	PAM_CONST struct pam_message *msgs = &msg;
 	struct pam_response *resp = NULL;
@@ -115,7 +119,7 @@ char *conv_read(pam_handle_t *pamh, const char *text, int echocode)
 		ret = resp->resp;
 	}
 
-	// Deallocate temporary storage
+	/* Deallocate temporary storage */
 	if (resp)
 	{
 		if (!ret)
@@ -129,9 +133,18 @@ char *conv_read(pam_handle_t *pamh, const char *text, int echocode)
 
 void conv_info(pam_handle_t *pamh, const char *text)
 {
+	/* note: on MacOS, pam_message.msg is a non-const char*, so we need to copy it */
+	char * pam_msg = strdup(text);
+	if (pam_msg==NULL)
+	{
+		log_message(LOG_ERR, pamh, "Failed to print info message: %s", strerror(errno));
+		return;
+	}
+
 	PAM_CONST struct pam_message msg = {
 		.msg_style = PAM_TEXT_INFO,
-		.msg = text};
+		.msg = pam_msg
+	};
 
 	PAM_CONST struct pam_message *msgs = &msg;
 	struct pam_response *resp = NULL;
@@ -141,5 +154,6 @@ void conv_info(pam_handle_t *pamh, const char *text)
 	{
 		log_message(LOG_ERR, pamh, "Failed to print info message");
 	}
+	free(pam_msg);
 	free(resp);
 }
