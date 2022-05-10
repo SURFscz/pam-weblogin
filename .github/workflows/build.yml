@@ -43,7 +43,7 @@ jobs:
 
     # set CC to 'cc' for MacOS and the (e.g.) clang-12 for Linux
     env:
-      CC: ${{ runner.compiler == 'native' && 'cc' || format('{0}-{1}',matrix.compiler,matrix.version) }}"
+      CC: ${{ matrix.compiler == 'native' && 'cc' || format('{0}-{1}',matrix.compiler,matrix.version) }}"
 
     steps:
       - name: Housekeeping
