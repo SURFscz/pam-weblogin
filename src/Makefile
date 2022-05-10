@@ -10,7 +10,7 @@ CC = gcc
 endif
 
 CFLAGS ?= -O0 -ggdb3
-CFLAGS += -std=c17
+CFLAGS += -std=c11
 CFLAGS += -Wall -Wextra -Wshadow -Wpedantic -Wuninitialized -Wformat=2
 CFLAGS += -Werror
 CFLAGS += -fstack-protector-strong
