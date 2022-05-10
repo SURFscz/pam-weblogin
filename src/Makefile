@@ -18,7 +18,7 @@ CFLAGS += -Werror
 CFLAGS += -fstack-protector-strong
 
 # gcc only
-ifneq "$(findstring gcc,$(CC))" ""
+ifneq "$(shell $(CC) --version | grep gcc)" ""
   CFLAGS += -Wformat-overflow=2 -Wformat-truncation=2
   CFLAGS += -Wno-unknown-pragmas
 
@@ -28,7 +28,7 @@ ifneq "$(findstring gcc,$(CC))" ""
 endif
 
 # clang only
-ifneq "$(findstring clang,$(CC))" ""
+ifneq "$(shell $(CC) --version | grep clang)" ""
   CFLAGS += -Weverything
   CFLAGS += -Wno-declaration-after-statement -Wno-disabled-macro-expansion
   CFLAGS += -Wno-reserved-id-macro -Wno-padded
