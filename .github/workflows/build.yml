@@ -3,7 +3,6 @@
 name: Builds
 
 on:
-  # Triggers the workflow on push or pull request events
   push:
   pull_request:
   release:
@@ -11,63 +10,68 @@ on:
       - 'v*'
     types: [published]
 
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
   Build:
-    name: Test builing
+    name: Test building
     if: always()
 
-    runs-on: ubuntu-20.04
+    runs-on: ${{ matrix.os }}
 
-    # Test different compilers
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { compiler: gcc,   version:  7 }
-          - { compiler: gcc,   version:  8 }
-          - { compiler: gcc,   version:  9 }
-          - { compiler: gcc,   version: 10 }
-          - { compiler: gcc,   version: 11 }
-          - { compiler: clang, version:  9 }
-          - { compiler: clang, version: 10 }
-          - { compiler: clang, version: 11 }
-          - { compiler: clang, version: 12 }
-          - { compiler: clang, version: 13 }
-          - { compiler: clang, version: 14 }
+          - { os: ubuntu-20.10, compiler: gcc,   version:  7 }
+          - { os: ubuntu-20.10, compiler: gcc,   version:  8 }
+          - { os: ubuntu-20.10, compiler: gcc,   version:  9 }
+          - { os: ubuntu-20.10, compiler: gcc,   version: 10 }
+          - { os: ubuntu-20.10, compiler: gcc,   version: 11 }
+          - { os: ubuntu-20.10, compiler: clang, version:  9 }
+          - { os: ubuntu-20.10, compiler: clang, version: 10 }
+          - { os: ubuntu-20.10, compiler: clang, version: 11 }
+          - { os: ubuntu-20.10, compiler: clang, version: 12 }
+          - { os: ubuntu-20.10, compiler: clang, version: 13 }
+          - { os: ubuntu-20.10, compiler: clang, version: 14 }
+          - { os: macos-10.15,  compiler: native             }
+          - { os: macos-11,     compiler: native             }
+          - { os: macos-12,     compiler: native             }
+
+    # set CC to 'cc' for MacOS and the (e.g.) clang-12 for Linux
+    env:
+      CC: ${{ matrix.compiler == 'native' && 'cc' || format('{0}-{1}',matrix.compiler,matrix.version) }}
 
     steps:
       - name: Housekeeping
         run: |
           sudo apt-get purge man-db
+        if: runner.os == 'Linux'
 
       - name: Install gcc
         run: |
           sudo add-apt-repository --yes --update ppa:ubuntu-toolchain-r/test
           sudo apt-get install --yes gcc-${{matrix.version}}
-        if: ${{ matrix.compiler == 'gcc' }}
+        if: runner.os == 'Linux' && matrix.compiler == 'gcc'
 
       - name: Install clang
         run: |
           wget https://apt.llvm.org/llvm.sh
           sudo bash ./llvm.sh ${{ matrix.version }}
-        if: ${{ matrix.compiler == 'clang' }}
+        if: runner.os == 'Linux' &&  matrix.compiler == 'clang'
 
       - name: Show compiler version
-        run: ${{matrix.compiler}}-${{matrix.version}} --version
+        run: $CC --version
 
       - name: Install dependencies
         run: |
           sudo apt-get install --yes libpam0g-dev libcurl4-openssl-dev
+        if: runner.os == 'Linux'
 
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: Test compilation
-        env:
-          CC: ${{matrix.compiler}}-${{matrix.version}}
         run: |
           make all
 

@@ -31,10 +31,10 @@ endif
 ifneq "$(shell $(CC) --version | grep clang)" ""
   CFLAGS += -Weverything
   CFLAGS += -Wno-declaration-after-statement -Wno-disabled-macro-expansion
-  CFLAGS += -Wno-reserved-id-macro -Wno-padded -Wno-poison-system-directories
-
-  ifeq "$(shell expr '$(CC_MAJOR)' '>=' '13')" "1"
-    CFLAGS += -Wno-reserved-identifier
+  CFLAGS += -Wno-reserved-id-macro -Wno-reserved-identifier
+  CFLAGS += -Wno-padded -Wno-poison-system-directories
+  ifeq "$(shell expr '$(CC_MAJOR)' '<' '14')" "1"
+    CFLAGS += -Wno-unknown-warning-option
   endif
 endif
 
