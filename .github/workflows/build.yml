@@ -40,8 +40,7 @@ jobs:
 
       - name: Add llvm repository
         run: |
-          sudo add-apt-repository --yes --update --sourceslist "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-${{matrix.version}}"
-          sudo cat /etc/apt/sources.list
+          sudo add-apt-repository --yes --update "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-${{matrix.version}} main"
         if: ${{ matrix.compiler == 'clang' }}
 
       - name: Install compiler
