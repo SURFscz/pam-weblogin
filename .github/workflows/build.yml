@@ -26,8 +26,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { compiler: gcc,   version: [7, 8, 9, 10, 11] }
-          - { compiler: clang, version: [9, 10, 11, 12, 13, 14] }
+          - { compiler: gcc,   version:  7 }
+          - { compiler: gcc,   version:  8 }
+          - { compiler: gcc,   version:  9 }
+          - { compiler: gcc,   version: 10 }
+          - { compiler: gcc,   version: 11 }
+          - { compiler: clang, version:  9 }
+          - { compiler: clang, version: 10 }
+          - { compiler: clang, version: 11 }
+          - { compiler: clang, version: 12 }
+          - { compiler: clang, version: 13 }
+          - { compiler: clang, version: 14 }
 
     steps:
       - name: Install gcc
