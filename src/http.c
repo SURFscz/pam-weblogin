@@ -72,11 +72,10 @@ int postURL(const char *url, const char *token, const char *data, char **result)
 	headers = curl_slist_append(headers, "Content-Type: application/json");
 	headers = curl_slist_append(headers, authorization);
 	free(authorization);
-	/*
-		printf("http URL: %s\n", url);
-		printf("http data: %s\n", data);
-	*/
-
+/*
+	printf("http URL: %s\n", url);
+	printf("http data: %s\n", data);
+*/
 	// Prepare API request...
 	curl = curl_easy_init();
 	if (curl)
@@ -97,14 +96,7 @@ int postURL(const char *url, const char *token, const char *data, char **result)
 		// Perform the request
 		if ((cc = curl_easy_perform(curl)) != CURLE_OK)
 		{
-			// printf("curl_easy_perform() failed: %s\n", curl_easy_strerror(cc));
-			goto cleanup;
-		}
-
-		// Check response
-		if ((cc = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code)) != CURLE_OK || response_code != 200)
-		{
-			// printf("Invalid response\n");
+			//printf("curl_easy_perform() failed: %s\n", curl_easy_strerror(cc));
 			goto cleanup;
 		}
 
@@ -114,6 +106,14 @@ int postURL(const char *url, const char *token, const char *data, char **result)
 			rc = 1;
 			*result = fetch->payload;
 		}
+
+		// Check response
+		if ((cc = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code)) != CURLE_OK || response_code != 201)
+		{
+			//printf("Invalid response: %ld, %s\n", response_code, *result);
+			goto cleanup;
+		}
+
 	}
 
 cleanup:

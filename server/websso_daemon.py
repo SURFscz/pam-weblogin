@@ -26,9 +26,9 @@ def pop_auth(session_id):
     auths.pop(session_id, None)
 
 
-def pop_cached(user):
-    logging.debug(f"pop cached {user}")
-    cached.pop(user, None)
+def pop_cached(user_id):
+    logging.debug(f"pop cached {user_id}")
+    cached.pop(user_id, None)
 
 
 def session_id(length=8):
@@ -41,7 +41,7 @@ def pin(length=4):
 
 def authorized(headers):
     auth = headers.get("Authorization")
-    if "client:verysecret" in auth:
+    if "Bearer" in auth:
         return True
     else:
         return False
@@ -54,16 +54,16 @@ def req():
 
     data = json.loads(request.data)
 
-    user = data.get('user')
+    user_id = data.get('user_id')
     attribute = data.get('attribute')
     cache_duration = data.get('cache_duration')
     new_session_id = session_id()
     url = os.environ.get("URL", "http://localhost:5001")
     auths[new_session_id] = {
         'session_id': new_session_id,
-        'challenge': f'Hello {user}. To continue, '
+        'challenge': f'Hello {user_id}. To continue, '
                      f'visit {url}/pam-websso/login/{new_session_id} and enter pin',
-        'cached': cached.get(user, False)
+        'cached': cached.get(user_id, False)
     }
 
     response = Response()
@@ -71,7 +71,7 @@ def req():
     response.data = json.dumps(auths[new_session_id])
 
     new_pin = pin()
-    auths[new_session_id]['user'] = user
+    auths[new_session_id]['user_id'] = user_id
     auths[new_session_id]['attribute'] = attribute
     auths[new_session_id]['pin'] = new_pin
     auths[new_session_id]['cache_duration'] = cache_duration
@@ -95,7 +95,7 @@ def auth():
 
     this_auth = auths.get(session_id)
     if this_auth:
-        user = this_auth.get('user')
+        user_id = this_auth.get('user_id')
         attribute = this_auth.get('attribute')
         pin = this_auth.get('pin')
         cache_duration = this_auth.get('cache_duration')
@@ -104,9 +104,9 @@ def auth():
                 'result': 'SUCCESS',
                 'msg': f'Authenticated on attribute {attribute}'
             }
-            cached[user] = True
+            cached[user_id] = True
             pop_auth(session_id)
-            Timer(int(cache_duration), pop_cached, [user]).start()
+            Timer(int(cache_duration), pop_cached, [user_id]).start()
         else:
             reply = {
                 'result': 'FAIL',
@@ -134,17 +134,17 @@ def login(session_id):
     this_auth = auths.get(session_id)
     if this_auth:
         if request.method == 'GET':
-            user = this_auth.get('user')
+            user_id = this_auth.get('user_id')
             content = "<html>\n<body>\n<form method=POST>\n"
-            content += f"Please authorize SSH login for user {user}<br />\n"
+            content += f"Please authorize SSH login for user {user_id}<br />\n"
             content += "<input name=action type=submit value=login>\n"
             content += "</body>\n</html>\n"
         else:
             request.data
-            user = this_auth['user']
+            user_id = this_auth['user_id']
             pin = this_auth['pin']
             content = "<html>\n<body>\n"
-            content += f"{session_id}/{user} successfully authenticated<br />\n"
+            content += f"{session_id}/{user_id} successfully authenticated<br />\n"
             content += f"PIN: {pin}<br />\n"
             content += "This window may be closed\n"
             content += "</body>\n</html>\n"

@@ -62,7 +62,7 @@ char *getString(json_value *value, const char *name)
 	json_value *key = findKey(value, name);
 	if (key == NULL)
 	{
-		return "";
+		return NULL;
 	}
 	return key->u.string.ptr;
 }
