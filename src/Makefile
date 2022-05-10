@@ -55,7 +55,7 @@ utils.c: utils.h
 pam_websso.c: config.h http.h utils.h
 
 %.o: %.c %.h
-	$(CC) $(CFLAGS) -fPIC -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 pam_websso.so: $(OBJS)
 	$(CC) $(LDFLAGS) -shared -o $@ *.o -lcurl -lpam -lm -ljsonparser
