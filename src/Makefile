@@ -28,9 +28,14 @@ endif
 #
 # clang only
 ifneq "$(findstring clang,$(CC))" ""
+  CLANG_MAJOR=$(shell gcc -dumpversion | cut -f1 -d.)
+  ifeq "$(shell expr '$(CLANG_MAJOR)' '>=' '14')" "1"
+    CFLAGS += -Wno-reserved-identifier
+  endif
+
   CFLAGS += -Weverything
   CFLAGS += -Wno-declaration-after-statement -Wno-disabled-macro-expansion
-  CFLAGS += -Wno-reserved-identifier -Wno-reserved-id-macro -Wno-padded
+  CFLAGS += -Wno-reserved-id-macro -Wno-padded
 endif
 
 SOURCES := config.c http.c utils.c pam_websso.c
