@@ -33,19 +33,19 @@ jobs:
           - { compiler: clang, version: 14 }
 
     steps:
-      - name: Add toolchain repository
+      - name: Install gcc
         run: |
           sudo add-apt-repository --yes --update ppa:ubuntu-toolchain-r/test
+          sudo apt-get install --yes gcc-${{matrix.version}}
         if: ${{ matrix.compiler == 'gcc' }}
 
-      - name: Add llvm repository
+      - name: Install clang
         run: |
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
           sudo add-apt-repository --yes --update "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-${{matrix.version}} main"
+          sudo apt-get install --yes --no-install-recommends clang-format clang-tidy clang-tools clang clangd libc++-dev libc++1 libc++abi-dev libc++abi1 libclang-dev libclang1 liblldb-dev libllvm-ocaml-dev libomp-dev libomp5 lld lldb llvm-dev llvm-runtime llvm python3-clang
+          sudo apt-get install --yes --no-install-recommends clang-${{matrix.version}}
         if: ${{ matrix.compiler == 'clang' }}
-
-      - name: Install compiler
-        run: |
-          sudo apt-get install --yes ${{matrix.compiler}}-${{matrix.version}}
 
       - name: Show compiler version
         run: ${{matrix.compiler}}-${{matrix.version}} --version
