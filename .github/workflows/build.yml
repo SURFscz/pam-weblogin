@@ -45,6 +45,10 @@ jobs:
       - name: Show compiler version
         run: ${{matrix.compiler}}-${{matrix.version}} --version
 
+      - name: Install dependencies
+        run: |
+          sudo apt-get install --yes libpam0g-dev
+
       - name: Checkout
         uses: actions/checkout@v3
 

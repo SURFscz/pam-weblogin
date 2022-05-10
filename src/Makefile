@@ -11,20 +11,26 @@ endif
 
 CFLAGS ?= -O0 -ggdb3
 CFLAGS += -std=c17
-CFLAGS += -Wall -Wextra -Wshadow -Wpedantic -Wuninitialized -Wformat=2 -Wno-unknown-pragmas
+CFLAGS += -Wall -Wextra -Wshadow -Wpedantic -Wuninitialized -Wformat=2
 CFLAGS += -Werror
 CFLAGS += -fstack-protector-strong
 
 # gcc only
 ifneq "$(findstring gcc,$(CC))" ""
-CFLAGS += -Wformat-overflow=2 -Wformat-truncation=2
-CFLAGS += -ftree-vrp -fanalyzer
+  GCC_MAJOR=$(shell gcc -dumpversion | cut -f1 -d.)
+  ifeq "$(shell expr '$(GCC_MAJOR)' '>=' '10')" "1"
+    CFLAGS += -ftree-vrp -fanalyzer
+  endif
+
+  CFLAGS += -Wformat-overflow=2 -Wformat-truncation=2
+  CFLAGS += -Wno-unknown-pragmas
 endif
 #
 # clang only
 ifneq "$(findstring clang,$(CC))" ""
-CFLAGS += -Weverything
-CFLAGS += -Wno-declaration-after-statement -Wno-disabled-macro-expansion
+  CFLAGS += -Weverything
+  CFLAGS += -Wno-declaration-after-statement -Wno-disabled-macro-expansion
+  CFLAGS += -Wno-reserved-identifier -Wno-reserved-id-macro -Wno-padded
 endif
 
 SOURCES := config.c http.c utils.c pam_websso.c
