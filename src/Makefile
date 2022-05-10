@@ -33,7 +33,7 @@ ifneq "$(findstring clang,$(CC))" ""
   CFLAGS += -Wno-declaration-after-statement -Wno-disabled-macro-expansion
   CFLAGS += -Wno-reserved-id-macro -Wno-padded
 
-  ifeq "$(shell expr '$(CC_MAJOR)' '>=' '14')" "1"
+  ifeq "$(shell expr '$(CC_MAJOR)' '>=' '13')" "1"
     CFLAGS += -Wno-reserved-identifier
   endif
 endif
