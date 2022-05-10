@@ -34,7 +34,7 @@ ifneq "$(shell $(CC) --version | grep clang)" ""
   CFLAGS += -Wno-reserved-id-macro -Wno-reserved-identifier
   CFLAGS += -Wno-padded -Wno-poison-system-directories
   ifeq "$(shell expr '$(CC_MAJOR)' '<' '14')" "1"
-    CFLAGS += -Wunknown-warning-option
+    CFLAGS += -Wno-unknown-warning-option
   endif
 endif
 
