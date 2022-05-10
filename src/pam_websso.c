@@ -26,11 +26,12 @@ PAM_EXTERN int pam_sm_acct_mgmt(UNUSED pam_handle_t *pamh, UNUSED int flags, UNU
 }
 
 /* expected hook, this is where custom stuff happens */
+/* TODO: this function is too long; split it up */
 PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int argc, const char *argv[])
 {
 	log_message(LOG_INFO, pamh, "Start of pam_websso");
 
-	// Read username
+	/* Read username */
 	const char *username;
 	if (pam_get_user(pamh, &username, "Username: ") != PAM_SUCCESS)
 	{
@@ -38,8 +39,10 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		return PAM_SYSTEM_ERR;
 	}
 
-	// Read configuration file
+	/* Read configuration file */
+	/* TODO: shouldn't we do this first? */
 	Config *cfg = NULL;
+	/* TODO: let's actually check argv[0] to see if it makes sense as a filename (getConfig doesn't do any checking) */
 	if (!(cfg = getConfig(pamh, (argc > 0) ? argv[0] : "/etc/pam-websso.conf")))
 	{
 		conv_info(pamh, "Error reading conf");
@@ -52,20 +55,21 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		log_message(LOG_INFO, pamh, "cfg->cache_duration: '%s'\n", cfg->cache_duration);
 		log_message(LOG_INFO, pamh, "cfg->retries: '%d'\n", cfg->retries);
 	*/
-	// Prepare full req url...
+	/* Prepare full req url... */
+	/* TODO: check return value */
 	char *url = NULL;
 	asprintf(&url, "%s/start", cfg->url);
 
-	// Prepare req input data...
+	/* Prepare req input data... */
+	/* TODO: check return value */
 	char *data = NULL;
 	asprintf(&data, "{\"user\":\"%s\",\"attribute\":\"%s\",\"cache_duration\":\"%d\"}",
 			 username, cfg->attribute, cfg->cache_duration);
 
-	// Request auth session_id/challenge
+	/* Request auth session_id/challenge */
+	/* what is req?  isn't it a response? */
 	char *req = NULL;
 	int rc = postURL(url, cfg->token, data, &req);
-	free(url);
-	free(data);
 
 	if (!rc)
 	{
@@ -75,9 +79,13 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		return PAM_SYSTEM_ERR;
 	}
 
+	free(url);
+	free(data);
+
 	log_message(LOG_INFO, pamh, "req: %s", req);
 
-	// Parse response
+	/* Parse response */
+	/* TODO:ugly, let's just make a wrapper function for this evil casting*/
 	json_char *json = (json_char *)req;
 	json_value *value = json_parse(json, strlen(json));
 	free(req);
@@ -93,6 +101,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	*/
 	if (cached)
 	{
+		/* TODO: this is user facing stuff; create a def or something for this */
 		conv_info(pamh, "You were cached!");
 		freeConfig(cfg);
 		free(session_id);
@@ -108,10 +117,12 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	bool timeout = false;
 
 	for (unsigned retry = 0; (retry < cfg->retries) &&
-							 (retval != PAM_SUCCESS) &&
-							 !timeout;
-		 ++retry)
+	                         (retval != PAM_SUCCESS) &&
+	                         !timeout;
+	                         ++retry)
 	{
+		/* TODO: better variable name */
+		/* TODO: check return value here! */
 		char *rpin = conv_read(pamh, "Pin: ", PAM_PROMPT_ECHO_OFF);
 
 		/* Prepare URL... */
@@ -138,6 +149,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		log_message(LOG_INFO, pamh, "auth: %s\n", auth);
 
 		/* Parse auth result */
+		/* TODO: see above, create wrapper function */
 		json = (json_char *)auth;
 		value = json_parse(json, strlen(json));
 		free(auth);
@@ -146,6 +158,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		char *auth_msg = getString(value, "msg");
 		free(value);
 
+		/* TODO: sanitize this message before showing it to pam */
 		conv_info(pamh, auth_msg);
 
 		log_message(LOG_INFO, pamh, "auth_result: %s\n", auth_result);

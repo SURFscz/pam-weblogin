@@ -9,8 +9,12 @@
 #include <string.h>
 #include <syslog.h>
 #include <stdarg.h>
+#include <errno.h>
 
+/* TODO: add debug logging */
+/* TODO: add explanations and annotations for each function */
 
+/* TODO: remove pamh here; if we need to relay the service name, pass it as a string */
 void log_message(int priority, pam_handle_t *pamh, const char *format, ...)
 {
 	char *service = NULL;
@@ -32,6 +36,7 @@ void log_message(int priority, pam_handle_t *pamh, const char *format, ...)
 	if (priority == LOG_EMERG)
 	{
 		/* Something really bad happened. There is no way we can proceed safely. */
+		/* TODO:  are we ever using this? */
 		exit(1);
 	}
 }
@@ -45,6 +50,9 @@ json_value *findKey(json_value *value, const char *name)
 	for (unsigned x = 0; x < value->u.object.length; x++)
 	{
 		// log_message(LOG_INFO, pamh, "object[%d].name = %s\n", x, value->u.object.values[x].name);
+		/* TODO: are we ABSOLUTELY SURE that the json parser will NEVER return unterminated string or some other weirdness?!
+		         Note that the json can contain non-validated user input! (username, email, etc)
+		 */
 		if (!strcmp(value->u.object.values[x].name, name))
 		{
 			return value->u.object.values[x].value;
@@ -58,8 +66,10 @@ char *getString(json_value *value, const char *name)
 	json_value *key = findKey(value, name);
 	if (key == NULL)
 	{
+		/* TODO why not return NULL? */
 		return "";
 	}
+	/* TODO: wouldn't it be safe to return a strdup? */
 	return key->u.string.ptr;
 }
 
@@ -68,14 +78,16 @@ bool getBool(json_value *value, const char *name)
 	json_value *key = findKey(value, name);
 	if (key == NULL)
 	{
+		/* TODO: we really should return a failure condition */
 		return false;
 	}
 	return key->u.boolean;
 }
 
+/* TODO: not really utils; move to own pam file */
 static int converse(pam_handle_t *pamh, int nargs,
-					PAM_CONST struct pam_message **message,
-					struct pam_response **response)
+                    PAM_CONST struct pam_message **message,
+                    struct pam_response **response)
 {
 	struct pam_conv *conv;
 	int retval = pam_get_item(pamh, PAM_CONV, (void *)&conv);
@@ -86,6 +98,7 @@ static int converse(pam_handle_t *pamh, int nargs,
 	return conv->conv(nargs, message, response, conv->appdata_ptr);
 }
 
+/* TODO:fix return values!  Needs te return NULL on failure! */
 char *conv_read(pam_handle_t *pamh, const char *text, int echocode)
 {
 	/* note: on MacOS, pam_message.msg is a non-const char*, so we need to copy it */
@@ -100,6 +113,7 @@ char *conv_read(pam_handle_t *pamh, const char *text, int echocode)
 		.msg = pam_msg
 	};
 
+	/* TODO: change variable names: wat is the difference between ret and retval? */
 	PAM_CONST struct pam_message *msgs = &msg;
 	struct pam_response *resp = NULL;
 	int retval = converse(pamh, 1, &msgs, &resp);
@@ -124,13 +138,16 @@ char *conv_read(pam_handle_t *pamh, const char *text, int echocode)
 	{
 		if (!ret)
 		{
+			/* TODO: might be NULL */
 			free(resp->resp);
 		}
 		free(resp);
 	}
+	free(pam_msg);
 	return ret;
 }
 
+/* TODO: what does this function do? */
 void conv_info(pam_handle_t *pamh, const char *text)
 {
 	/* note: on MacOS, pam_message.msg is a non-const char*, so we need to copy it */

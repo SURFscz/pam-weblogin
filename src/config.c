@@ -9,6 +9,10 @@
 
 #define MAXLINE 1024
 
+/* TODO:
+    - clean up loop;
+	- add max size
+ */
 static char *trim(char *s)
 {
 	while (isspace(*(s + strlen(s) - 1)))
@@ -49,9 +53,12 @@ void freeConfig(Config *cfg)
  * token = Bearer client:verysecret
  */
 
+/* TODO:
+	- seems we are only passing pamh here for logging;  be more clever about that
+	- use lowercase variables (Config)
+ */
 Config *getConfig(pam_handle_t *pamh, const char *filename)
 {
-	int lineno = 0;
 	FILE *fp = NULL;
 
 	Config *cfg = malloc(sizeof(Config));
@@ -61,23 +68,35 @@ Config *getConfig(pam_handle_t *pamh, const char *filename)
 		return NULL;
 	}
 
+	/* TODO:
+	   - use constants for defaults
+	   - use memset/calloc for initialization
+	  */
 	cfg->url = NULL;
 	cfg->token = NULL;
 	cfg->attribute = NULL;
 	cfg->cache_duration = 60;
 	cfg->retries = 1;
 
+	/* TODO: invert condition and explicitly handle failure case */
+	int lineno = 0;
 	if ((fp = fopen(filename, "r")) != NULL)
 	{
 		char buffer[MAXLINE];
 
+		/* TODO: split out helper functions to make this more readable */
 		while (!feof(fp))
 		{
-			memset(buffer, 0, MAXLINE);
+			memset(buffer, 0, MAXLINE); /* should not be necessary */
 
 			fgets(buffer, MAXLINE, fp);
 
 			lineno++;
+
+			/* todo:
+			  - clean up variable names (key is not yet the key here
+			  - remove leading spaces
+			  */
 
 			char *key = trim(buffer);
 
@@ -87,6 +106,7 @@ Config *getConfig(pam_handle_t *pamh, const char *filename)
 				continue;
 			}
 
+			/* todo: use strsep() */
 			/* Line contains = token */
 			char *val = strchr(key, '=');
 			if (val == NULL)
@@ -100,6 +120,11 @@ Config *getConfig(pam_handle_t *pamh, const char *filename)
 			val = trim(val);
 			key = trim(key);
 
+			/* TODO:
+				- use elsif
+				- use strncmp
+				- remove duplicated logging code
+			 */
 			/* Check for url config */
 			if (!strcmp(key, "url"))
 			{
@@ -135,6 +160,7 @@ Config *getConfig(pam_handle_t *pamh, const char *filename)
 				log_message(LOG_DEBUG, pamh, "retries: %d", cfg->retries);
 			}
 		}
+		/* TODO: explicitly check return value */
 		fclose(fp);
 	}
 

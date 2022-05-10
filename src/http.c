@@ -16,7 +16,7 @@ struct curl_fetch_st
 /* callback for curl fetch */
 static size_t curl_callback(void *contents, size_t size, size_t nmemb, void *userp)
 {
-	size_t realsize = size * nmemb;							 /* calculate buffer size */
+	size_t realsize = size * nmemb;                          /* calculate buffer size */
 	struct curl_fetch_st *p = (struct curl_fetch_st *)userp; /* cast pointer to fetch struct */
 
 	/* expand buffer */
@@ -32,6 +32,7 @@ static size_t curl_callback(void *contents, size_t size, size_t nmemb, void *use
 		free(p->payload);
 
 		/* return */
+		/* TODO: check if this is correct; what happens if curl gets this response? */
 		return (size_t)-1;
 	}
 
@@ -67,6 +68,8 @@ int postURL(const char *url, const char *token, const char *data, char **result)
 	struct curl_slist *headers = NULL;
 	char *authorization = NULL;
 
+	/* TODO: should be Bearer token right? */
+	/* TODO: need to check return code! */
 	asprintf(&authorization, "Authorization: %s", token);
 	headers = curl_slist_append(headers, "Accept: application/json");
 	headers = curl_slist_append(headers, "Content-Type: application/json");
@@ -109,6 +112,7 @@ int postURL(const char *url, const char *token, const char *data, char **result)
 		}
 
 		/* Assign payload */
+		/* TODO: what if fetch->payload _is_ actually NULL?? */
 		if (fetch->payload != NULL)
 		{
 			rc = 1;
