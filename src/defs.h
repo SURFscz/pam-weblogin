@@ -10,6 +10,9 @@
 /* include most default macros */
 #define _GNU_SOURCE
 
+/* for advanced features on MacOS (such as vsyslog()) */
+#define _DARWIN_C_SOURCE
+
 
 #define UNUSED __attribute__ ((unused))
 
