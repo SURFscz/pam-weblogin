@@ -128,6 +128,8 @@ char *conv_read(pam_handle_t *pamh, const char *text, int echocode)
 		}
 		free(resp);
 	}
+	free(pam_msg);
+
 	return ret;
 }
 
