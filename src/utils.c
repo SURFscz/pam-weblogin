@@ -66,10 +66,9 @@ char *getString(json_value *value, const char *name)
 	json_value *key = findKey(value, name);
 	if (key == NULL)
 	{
-		/* TODO why not return NULL? */
-		return "";
+		return NULL;
 	}
-	/* TODO: wouldn't it be safe to return a strdup? */
+	/* TODO: wouldn't it be safer to return a strdup? */
 	return key->u.string.ptr;
 }
 
@@ -144,6 +143,7 @@ char *conv_read(pam_handle_t *pamh, const char *text, int echocode)
 		free(resp);
 	}
 	free(pam_msg);
+
 	return ret;
 }
 

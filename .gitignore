@@ -1,3 +1,6 @@
+lib/
+bin/
+pyvenv.cfg
 .vscode/
 *.o
 *.so

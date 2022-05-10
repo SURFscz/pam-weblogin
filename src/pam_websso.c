@@ -63,13 +63,13 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	/* Prepare req input data... */
 	/* TODO: check return value */
 	char *data = NULL;
-	asprintf(&data, "{\"user\":\"%s\",\"attribute\":\"%s\",\"cache_duration\":\"%d\"}",
+	asprintf(&data, "{\"user_id\":\"%s\",\"attribute\":\"%s\",\"cache_duration\":\"%d\"}",
 			 username, cfg->attribute, cfg->cache_duration);
 
 	/* Request auth session_id/challenge */
-	/* what is req?  isn't it a response? */
-	char *req = NULL;
-	int rc = postURL(url, cfg->token, data, &req);
+	// Request auth session_id/challenge
+	char *start = NULL;
+	int rc = postURL(url, cfg->token, data, &start);
 
 	if (!rc)
 	{
@@ -82,13 +82,13 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	free(url);
 	free(data);
 
-	log_message(LOG_INFO, pamh, "req: %s", req);
+	log_message(LOG_INFO, pamh, "start: %s", start);
 
 	/* Parse response */
 	/* TODO:ugly, let's just make a wrapper function for this evil casting*/
-	json_char *json = (json_char *)req;
+	json_char *json = (json_char *)start;
 	json_value *value = json_parse(json, strlen(json));
-	free(req);
+	free(start);
 
 	char *session_id = getString(value, "session_id");
 	char *challenge = getString(value, "challenge");
@@ -99,6 +99,16 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		log_message(LOG_INFO, pamh, "challenge: %s\n", challenge);
 		log_message(LOG_INFO, pamh, "cached: %s\n", cached ? "true" : "false");
 	*/
+
+	// The answer didn't contain a session_id, no need to continue
+	if (!session_id)
+	{
+		conv_info(pamh, "Server error!");
+		freeConfig(cfg);
+		return PAM_AUTH_ERR;
+	}
+
+	// Login was cached, continue successful
 	if (cached)
 	{
 		/* TODO: this is user facing stuff; create a def or something for this */
@@ -123,14 +133,14 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	{
 		/* TODO: better variable name */
 		/* TODO: check return value here! */
-		char *rpin = conv_read(pamh, "Pin: ", PAM_PROMPT_ECHO_OFF);
+		char *pin = conv_read(pamh, "Pin: ", PAM_PROMPT_ECHO_OFF);
 
 		/* Prepare URL... */
 		asprintf(&url, "%s/check-pin", cfg->url);
 
 		/* Prepare auth input data... */
-		asprintf(&data, "{\"session_id\":\"%s\",\"rpin\":\"%s\"}", session_id, rpin);
-		free(rpin);
+		asprintf(&data, "{\"session_id\":\"%s\",\"pin\":\"%s\"}", session_id, pin);
+		free(pin);
 
 		/* Request auth result */
 		char *auth = NULL;
@@ -154,24 +164,26 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		value = json_parse(json, strlen(json));
 		free(auth);
 
-		char *auth_result = getString(value, "result");
-		char *auth_msg = getString(value, "msg");
+		char *result = getString(value, "result");
+		char *debug_msg = getString(value, "debug_msg");
 		free(value);
 
-		/* TODO: sanitize this message before showing it to pam */
-		conv_info(pamh, auth_msg);
-
-		log_message(LOG_INFO, pamh, "auth_result: %s\n", auth_result);
-		log_message(LOG_INFO, pamh, "auth_msg: %s\n", auth_msg);
-
-		if (auth_result)
+		if (debug_msg)
 		{
-			retval = !strcmp(auth_result, "SUCCESS") ? PAM_SUCCESS : PAM_AUTH_ERR;
-			timeout = !strcmp(auth_result, "TIMEOUT");
+			/* TODO: sanitize this message before showing it to pam */
+			conv_info(pamh, debug_msg);
+			log_message(LOG_INFO, pamh, "debug_msg: %s\n", debug_msg);
+			free(debug_msg);
 		}
 
-		free(auth_result);
-		free(auth_msg);
+		if (result)
+		{
+			log_message(LOG_INFO, pamh, "result: %s\n", result);
+			retval = !strcmp(result, "SUCCESS") ? PAM_SUCCESS : PAM_AUTH_ERR;
+			timeout = !strcmp(result, "TIMEOUT");
+			free(result);
+		}
+
 	}
 
 	free(session_id);
