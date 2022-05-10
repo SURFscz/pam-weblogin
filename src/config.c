@@ -89,11 +89,12 @@ Config *getConfig(pam_handle_t *pamh, const char *filename)
 		{
 			memset(buffer, 0, MAXLINE); /* should not be necessary */
 
+			/* TODO: check for overflow here (i.e., last char needs to be CR/LF */
 			fgets(buffer, MAXLINE, fp);
 
 			lineno++;
 
-			/* todo:
+			/* TODO:
 			  - clean up variable names (key is not yet the key here
 			  - remove leading spaces
 			  */
