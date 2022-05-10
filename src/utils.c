@@ -11,8 +11,6 @@
 #include <stdarg.h>
 
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wformat-nonliteral"
 void log_message(int priority, pam_handle_t *pamh, const char *format, ...)
 {
 	char *service = NULL;
@@ -37,7 +35,6 @@ void log_message(int priority, pam_handle_t *pamh, const char *format, ...)
 		exit(1);
 	}
 }
-#pragma clang diagnostic pop
 
 json_value *findKey(json_value *value, const char *name)
 {
