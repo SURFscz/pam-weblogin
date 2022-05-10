@@ -3,7 +3,6 @@
 name: Builds
 
 on:
-  # Triggers the workflow on push or pull request events
   push:
   pull_request:
   release:
@@ -11,7 +10,6 @@ on:
       - 'v*'
     types: [published]
 
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
@@ -21,7 +19,6 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
-    # Test different compilers ans OSes
     strategy:
       fail-fast: false
       matrix:
