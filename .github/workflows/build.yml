@@ -1,0 +1,79 @@
+---
+
+name: Builds
+
+on:
+  # Triggers the workflow on push or pull request events
+  push:
+  pull_request:
+  release:
+    tags:
+      - 'v*'
+    types: [published]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  Build:
+    name: Test builing
+    if: always()
+
+    runs-on: ubuntu-20.04
+
+    # Test different compilers
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { compiler: gcc,   version:  7 }
+          - { compiler: gcc,   version:  8 }
+          - { compiler: gcc,   version:  9 }
+          - { compiler: gcc,   version: 10 }
+          - { compiler: gcc,   version: 11 }
+          - { compiler: clang, version:  9 }
+          - { compiler: clang, version: 10 }
+          - { compiler: clang, version: 11 }
+          - { compiler: clang, version: 12 }
+          - { compiler: clang, version: 13 }
+          - { compiler: clang, version: 14 }
+
+    steps:
+      - name: Install gcc
+        run: |
+          sudo add-apt-repository --yes --update ppa:ubuntu-toolchain-r/test
+          sudo apt-get install --yes gcc-${{matrix.version}}
+        if: ${{ matrix.compiler == 'gcc' }}
+
+      - name: Install clang
+        run: |
+          #wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          #sudo add-apt-repository --yes --update "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-${{matrix.version}} main"
+          #sudo apt-get install --yes --no-install-recommends clang-format clang-tidy clang-tools clang clangd libc++-dev libc++1 libc++abi-dev libc++abi1 libclang-dev libclang1 liblldb-dev libllvm-ocaml-dev libomp-dev libomp5 lld lldb llvm-dev llvm-runtime llvm python3-clang
+          #sudo apt-get install --yes --no-install-recommends clang-${{matrix.version}}
+          wget https://apt.llvm.org/llvm.sh
+          sudo bash ./llvm.sh ${{ matrix.version }}
+        if: ${{ matrix.compiler == 'clang' }}
+
+      - name: Show compiler version
+        run: ${{matrix.compiler}}-${{matrix.version}} --version
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get install --yes libpam0g-dev libcurl4-openssl-dev
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Test make clean
+        run: |
+          make clean
+          make clean
+          rm -rf json-parser/
+          make clean
+
+      - name: Test compilation
+        env:
+          CC: ${{matrix.compiler}}-${{matrix.version}}
+        run: |
+          make all

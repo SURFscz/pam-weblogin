@@ -8,23 +8,34 @@ URL ?= "http://localhost:5001"
 ifeq ($(origin CC),default)
 CC = gcc
 endif
+CC_MAJOR:=$(shell $(CC) -dumpversion | cut -f1 -d.)
 
 CFLAGS ?= -O0 -ggdb3
-CFLAGS += -std=c17
-CFLAGS += -Wall -Wextra -Wshadow -Wpedantic -Wuninitialized -Wformat=2 -Wno-unknown-pragmas
+CFLAGS += -std=c11
+CFLAGS += -fPIC
+CFLAGS += -Wall -Wextra -Wshadow -Wpedantic -Wuninitialized -Wformat=2
 CFLAGS += -Werror
 CFLAGS += -fstack-protector-strong
 
 # gcc only
 ifneq "$(findstring gcc,$(CC))" ""
-CFLAGS += -Wformat-overflow=2 -Wformat-truncation=2
-CFLAGS += -ftree-vrp -fanalyzer
+  CFLAGS += -Wformat-overflow=2 -Wformat-truncation=2
+  CFLAGS += -Wno-unknown-pragmas
+
+  ifeq "$(shell expr '$(CC_MAJOR)' '>=' '10')" "1"
+    CFLAGS += -ftree-vrp -fanalyzer
+  endif
 endif
-#
+
 # clang only
 ifneq "$(findstring clang,$(CC))" ""
-CFLAGS += -Weverything
-CFLAGS += -Wno-declaration-after-statement -Wno-disabled-macro-expansion
+  CFLAGS += -Weverything
+  CFLAGS += -Wno-declaration-after-statement -Wno-disabled-macro-expansion
+  CFLAGS += -Wno-reserved-id-macro -Wno-padded
+
+  ifeq "$(shell expr '$(CC_MAJOR)' '>=' '13')" "1"
+    CFLAGS += -Wno-reserved-identifier
+  endif
 endif
 
 SOURCES := config.c http.c utils.c pam_websso.c
@@ -44,7 +55,7 @@ utils.c: utils.h
 pam_websso.c: config.h http.h utils.h
 
 %.o: %.c %.h
-	$(CC) $(CFLAGS) -fPIC -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 pam_websso.so: $(OBJS)
 	$(CC) $(LDFLAGS) -shared -o $@ *.o -lcurl -lpam -lm -ljsonparser

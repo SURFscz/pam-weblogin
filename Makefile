@@ -21,6 +21,3 @@ clean: clean-src clean-json-parser
 clean-json-parser: json-parser/Makefile
 clean-json-parser clean-src: clean-%:
 	$(MAKE) -C $* clean
-
-
-
