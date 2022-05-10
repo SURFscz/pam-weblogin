@@ -39,6 +39,10 @@ jobs:
           - { compiler: clang, version: 14 }
 
     steps:
+      - name: Housekeeping
+        run: |
+          sudo apt purge man-db
+
       - name: Install gcc
         run: |
           sudo add-apt-repository --yes --update ppa:ubuntu-toolchain-r/test
@@ -47,10 +51,6 @@ jobs:
 
       - name: Install clang
         run: |
-          #wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-          #sudo add-apt-repository --yes --update "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-${{matrix.version}} main"
-          #sudo apt-get install --yes --no-install-recommends clang-format clang-tidy clang-tools clang clangd libc++-dev libc++1 libc++abi-dev libc++abi1 libclang-dev libclang1 liblldb-dev libllvm-ocaml-dev libomp-dev libomp5 lld lldb llvm-dev llvm-runtime llvm python3-clang
-          #sudo apt-get install --yes --no-install-recommends clang-${{matrix.version}}
           wget https://apt.llvm.org/llvm.sh
           sudo bash ./llvm.sh ${{ matrix.version }}
         if: ${{ matrix.compiler == 'clang' }}
