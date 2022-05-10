@@ -9,7 +9,7 @@
 #include <string.h>
 #include <syslog.h>
 #include <stdarg.h>
-
+#include <errno.h>
 
 void log_message(int priority, pam_handle_t *pamh, const char *format, ...)
 {

@@ -16,7 +16,7 @@ on:
 
 jobs:
   Build:
-    name: Test builing
+    name: Test building
     if: always()
 
     runs-on: ${{ matrix.os }}
