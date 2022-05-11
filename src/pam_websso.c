@@ -2,12 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <syslog.h>
 
 #include <security/pam_appl.h>
 #include <security/pam_modules.h>
 
 #include <json.h>
 
+#include "pam.h"
 #include "utils.h"
 #include "config.h"
 #include "http.h"
@@ -48,13 +50,13 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		conv_info(pamh, "Error reading conf");
 		return PAM_SYSTEM_ERR;
 	}
-	/*
-		log_message(LOG_INFO, pamh, "cfg->url: '%s'\n", cfg->url);
-		log_message(LOG_INFO, pamh, "cfg->token: '%s'\n", cfg->token);
-		log_message(LOG_INFO, pamh, "cfg->attribute: '%s'\n", cfg->attribute);
-		log_message(LOG_INFO, pamh, "cfg->cache_duration: '%s'\n", cfg->cache_duration);
-		log_message(LOG_INFO, pamh, "cfg->retries: '%d'\n", cfg->retries);
-	*/
+/*
+	log_message(LOG_INFO, pamh, "cfg->url: '%s'\n", cfg->url);
+	log_message(LOG_INFO, pamh, "cfg->token: '%s'\n", cfg->token);
+	log_message(LOG_INFO, pamh, "cfg->attribute: '%s'\n", cfg->attribute);
+	log_message(LOG_INFO, pamh, "cfg->cache_duration: '%s'\n", cfg->cache_duration);
+	log_message(LOG_INFO, pamh, "cfg->retries: '%d'\n", cfg->retries);
+*/
 	/* Prepare full req url... */
 	/* TODO: check return value */
 	char *url = NULL;
@@ -85,7 +87,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	log_message(LOG_INFO, pamh, "start: %s", start);
 
 	/* Parse response */
-	/* TODO:ugly, let's just make a wrapper function for this evil casting*/
+	/* TODO:ugly, let's just make a wrapper function for this evil casting */
 	json_char *json = (json_char *)start;
 	json_value *value = json_parse(json, strlen(json));
 	free(start);
@@ -131,8 +133,8 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	                         !timeout;
 	                         ++retry)
 	{
-		/* TODO: better variable name */
-		/* TODO: check return value here! */
+		/* TODO: better variable name (MvE: What's wrong with pin?') */
+		/* TODO: check return value here! (MvE: Why, no pin is also valid?) */
 		char *pin = conv_read(pamh, "Pin: ", PAM_PROMPT_ECHO_OFF);
 
 		/* Prepare URL... */

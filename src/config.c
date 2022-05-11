@@ -1,20 +1,25 @@
 #include "defs.h"
 #include "utils.h"
 #include "config.h"
+#include "pam.h"
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <syslog.h>
 #include <ctype.h>
+#include <string.h>
 
 #define MAXLINE 1024
 
 /* TODO:
-    - clean up loop;
-	- add max size
+    - clean up loop (MvE: ??)
  */
-static char *trim(char *s)
+static char *trim(char *s, unsigned int max_len)
 {
+	// max size check
+	if (strlen(s) > max_len)
+		*(s + max_len) = '\0';
+
 	while (isspace(*(s + strlen(s) - 1)))
 		*(s + strlen(s) - 1) = '\0';
 
@@ -51,11 +56,14 @@ void freeConfig(Config *cfg)
  * # The url to connect to
  * url = http://test.example.com/test
  * token = Bearer client:verysecret
+ * retries, number of allowed pin failures
+ * attribute, the remote attribute that is used to check user
+ * cache_duration, the max time that logins are cached
  */
 
 /* TODO:
 	- seems we are only passing pamh here for logging;  be more clever about that
-	- use lowercase variables (Config)
+	- use lowercase variables (Config) (MvE: Config is not a variable)
  */
 Config *getConfig(pam_handle_t *pamh, const char *filename)
 {
@@ -69,7 +77,7 @@ Config *getConfig(pam_handle_t *pamh, const char *filename)
 	}
 
 	/* TODO:
-	   - use constants for defaults
+	   - use constants for defaults (Mve: constant or #define?)
 	   - use memset/calloc for initialization
 	  */
 	cfg->url = NULL;
@@ -95,31 +103,30 @@ Config *getConfig(pam_handle_t *pamh, const char *filename)
 			lineno++;
 
 			/* TODO:
-			  - clean up variable names (key is not yet the key here
 			  - remove leading spaces
 			  */
 
-			char *key = trim(buffer);
+			char *line = trim(buffer, MAXLINE);
 
 			/* Line starts with a # comment */
-			if (key[0] == '#')
+			if (line[0] == '#')
 			{
 				continue;
 			}
 
 			/* todo: use strsep() */
 			/* Line contains = token */
-			char *val = strchr(key, '=');
+			char *val = strchr(line, '=');
 			if (val == NULL)
 			{
-				log_message(LOG_INFO, pamh, "Configuration line: %d: missing '=' symbol, skipping line", lineno);
+				//log_message(LOG_INFO, pamh, "Configuration line: %d: missing '=' symbol, skipping line", lineno);
 				continue;
 			}
 
 			*val++ = '\0';
 
-			val = trim(val);
-			key = trim(key);
+			val = trim(val, MAXLINE);
+			char *key = trim(line, MAXLINE);
 
 			/* TODO:
 				- use elsif
@@ -134,28 +141,28 @@ Config *getConfig(pam_handle_t *pamh, const char *filename)
 			}
 
 			/* Check for token config */
-			if (!strcmp(key, "token"))
+			else if (!strcmp(key, "token"))
 			{
 				cfg->token = strdup(val);
 				log_message(LOG_DEBUG, pamh, "token: %s", cfg->token);
 			}
 
 			/* Check for token config */
-			if (!strcmp(key, "attribute"))
+			else if (!strcmp(key, "attribute"))
 			{
 				cfg->attribute = strdup(val);
 				log_message(LOG_DEBUG, pamh, "attribute: %s", cfg->attribute);
 			}
 
 			/* Check for cache_duration config */
-			if (!strcmp(key, "cache_duration"))
+			else if (!strcmp(key, "cache_duration"))
 			{
 				cfg->cache_duration = (unsigned)abs(atoi(val));
 				log_message(LOG_DEBUG, pamh, "cache_duration: %d", cfg->cache_duration);
 			}
 
 			/* Check for retries config */
-			if (!strcmp(key, "retries"))
+			else if (!strcmp(key, "retries"))
 			{
 				cfg->retries = (unsigned)abs(atoi(val));
 				log_message(LOG_DEBUG, pamh, "retries: %d", cfg->retries);
