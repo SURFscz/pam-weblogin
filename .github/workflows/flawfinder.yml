@@ -2,7 +2,7 @@ name: flawfinder
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, fix-codeql-harry ]
   pull_request:
     branches: [ main ]
   schedule:
