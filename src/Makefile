@@ -58,8 +58,8 @@ pam_websso.so: $(OBJS) ../json-parser/libjsonparser.a
 	chmod 644 $@
 
 .PHONY: install
-install: module
-	cp pam_websso.so /lib/x86_64-linux-gnu/security/
+install: pam_websso.so
+	sudo cp pam_websso.so /lib/x86_64-linux-gnu/security/
 
 .PHONY: clean
 clean:
@@ -68,6 +68,6 @@ clean:
 .PHONY: test
 test: install
 	echo "auth required pam_websso.so /etc/pam-websso.conf" | sudo tee "/etc/pam.d/websso"
-	echo "url=${URL}\ntoken = Bearer client:verysecret\nretries = 2\nattribute=uid\n" | sudo tee "/etc/pam-websso.conf"
-	pamtester websso $(id -u -n) websso authenticate
+	echo "url=${URL}\ntoken = Bearer ${TOKEN}\nretries = ${RETRIES}\nattribute = ${ATTRIBUTE}\n" | sudo tee "/etc/pam-websso.conf"
+	pamtester websso websso authenticate
 

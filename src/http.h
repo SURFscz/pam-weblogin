@@ -1,8 +1,6 @@
 #ifndef HTTP_H
 #define HTTP_H
 
-#include "defs.h"
-
-int postURL(const char* url, const char* token, const char* data, char** result);
+char *API(const char* url, const char *method, char *headers[], const char* data);
 
 #endif

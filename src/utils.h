@@ -14,12 +14,8 @@
 
 #define PAM_CONST const
 
-#ifndef asprintf
-extern int asprintf(char **restrict strp, const char *restrict fmt, ...);
-#endif
-
-void log_message(int priority, pam_handle_t *pamh, const char *format, ...)
-     __attribute__ ((format (printf, 3, 4)));
+extern pam_handle_t *active_pamh;
+void log_message(int priority, const char *fmt, ...);
 
 // JSON helpers
 json_value *findKey(json_value *value, const char *name);
