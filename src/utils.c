@@ -38,22 +38,24 @@ json_value *findKey(json_value* value, const char* name) {
 		return NULL;
 	}
 
-	char *remaining, *current = strdup(name);
+	char *remaining = NULL, *current = strdup(name);
 
-	if ((remaining=strchr(current, '.')) != NULL) {
-		*remaining++ = '\0';
-	}
-
-	for (unsigned int x = 0; x < value->u.object.length; x++) {
-		if (!strcmp(value->u.object.values[x].name, current)) {
-
-			result = (remaining ? findKey(value->u.object.values[x].value, remaining) : value->u.object.values[x].value);
-
-			break;
+	if (current) {
+		if ((remaining=strchr(current, '.')) != NULL) {
+			*remaining++ = '\0';
 		}
-	}
 
-	free(current);
+		for (unsigned int x = 0; x < value->u.object.length; x++) {
+			if (!strcmp(value->u.object.values[x].name, current)) {
+
+				result = (remaining ? findKey(value->u.object.values[x].value, remaining) : value->u.object.values[x].value);
+
+				break;
+			}
+		}
+
+		free(current);
+	}
 
 	return result;
 }

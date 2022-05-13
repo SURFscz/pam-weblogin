@@ -96,11 +96,11 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	cached = getBool(challenge_json, "cached");
 	json_value_free(challenge_json);
 
-	// /*
+	/*
 		log_message(LOG_INFO, "session_id: %s\n", session_id);
 		log_message(LOG_INFO, "challenge: %s\n", challenge);
 		log_message(LOG_INFO, "cached: %s\n", cached ? "true" : "false");
-	// */
+	*/
 
 	// The answer didn't contain a session_id, no need to continue
 	if (session_id == NULL)
