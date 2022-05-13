@@ -88,7 +88,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	}
 
 	// Parse response
-	json_value *challenge_json = json_parse(challenge_response, strlen(challenge_response));
+	json_value *challenge_json = json_parse(challenge_response, strnlen(challenge_response, BUFSIZ));
 	free(challenge_response);
 
 	session_id = getString(challenge_json, "session_id");
@@ -117,11 +117,12 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		goto finalize;
 	}
 
-	/* Pin challenge Conversation */
+	/* Show challenge URL... (user has to follow link !) */
 	conv_info(pamh, challenge);
 	
 	bool timeout = false;
 
+	/* Now User has to return to the prompted and anter the correct PIN !... */
 	for (unsigned retry = 0; (retry < cfg->retries) &&
 							 (pam_result != PAM_SUCCESS) &&
 							 !timeout;
@@ -153,7 +154,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 			break;
 		}
 		/* Parse auth result */
-		json_value *verify_json = json_parse(verify_response, strlen(verify_response));
+		json_value *verify_json = json_parse(verify_response, strnlen(verify_response, BUFSIZ));
 		free(verify_response);
 
 		char *result = getString(verify_json, "result");

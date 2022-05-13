@@ -124,14 +124,14 @@ Config *getConfig(const char *filename)
 			/* Check for cache_duration config */
 			if (!strcmp(key, "cache_duration"))
 			{
-				cfg->cache_duration = (unsigned)abs(atoi(val));
+				cfg->cache_duration = (unsigned)abs(strtol(val, NULL, 10));
 				log_message(LOG_DEBUG, "cache_duration: %d", cfg->cache_duration);
 			}
 
 			/* Check for retries config */
 			if (!strcmp(key, "retries"))
 			{
-				cfg->retries = (unsigned)abs(atoi(val));
+				cfg->retries = (unsigned)abs(strtol(val, NULL, 10));
 				log_message(LOG_DEBUG, "retries: %d", cfg->retries);
 			}
 		}
