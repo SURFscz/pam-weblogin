@@ -48,7 +48,7 @@ def authorized(headers):
 
 
 @app.route('/pam-websso/start', methods=['POST'])
-def req():
+def start():
     if not authorized(request.headers):
         return Response(response="Unauthorized", status=401)
 
@@ -66,7 +66,7 @@ def req():
         'cached': cached.get(user_id, False)
     }
 
-    response = Response()
+    response = Response(status=201)
     response.headers['Content-Type'] = "application/json"
     response.data = json.dumps(auths[new_session_id])
 
@@ -85,13 +85,13 @@ def req():
 
 
 @app.route('/pam-websso/check-pin', methods=['POST'])
-def auth():
+def check_pin():
     if not authorized(request.headers):
         return Response(response="Unauthorized", status=401)
 
     data = json.loads(request.data)
     session_id = data.get('session_id')
-    rpin = data.get('rpin')
+    received_pin = data.get('pin')
 
     this_auth = auths.get(session_id)
     if this_auth:
@@ -99,7 +99,7 @@ def auth():
         attribute = this_auth.get('attribute')
         pin = this_auth.get('pin')
         cache_duration = this_auth.get('cache_duration')
-        if rpin == pin:
+        if received_pin == pin:
             reply = {
                 'result': 'SUCCESS',
                 'msg': f'Authenticated on attribute {attribute}'
@@ -118,7 +118,7 @@ def auth():
             'msg': 'Authentication failed'
         }
 
-    response = Response()
+    response = Response(status=201)
     response.headers['Content-Type'] = "application/json"
     response.data = json.dumps(reply)
 

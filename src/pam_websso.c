@@ -119,7 +119,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 
 	/* Show challenge URL... (user has to follow link !) */
 	conv_info(pamh, challenge);
-	
+
 	bool timeout = false;
 
 	/* Now User has to return to the prompted and anter the correct PIN !... */
@@ -134,7 +134,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		asprintf(&url, "%s/check-pin", cfg->url);
 
 		/* Prepare check pin input data... */
-		asprintf(&data, "{\"session_id\":\"%s\",\"rpin\":\"%s\"}", session_id, pin);
+		asprintf(&data, "{\"session_id\":\"%s\",\"pin\":\"%s\"}", session_id, pin);
 		free(pin);
 
 		/* Request check pin result */
