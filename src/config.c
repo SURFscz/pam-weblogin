@@ -91,7 +91,7 @@ Config *getConfig(const char *filename)
 			char *val = strchr(key, '=');
 			if (val == NULL)
 			{
-				log_message(LOG_INFO, "Configuration line: %d: missing '=' symbol, skipping line", lineno);
+				//log_message(LOG_INFO, "Configuration line: %d: missing '=' symbol, skipping line", lineno);
 				continue;
 			}
 
@@ -124,14 +124,14 @@ Config *getConfig(const char *filename)
 			/* Check for cache_duration config */
 			if (!strcmp(key, "cache_duration"))
 			{
-				cfg->cache_duration = (unsigned)abs(strtol(val, NULL, 10));
+				cfg->cache_duration = abs((int)strtol(val, NULL, 10));
 				log_message(LOG_DEBUG, "cache_duration: %d", cfg->cache_duration);
 			}
 
 			/* Check for retries config */
 			if (!strcmp(key, "retries"))
 			{
-				cfg->retries = (unsigned)abs(strtol(val, NULL, 10));
+				cfg->retries = abs((int)strtol(val, NULL, 10));
 				log_message(LOG_DEBUG, "retries: %d", cfg->retries);
 			}
 		}
