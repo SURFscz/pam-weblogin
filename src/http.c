@@ -62,7 +62,7 @@ char *API(const char* url, const char *method, char *headers[], const char* data
 	for (int i=0; headers[i]; i++) {
 		request_headers = curl_slist_append(request_headers, headers[i]);
 	}
-	
+
 	// Prepare payload for response...
 	fetcher.payload = (char*)calloc(1, sizeof(fetcher.payload));
 	fetcher.size = 0;
@@ -87,7 +87,7 @@ char *API(const char* url, const char *method, char *headers[], const char* data
 		}
 
 		// Check response
-		if (curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code) != CURLE_OK || response_code != 200) {
+		if (curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code) != CURLE_OK || response_code != 201) {
 			log_message(LOG_ERR, "Request to %s --> %d", url, response_code);
 			return NULL;
 		}
