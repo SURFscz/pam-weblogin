@@ -38,7 +38,7 @@ To initiate a request, send a request to the `/start` endpoint with a json body.
   - `attribute`: the attribute or claim from the web authentication process to which the `user_id` should be matched (e.g., `email`, `sub` (for OpenID Connect) or `urn:oasis:names:tc:SAML:attribute:subject-id` for SAML2)
   - `cache_duration`: the duration (in seconds) during which a previous login of the same user should be considered valid, and during which the user does not need to authenticate in the web browser again.
 
-The response consists of a json object with the following members:
+The response can be 404 with an empty body or be a 200 and consist of a json object with the following members:
   - `result`: should always be "OK"
   - `session_id`: identifier to refer to this login sessions later on (specifically, when querying the `/check-pin` API)
   - `challenge`: challenge to show to the user; this includes a URL which the user should visit to authenticate
