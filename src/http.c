@@ -88,11 +88,11 @@ char *API(const char* url, const char *method, char *headers[], const char* data
 
 		// Check response
 		if (curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code) != CURLE_OK || response_code != 201) {
-			log_message(LOG_ERR, "Request to %s --> %d", url, response_code);
 			return NULL;
 		}
 
 		// always cleanup
+		log_message(LOG_INFO, "Request to %s, %d, %s", url, response_code, fetcher.payload);
 		curl_easy_cleanup(curl);
 	}
 

@@ -91,9 +91,11 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	json_value *challenge_json = json_parse(challenge_response, strnlen(challenge_response, BUFSIZ));
 	free(challenge_response);
 
-	session_id = getString(challenge_json, "session_id");
-	challenge = getString(challenge_json, "challenge");
 	cached = getBool(challenge_json, "cached");
+	if (!cached) {
+		session_id = getString(challenge_json, "session_id");
+		challenge = getString(challenge_json, "challenge");
+	}
 	json_value_free(challenge_json);
 
 	/*
@@ -103,7 +105,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	*/
 
 	// The answer didn't contain a session_id, no need to continue
-	if (session_id == NULL)
+	if (!cached && session_id == NULL)
 	{
 		conv_info(pamh, "Server error!");
 		goto finalize;
