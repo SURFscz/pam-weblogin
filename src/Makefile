@@ -70,5 +70,5 @@ clean:
 test: install
 	echo "auth required pam_websso.so /etc/pam-websso.conf" | sudo tee "/etc/pam.d/websso"
 	echo "url=${URL}\ntoken = Bearer ${TOKEN}\nretries = ${RETRIES}\nattribute=${ATTRIBUTE}\n" | sudo tee "/etc/pam-websso.conf"
-	pamtester websso $(id -u -n) websso authenticate
+	pamtester websso "$${USERNAME:-unspecified}" authenticate
 
