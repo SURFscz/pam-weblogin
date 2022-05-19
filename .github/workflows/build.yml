@@ -65,7 +65,7 @@ jobs:
 
       - name: Install automake
         run: |
-          brew install automake
+          brew install automake make
         if: runner.os == 'macOS'
 
       - name: Install dependencies
