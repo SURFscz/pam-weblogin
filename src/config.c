@@ -1,11 +1,16 @@
 #include "defs.h"
-#include "utils.h"
-#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+
+#include "tty.h"
+
+#include "config.h"
+
+#define DEFAULT_CACHE_DURATION 60
+#define DEFAULT_RETRIES 1
 
 #define MAXLINE 1024
 
@@ -64,8 +69,8 @@ Config *getConfig(const char *filename)
 	cfg->url = NULL;
 	cfg->token = NULL;
 	cfg->attribute = NULL;
-	cfg->cache_duration = 60;
-	cfg->retries = 1;
+	cfg->cache_duration = DEFAULT_CACHE_DURATION;
+	cfg->retries = DEFAULT_RETRIES;
 
 	if ((fp = fopen(filename, "r")) != NULL)
 	{
@@ -75,7 +80,10 @@ Config *getConfig(const char *filename)
 		{
 			memset(buffer, 0, MAXLINE);
 
-			fgets(buffer, MAXLINE, fp);
+			if (fgets(buffer, MAXLINE, fp) == NULL) {
+				log_message(LOG_ERR, "Error reading line from: %s", filename);
+				break;
+			}
 
 			lineno++;
 
@@ -108,30 +116,30 @@ Config *getConfig(const char *filename)
 			}
 
 			/* Check for token config */
-			if (!strcmp(key, "token"))
+			else if (!strcmp(key, "token"))
 			{
 				cfg->token = strdup(val);
 				log_message(LOG_DEBUG, "token: %s", cfg->token);
 			}
 
 			/* Check for token config */
-			if (!strcmp(key, "attribute"))
+			else if (!strcmp(key, "attribute"))
 			{
 				cfg->attribute = strdup(val);
 				log_message(LOG_DEBUG, "attribute: %s", cfg->attribute);
 			}
 
 			/* Check for cache_duration config */
-			if (!strcmp(key, "cache_duration"))
+			else if (!strcmp(key, "cache_duration"))
 			{
-				cfg->cache_duration = abs((int)strtol(val, NULL, 10));
+				cfg->cache_duration = (unsigned int)labs(strtol(val, NULL, 10));
 				log_message(LOG_DEBUG, "cache_duration: %d", cfg->cache_duration);
 			}
 
 			/* Check for retries config */
-			if (!strcmp(key, "retries"))
+			else if (!strcmp(key, "retries"))
 			{
-				cfg->retries = abs((int)strtol(val, NULL, 10));
+				cfg->retries = (unsigned int)labs(strtol(val, NULL, 10));
 				log_message(LOG_DEBUG, "retries: %d", cfg->retries);
 			}
 		}

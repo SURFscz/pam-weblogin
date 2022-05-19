@@ -4,15 +4,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stdbool.h>
 
 #include <security/pam_appl.h>
 #include <security/pam_modules.h>
 
-#include <json.h>
+#include <json-parser/json.h>
 
-#include "utils.h"
 #include "config.h"
 #include "http.h"
+#include "utils.h"
+#include "tty.h"
+
+#include "pam_websso.h"
 
 PAM_EXTERN int pam_sm_setcred(UNUSED pam_handle_t *pamh, UNUSED int flags, UNUSED int argc, UNUSED const char *argv[])
 {
@@ -38,7 +42,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 
 	// Read username
 	const char *username;
-	if (pam_get_user(pamh, &username, "Username: ") != PAM_SUCCESS)
+	if (pam_get_user(pamh, &username, PROMPT_USERNAME) != PAM_SUCCESS)
 	{
 		log_message(LOG_ERR, "Error getting user");
 		return PAM_SYSTEM_ERR;
@@ -46,9 +50,9 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 
 	// Read configuration file
 	Config *cfg = NULL;
-	if (!(cfg = getConfig((argc > 0) ? argv[0] : "/etc/pam-websso.conf")))
+	if (!(cfg = getConfig((argc > 0) ? argv[0] : DEFAULT_CONF_FILE)))
 	{
-		conv_info(pamh, "Error reading conf");
+		tty_output(pamh, "Error reading conf");
 		return PAM_SYSTEM_ERR;
 	}
 	/*
@@ -59,15 +63,15 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		log_message(LOG_INFO, "cfg->retries: '%d'\n", cfg->retries);
 	*/
 
-	asprintf(&authorization, "Authorization: %s", cfg->token);
+	authorization = str_printf("Authorization: %s", cfg->token);
 
 	// Prepare full start url...
 	char *url = NULL;
-	asprintf(&url, "%s/start", cfg->url);
+	url = str_printf("%s/%s", cfg->url, API_START_PATH);
 
 	// Prepare start input data...
 	char *data = NULL;
-	asprintf(&data, "{\"user_id\":\"%s\",\"attribute\":\"%s\",\"cache_duration\":\"%d\"}",
+	data = str_printf("{\"user_id\":\"%s\",\"attribute\":\"%s\",\"cache_duration\":\"%d\"}",
 			 username, cfg->attribute, cfg->cache_duration);
 
 	// Request auth session_id/challenge
@@ -75,14 +79,15 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		url,
 		"POST",
 		(char *[]){ "Content-Type: application/json", authorization, NULL},
-		data
+		data,
+		API_START_RESPONSE_CODE
 	);
 	free(url);
 	free(data);
 
 	if (challenge_response == NULL) {
 		log_message(LOG_ERR, "Error making request");
-		conv_info(pamh, "Could not contact auth server");
+		tty_output(pamh, "Could not contact auth server");
 		pam_result = PAM_SYSTEM_ERR;
 		goto finalize;
 	}
@@ -92,35 +97,30 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	free(challenge_response);
 
 	cached = getBool(challenge_json, "cached");
+	
 	if (!cached) {
 		session_id = getString(challenge_json, "session_id");
 		challenge = getString(challenge_json, "challenge");
 	}
 	json_value_free(challenge_json);
 
-	/*
-		log_message(LOG_INFO, "session_id: %s\n", session_id);
-		log_message(LOG_INFO, "challenge: %s\n", challenge);
-		log_message(LOG_INFO, "cached: %s\n", cached ? "true" : "false");
-	*/
-
-	// The answer didn't contain a session_id, no need to continue
-	if (!cached && session_id == NULL)
-	{
-		conv_info(pamh, "Server error!");
-		goto finalize;
-	}
-
 	// Login was cached, continue successful
 	if (cached)
 	{
-		conv_info(pamh, "You were cached!");
+		tty_output(pamh, "You were cached!");
 		pam_result = PAM_SUCCESS;
 		goto finalize;
 	}
 
+	// Now we need to have a session_id and a challenge !
+	if (!session_id || !challenge)
+	{
+		tty_output(pamh, "Server error!");
+		goto finalize;
+	}
+
 	/* Show challenge URL... (user has to follow link !) */
-	conv_info(pamh, challenge);
+	tty_output(pamh, challenge);
 
 	bool timeout = false;
 
@@ -130,13 +130,13 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 							 !timeout;
 		 ++retry)
 	{
-		char *pin = conv_read(pamh, "Pin: ", PAM_PROMPT_ECHO_OFF);
+		char *pin = tty_input(pamh, PROMPT_PIN, PAM_PROMPT_ECHO_OFF);
 
 		/* Prepare URL... */
-		asprintf(&url, "%s/check-pin", cfg->url);
+		url = str_printf("%s/%s", cfg->url, API_CHECK_PIN_PATH);
 
 		/* Prepare check pin input data... */
-		asprintf(&data, "{\"session_id\":\"%s\",\"pin\":\"%s\"}", session_id, pin);
+		data = str_printf("{\"session_id\":\"%s\",\"pin\":\"%s\"}", session_id, pin);
 		free(pin);
 
 		/* Request check pin result */
@@ -144,14 +144,15 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 			url,
 			"POST",
 			(char *[]){ "Content-Type: application/json", authorization, NULL},
-			data
+			data,
+			API_CHECK_PIN_RESPONSE_CODE
 		);
 		free(url);
 		free(data);
 
 		if (verify_response == NULL) {
 			log_message(LOG_ERR, "Error making request");
-			conv_info(pamh, "Could not contact auth server");
+			tty_output(pamh, "Could not contact auth server");
 			pam_result = PAM_SYSTEM_ERR;
 			break;
 		}
@@ -165,7 +166,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 
 		if (debug_msg)
 		{
-			conv_info(pamh, debug_msg);
+			tty_output(pamh, debug_msg);
 			log_message(LOG_INFO, "debug_msg: %s\n", debug_msg);
 			free(debug_msg);
 		}

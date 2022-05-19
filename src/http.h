@@ -1,6 +1,6 @@
 #ifndef HTTP_H
 #define HTTP_H
 
-char *API(const char* url, const char *method, char *headers[], const char* data);
+extern char *API(const char* url, const char *method, char *headers[], const char* data, long expected_response_code);
 
-#endif
+#endif // HTTP_H

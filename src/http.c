@@ -1,6 +1,4 @@
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+#include "defs.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,6 +7,7 @@
 
 #include <curl/curl.h>
 
+#include "tty.h"
 #include "utils.h"
 #include "http.h"
 
@@ -16,6 +15,7 @@ typedef struct {
 	char* payload;
 	size_t size;
 } CURL_FETCH;
+
 
 size_t curl_callback(void* contents, size_t size, size_t nmemb, void* userp) {
 	size_t realsize = size * nmemb;         /* calculate buffer size */
@@ -52,7 +52,7 @@ size_t curl_callback(void* contents, size_t size, size_t nmemb, void* userp) {
 /*
  * API to URL url and returns the result
  */
-char *API(const char* url, const char *method, char *headers[], const char* data) {
+char *API(const char* url, const char *method, char *headers[], const char* data, long expected_response_code) {
 	CURL* curl;
 	CURL_FETCH fetcher;
 
@@ -87,14 +87,20 @@ char *API(const char* url, const char *method, char *headers[], const char* data
 		}
 
 		// Check response
-		if (curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code) != CURLE_OK || response_code != 201) {
+		if (curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code) != CURLE_OK) {
 			return NULL;
 		}
 
 		// always cleanup
 		log_message(LOG_INFO, "Request to %s, %d, %s", url, response_code, fetcher.payload);
 		curl_easy_cleanup(curl);
+
+		
+		if (response_code == expected_response_code) {
+			return fetcher.payload;
+		}
 	}
 
-	return fetcher.payload;
+	free(fetcher.payload);
+	return NULL;
 }

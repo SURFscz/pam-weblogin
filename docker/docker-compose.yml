@@ -8,7 +8,6 @@ services:
       args:
         UID: ${UID:-1000}
         GID: ${GID:-1000}
-        PASSWORD: ${PASSWORD:-1000}
     container_name: sandbox
     hostname: sandbox
     volumes:
@@ -21,3 +20,4 @@ services:
       RETRIES: ${RETRIES:-3}
       ATTRIBUTE: ${ATTRIBUTE:-email}
       CACHE_DURATION: ${CACHE_DURATION:-30}
+      USERNAME: ${USERNAME:-unspecified}
