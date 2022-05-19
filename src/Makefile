@@ -38,28 +38,29 @@ ifneq "$(shell $(CC) --version | grep clang)" ""
   endif
 endif
 
-SOURCES := config.c http.c utils.c pam_websso.c
+SOURCES := config.c http.c utils.c tty.c pam_websso.c
 OBJS := $(SOURCES:%.c=%.o)
 
-CFLAGS += -I../json-parser
+CFLAGS += -I..
 
 # default target
 .PHONY: all
 all: pam_websso.so
 
 # dependencies
-config.o: config.c config.h utils.h defs.h
-http.o: http.c http.h utils.h defs.h
-utils.o: utils.c utils.h defs.h
-pam_websso.o: pam_websso.c config.h http.h utils.h defs.h
+config.o: config.c config.h tty.h defs.h
+http.o: http.c http.h tty.h defs.h
+utils.o: utils.c utils.h tty.h defs.h
+tty.o: tty.c utils.h defs.h
+pam_websso.o: pam_websso.c config.h http.h utils.h tty.h defs.h
 
 pam_websso.so: $(OBJS) ../json-parser/libjsonparser.a
 	$(CC) $(LDFLAGS) -shared -o $@ $^ -lcurl -lpam -lm
 	chmod 644 $@
 
 .PHONY: install
-install: module
-	cp pam_websso.so /lib/x86_64-linux-gnu/security/
+install: pam_websso.so
+	sudo cp pam_websso.so /lib/x86_64-linux-gnu/security/
 
 .PHONY: clean
 clean:
@@ -68,6 +69,6 @@ clean:
 .PHONY: test
 test: install
 	echo "auth required pam_websso.so /etc/pam-websso.conf" | sudo tee "/etc/pam.d/websso"
-	echo "url=${URL}\ntoken = Bearer client:verysecret\nretries = 2\nattribute=uid\n" | sudo tee "/etc/pam-websso.conf"
+	echo "url=${URL}\ntoken = Bearer ${TOKEN}\nretries = ${RETRIES}\nattribute=${ATTRIBUTE}\n" | sudo tee "/etc/pam-websso.conf"
 	pamtester websso $(id -u -n) websso authenticate
 

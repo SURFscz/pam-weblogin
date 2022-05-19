@@ -1,10 +1,5 @@
 #ifndef CONFIG_H
 #define CONFIG_H
-
-#include "defs.h"
-
-#include <security/pam_appl.h>
-
 typedef struct
 {
 	char *url;
@@ -15,6 +10,6 @@ typedef struct
 } Config;
 
 void freeConfig(Config *cfg);
-Config *getConfig(pam_handle_t *pamh, const char *filename);
+Config *getConfig(const char *filename);
 
-#endif
+#endif // CONFIG_H

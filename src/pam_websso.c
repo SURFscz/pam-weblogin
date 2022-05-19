@@ -1,179 +1,189 @@
+#include "defs.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stdbool.h>
 
 #include <security/pam_appl.h>
 #include <security/pam_modules.h>
 
-#include <json.h>
+#include <json-parser/json.h>
 
-#include "utils.h"
 #include "config.h"
 #include "http.h"
+#include "utils.h"
+#include "tty.h"
 
-/* expected hook */
+#include "pam_websso.h"
+
 PAM_EXTERN int pam_sm_setcred(UNUSED pam_handle_t *pamh, UNUSED int flags, UNUSED int argc, UNUSED const char *argv[])
 {
-	// printf("Setcred\n");
 	return PAM_SUCCESS;
 }
 
 PAM_EXTERN int pam_sm_acct_mgmt(UNUSED pam_handle_t *pamh, UNUSED int flags, UNUSED int argc, UNUSED const char *argv[])
 {
-	// printf("Acct mgmt\n");
 	return PAM_SUCCESS;
 }
 
-/* expected hook, this is where custom stuff happens */
 PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int argc, const char *argv[])
 {
-	log_message(LOG_INFO, pamh, "Start of pam_websso");
+	char *session_id = NULL;
+	char *challenge = NULL;
+	char *authorization = NULL;
+	bool cached = false;
+	int pam_result = PAM_AUTH_ERR;
+
+	log_message(LOG_INFO, "Start of pam_websso");
 
 	// Read username
 	const char *username;
-	if (pam_get_user(pamh, &username, "Username: ") != PAM_SUCCESS)
+	if (pam_get_user(pamh, &username, PROMPT_USERNAME) != PAM_SUCCESS)
 	{
-		log_message(LOG_ERR, pamh, "Error getting user");
+		log_message(LOG_ERR, "Error getting user");
 		return PAM_SYSTEM_ERR;
 	}
 
 	// Read configuration file
 	Config *cfg = NULL;
-	if (!(cfg = getConfig(pamh, (argc > 0) ? argv[0] : "/etc/pam-websso.conf")))
+	if (!(cfg = getConfig((argc > 0) ? argv[0] : DEFAULT_CONF_FILE)))
 	{
-		conv_info(pamh, "Error reading conf");
+		tty_output(pamh, "Error reading conf");
 		return PAM_SYSTEM_ERR;
 	}
 	/*
-		log_message(LOG_INFO, pamh, "cfg->url: '%s'\n", cfg->url);
-		log_message(LOG_INFO, pamh, "cfg->token: '%s'\n", cfg->token);
-		log_message(LOG_INFO, pamh, "cfg->attribute: '%s'\n", cfg->attribute);
-		log_message(LOG_INFO, pamh, "cfg->cache_duration: '%s'\n", cfg->cache_duration);
-		log_message(LOG_INFO, pamh, "cfg->retries: '%d'\n", cfg->retries);
+		log_message(LOG_INFO, "cfg->url: '%s'\n", cfg->url);
+		log_message(LOG_INFO, "cfg->token: '%s'\n", cfg->token);
+		log_message(LOG_INFO, "cfg->attribute: '%s'\n", cfg->attribute);
+		log_message(LOG_INFO, "cfg->cache_duration: '%d'\n", cfg->cache_duration);
+		log_message(LOG_INFO, "cfg->retries: '%d'\n", cfg->retries);
 	*/
+
+	authorization = str_printf("Authorization: %s", cfg->token);
+
 	// Prepare full start url...
 	char *url = NULL;
-	asprintf(&url, "%s/start", cfg->url);
+	url = str_printf("%s/%s", cfg->url, API_START_PATH);
 
 	// Prepare start input data...
 	char *data = NULL;
-	asprintf(&data, "{\"user_id\":\"%s\",\"attribute\":\"%s\",\"cache_duration\":\"%d\"}",
+	data = str_printf("{\"user_id\":\"%s\",\"attribute\":\"%s\",\"cache_duration\":\"%d\"}",
 			 username, cfg->attribute, cfg->cache_duration);
 
 	// Request auth session_id/challenge
-	char *start = NULL;
-	int rc = postURL(url, cfg->token, data, &start);
+	json_char *challenge_response = (json_char *) API(
+		url,
+		"POST",
+		(char *[]){ "Content-Type: application/json", authorization, NULL},
+		data,
+		API_START_RESPONSE_CODE
+	);
 	free(url);
 	free(data);
 
-	if (!rc)
-	{
-		log_message(LOG_ERR, pamh, "Error making request");
-		conv_info(pamh, "Could not contact auth server");
-		freeConfig(cfg);
-		return PAM_SYSTEM_ERR;
+	if (challenge_response == NULL) {
+		log_message(LOG_ERR, "Error making request");
+		tty_output(pamh, "Could not contact auth server");
+		pam_result = PAM_SYSTEM_ERR;
+		goto finalize;
 	}
-
-	log_message(LOG_INFO, pamh, "start: %s", start);
 
 	// Parse response
-	json_char *json = (json_char *)start;
-	json_value *value = json_parse(json, strlen(json));
-	free(start);
+	json_value *challenge_json = json_parse(challenge_response, strnlen(challenge_response, BUFSIZ));
+	free(challenge_response);
 
-	char *session_id = getString(value, "session_id");
-	char *challenge = getString(value, "challenge");
-	bool cached = getBool(value, "cached");
-	free(value);
-	/*
-		log_message(LOG_INFO, pamh, "session_id: %s\n", session_id);
-		log_message(LOG_INFO, pamh, "challenge: %s\n", challenge);
-		log_message(LOG_INFO, pamh, "cached: %s\n", cached ? "true" : "false");
-	*/
-
-	// The answer didn't contain a session_id, no need to continue
-	if (!session_id)
-	{
-		conv_info(pamh, "Server error!");
-		freeConfig(cfg);
-		return PAM_AUTH_ERR;
+	cached = getBool(challenge_json, "cached");
+	
+	if (!cached) {
+		session_id = getString(challenge_json, "session_id");
+		challenge = getString(challenge_json, "challenge");
 	}
+	json_value_free(challenge_json);
 
 	// Login was cached, continue successful
 	if (cached)
 	{
-		conv_info(pamh, "You were cached!");
-		freeConfig(cfg);
-		free(session_id);
-		free(challenge);
-		return PAM_SUCCESS;
+		tty_output(pamh, "You were cached!");
+		pam_result = PAM_SUCCESS;
+		goto finalize;
 	}
 
-	/* Pin challenge Conversation */
-	conv_info(pamh, challenge);
-	free(challenge);
+	// Now we need to have a session_id and a challenge !
+	if (!session_id || !challenge)
+	{
+		tty_output(pamh, "Server error!");
+		goto finalize;
+	}
 
-	int retval = PAM_AUTH_ERR;
+	/* Show challenge URL... (user has to follow link !) */
+	tty_output(pamh, challenge);
+
 	bool timeout = false;
 
+	/* Now User has to return to the prompted and anter the correct PIN !... */
 	for (unsigned retry = 0; (retry < cfg->retries) &&
-							 (retval != PAM_SUCCESS) &&
+							 (pam_result != PAM_SUCCESS) &&
 							 !timeout;
 		 ++retry)
 	{
-		char *pin = conv_read(pamh, "Pin: ", PAM_PROMPT_ECHO_OFF);
+		char *pin = tty_input(pamh, PROMPT_PIN, PAM_PROMPT_ECHO_OFF);
 
 		/* Prepare URL... */
-		asprintf(&url, "%s/check-pin", cfg->url);
+		url = str_printf("%s/%s", cfg->url, API_CHECK_PIN_PATH);
 
-		/* Prepare auth input data... */
-		asprintf(&data, "{\"session_id\":\"%s\",\"pin\":\"%s\"}", session_id, pin);
+		/* Prepare check pin input data... */
+		data = str_printf("{\"session_id\":\"%s\",\"pin\":\"%s\"}", session_id, pin);
 		free(pin);
 
-		/* Request auth result */
-		char *auth = NULL;
-		rc = postURL(url, cfg->token, data, &auth);
+		/* Request check pin result */
+		json_char *verify_response = (json_char *) API(
+			url,
+			"POST",
+			(char *[]){ "Content-Type: application/json", authorization, NULL},
+			data,
+			API_CHECK_PIN_RESPONSE_CODE
+		);
 		free(url);
 		free(data);
 
-		if (!rc)
-		{
-			log_message(LOG_ERR, pamh, "Error making request");
-			conv_info(pamh, "Could not contact auth server");
-			retval = PAM_SYSTEM_ERR;
+		if (verify_response == NULL) {
+			log_message(LOG_ERR, "Error making request");
+			tty_output(pamh, "Could not contact auth server");
+			pam_result = PAM_SYSTEM_ERR;
 			break;
 		}
-
-		log_message(LOG_INFO, pamh, "auth: %s\n", auth);
-
 		/* Parse auth result */
-		json = (json_char *)auth;
-		value = json_parse(json, strlen(json));
-		free(auth);
+		json_value *verify_json = json_parse(verify_response, strnlen(verify_response, BUFSIZ));
+		free(verify_response);
 
-		char *result = getString(value, "result");
-		char *debug_msg = getString(value, "debug_msg");
-		free(value);
+		char *result = getString(verify_json, "result");
+		char *debug_msg = getString(verify_json, "debug_msg");
+		json_value_free(verify_json);
 
 		if (debug_msg)
 		{
-			conv_info(pamh, debug_msg);
-			log_message(LOG_INFO, pamh, "debug_msg: %s\n", debug_msg);
+			tty_output(pamh, debug_msg);
+			log_message(LOG_INFO, "debug_msg: %s\n", debug_msg);
 			free(debug_msg);
 		}
 
 		if (result)
 		{
-			log_message(LOG_INFO, pamh, "result: %s\n", result);
-			retval = !strcmp(result, "SUCCESS") ? PAM_SUCCESS : PAM_AUTH_ERR;
+			log_message(LOG_INFO, "result: %s\n", result);
+			pam_result = !strcmp(result, "SUCCESS") ? PAM_SUCCESS : PAM_AUTH_ERR;
 			timeout = !strcmp(result, "TIMEOUT");
 			free(result);
 		}
 
 	}
 
+finalize:
+	free(authorization);
+	free(challenge);
 	free(session_id);
 	freeConfig(cfg);
-	return retval;
+
+	return pam_result;
 }
