@@ -1,10 +1,9 @@
 SUBDIRS := json-parser src
 
-all: json-parser src/pam-websso.so
-
-pam-websso: src/pam-websso.so
+all: json-parser pam-websso
 
 # Make PAM-WEBSSO module
+pam-websso: src/pam-websso.so
 src/pam-websso.so: json-parser src/Makefile
 	$(MAKE) -C src/
 src/Makefile: src/Makefile.am src/configure.ac
@@ -31,10 +30,10 @@ clean-module:
 
 # Install...
 .PHONY: install
-install: src/pam-websso.so
+install: pam-websso
 	$(MAKE) -C src install
 
 # Test...
 .PHONY: test
-test:
+test: install
 	$(MAKE) -C src test
