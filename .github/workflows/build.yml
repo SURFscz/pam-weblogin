@@ -60,6 +60,11 @@ jobs:
           sudo bash ./llvm.sh ${{ matrix.version }}
         if: runner.os == 'Linux' &&  matrix.compiler == 'clang'
 
+      - name: Install automake
+        run: |
+          brew install automake
+        if: matrix.compiler == 'native'
+
       - name: Show compiler version
         run: $CC --version
 
