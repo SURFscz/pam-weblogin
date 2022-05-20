@@ -54,18 +54,18 @@ char *API(const char* url, const char *method, char *headers[], const char* data
 	CURL* curl;
 	CURL_FETCH fetcher;
 
-	// Prepare Headers...
+	/* Prepare Headers... */
 	struct curl_slist* request_headers = NULL;
 
 	for (int i=0; headers[i]; i++) {
 		request_headers = curl_slist_append(request_headers, headers[i]);
 	}
 
-	// Prepare payload for response...
+	/* Prepare payload for response...  */
 	fetcher.payload = (char*)calloc(1, sizeof(fetcher.payload));
 	fetcher.size = 0;
 
-	// Prepare API request...
+	/* Prepare API request... */
 	curl = curl_easy_init();
 	if (curl) {
 		long response_code;
@@ -75,25 +75,25 @@ char *API(const char* url, const char *method, char *headers[], const char* data
 		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, request_headers);
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_callback);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)&fetcher);
-		curl_easy_setopt(curl, CURLOPT_USERAGENT, "WEBLOGIN");
+		curl_easy_setopt(curl, CURLOPT_USERAGENT, USER_AGENT);
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
-		curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, data ? strnlen(data,1024) : 0);
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, data ? strnlen(data, 1024) : 0);
 
-		// Perform the request
+		/* Perform the request */
 		if (curl_easy_perform(curl) != CURLE_OK) {
 			return NULL;
 		}
 
-		// Check response
+		/* Check response */
 		if (curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code) != CURLE_OK) {
 			return NULL;
 		}
 
-		// always cleanup
-		log_message(LOG_INFO, "Request to %s, %d, %s", url, response_code, fetcher.payload);
+		/* always cleanup */
+		log_message(LOG_INFO, "Request to %s, %ld, %s", url, response_code, fetcher.payload);
 		curl_easy_cleanup(curl);
 
-		
+
 		if (response_code == expected_response_code) {
 			return fetcher.payload;
 		}

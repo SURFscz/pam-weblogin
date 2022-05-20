@@ -15,10 +15,7 @@ void log_message(int priority, const char *fmt, ...)
 	va_start(args, fmt);
 
 	openlog("web-login", LOG_CONS | LOG_PID, LOG_AUTHPRIV);
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wformat-nonliteral"
 	vsyslog(priority, fmt, args);
-#pragma clang diagnostic pop
 	closelog();
 
 	va_end(args);
@@ -37,7 +34,7 @@ static int converse(pam_handle_t *pamh, int nargs,
 	return conv->conv(nargs, message, response, conv->appdata_ptr);
 }
 
-char *tty_input(pam_handle_t *pamh, const char *text, int echocode)
+char *tty_input(pam_handle_t *pamh, const char *text, int echo_code)
 {
 	/* note: on MacOS, pam_message.msg is a non-const char*, so we need to copy it */
 	char * pam_msg = strdup(text);
@@ -47,7 +44,7 @@ char *tty_input(pam_handle_t *pamh, const char *text, int echocode)
 	}
 
 	const struct pam_message msg = {
-		.msg_style = echocode,
+		.msg_style = echo_code,
 		.msg = pam_msg
 	};
 

@@ -47,12 +47,9 @@ bool getBool(json_value *value, const char *name)
 char *str_printf(const char * fmt, ...) {
 	char *buffer = NULL;
 	va_list args;
-	
+
 	va_start(args, fmt);
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wformat-nonliteral"
 	int rc = vasprintf(&buffer, fmt, args);
-#pragma clang diagnostic pop
 	va_end(args);
 
 	if (rc == -1) {

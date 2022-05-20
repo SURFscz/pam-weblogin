@@ -4,13 +4,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <limits.h>
+#include <errno.h>
 
 #include "tty.h"
 
 #include "config.h"
-
-#define DEFAULT_CACHE_DURATION 60
-#define DEFAULT_RETRIES 1
 
 #define MAXLINE 1024
 
@@ -90,7 +89,7 @@ Config *getConfig(const char *filename)
 			char *key = trim(buffer);
 
 			/* Line starts with a # comment */
-			if (key[0] == '#')
+			if (key[0] == '#' || key[0] == '\0')
 			{
 				continue;
 			}
@@ -99,7 +98,7 @@ Config *getConfig(const char *filename)
 			char *val = strchr(key, '=');
 			if (val == NULL)
 			{
-				//log_message(LOG_INFO, "Configuration line: %d: missing '=' symbol, skipping line", lineno);
+				log_message(LOG_INFO, "Configuration line: %d: missing '=' symbol, skipping line", lineno);
 				continue;
 			}
 
@@ -132,6 +131,14 @@ Config *getConfig(const char *filename)
 			/* Check for cache_duration config */
 			else if (!strcmp(key, "cache_duration"))
 			{
+				long cache_duration = strtol(val, NULL, 10);
+				if (   ( cache_duration == 0        && errno == EINVAL )
+				    || ( cache_duration == LONG_MAX && errno == ERANGE )
+					||   cache_duration < 0 )
+				{
+					log_message(LOG_INFO, "Configuration file line %d: parse error (%s)", lineno, strerror(errno));
+					continue;
+				}
 				cfg->cache_duration = (unsigned int)labs(strtol(val, NULL, 10));
 				log_message(LOG_DEBUG, "cache_duration: %d", cfg->cache_duration);
 			}
@@ -152,7 +159,7 @@ Config *getConfig(const char *filename)
 		return cfg;
 	}
 
-	// Fail if either url or token is unset
+	/* Fail if either url or token is unset */
 	if (!cfg->url)
 		log_message(LOG_ERR, "Missing 'url' in configuration!");
 

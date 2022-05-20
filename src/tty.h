@@ -6,9 +6,10 @@
 #include <security/pam_appl.h>
 #include <security/pam_modules.h>
 
-extern void log_message(int priority, const char *fmt, ...);
+void log_message(int priority, const char *fmt, ...)
+	__attribute__ ((format (printf, 2, 3)));
 
-extern char *tty_input(pam_handle_t *pamh, const char *text, int echocode);
-extern void tty_output(pam_handle_t *pamh, const char *text);
+char *tty_input(pam_handle_t *pamh, const char *text, int echo_code);
+void tty_output(pam_handle_t *pamh, const char *text);
 
-#endif // TTY_H
+#endif /* TTY_H */

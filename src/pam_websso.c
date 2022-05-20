@@ -38,7 +38,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 
 	log_message(LOG_INFO, "Start of pam_websso");
 
-	// Read username
+	/* Read username */
 	const char *username;
 	if (pam_get_user(pamh, &username, PROMPT_USERNAME) != PAM_SUCCESS)
 	{
@@ -46,7 +46,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		return PAM_SYSTEM_ERR;
 	}
 
-	// Read configuration file
+	/* Read configuration file */
 	Config *cfg = NULL;
 	if (!(cfg = getConfig((argc > 0) ? argv[0] : DEFAULT_CONF_FILE)))
 	{
@@ -63,16 +63,16 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 
 	authorization = str_printf("Authorization: %s", cfg->token);
 
-	// Prepare full start url...
+	/* Prepare full start url... */
 	char *url = NULL;
 	url = str_printf("%s/%s", cfg->url, API_START_PATH);
 
-	// Prepare start input data...
+	/* Prepare start input data... */
 	char *data = NULL;
 	data = str_printf("{\"user_id\":\"%s\",\"attribute\":\"%s\",\"cache_duration\":\"%d\"}",
 			 username, cfg->attribute, cfg->cache_duration);
 
-	// Request auth session_id/challenge
+	/* Request auth session_id/challenge */
 	json_char *challenge_response = (json_char *) API(
 		url,
 		"POST",
@@ -90,7 +90,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		goto finalize;
 	}
 
-	// Parse response
+	/* Parse response */
 	json_value *challenge_json = json_parse(challenge_response, strnlen(challenge_response, BUFSIZ));
 	free(challenge_response);
 
@@ -102,7 +102,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	}
 	json_value_free(challenge_json);
 
-	// Login was cached, continue successful
+	/* Login was cached, continue successful */
 	if (cached)
 	{
 		tty_output(pamh, "You were cached!");
@@ -110,7 +110,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		goto finalize;
 	}
 
-	// Now we need to have a session_id and a challenge !
+	/* Now we need to have a session_id and a challenge ! */
 	if (!session_id || !challenge)
 	{
 		tty_output(pamh, "Server error!");
