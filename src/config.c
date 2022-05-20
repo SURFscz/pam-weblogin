@@ -1,11 +1,15 @@
 #include "defs.h"
-#include "utils.h"
-#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <limits.h>
+#include <errno.h>
+
+#include "tty.h"
+
+#include "config.h"
 
 #define MAXLINE 1024
 
@@ -49,7 +53,7 @@ void freeConfig(Config *cfg)
  * token = Bearer client:verysecret
  */
 
-Config *getConfig(pam_handle_t *pamh, const char *filename)
+Config *getConfig(const char *filename)
 {
 	int lineno = 0;
 	FILE *fp = NULL;
@@ -57,15 +61,15 @@ Config *getConfig(pam_handle_t *pamh, const char *filename)
 	Config *cfg = malloc(sizeof(Config));
 	if (cfg == NULL)
 	{
-		log_message(LOG_ERR, pamh, "Can't allocate memory");
+		log_message(LOG_ERR, "Can't allocate memory");
 		return NULL;
 	}
 
 	cfg->url = NULL;
 	cfg->token = NULL;
 	cfg->attribute = NULL;
-	cfg->cache_duration = 60;
-	cfg->retries = 1;
+	cfg->cache_duration = DEFAULT_CACHE_DURATION;
+	cfg->retries = DEFAULT_RETRIES;
 
 	if ((fp = fopen(filename, "r")) != NULL)
 	{
@@ -75,14 +79,17 @@ Config *getConfig(pam_handle_t *pamh, const char *filename)
 		{
 			memset(buffer, 0, MAXLINE);
 
-			fgets(buffer, MAXLINE, fp);
+			if (fgets(buffer, MAXLINE, fp) == NULL) {
+				log_message(LOG_ERR, "Error reading line from: %s", filename);
+				break;
+			}
 
 			lineno++;
 
 			char *key = trim(buffer);
 
 			/* Line starts with a # comment */
-			if (key[0] == '#')
+			if (key[0] == '#' || key[0] == '\0')
 			{
 				continue;
 			}
@@ -91,7 +98,7 @@ Config *getConfig(pam_handle_t *pamh, const char *filename)
 			char *val = strchr(key, '=');
 			if (val == NULL)
 			{
-				log_message(LOG_INFO, pamh, "Configuration line: %d: missing '=' symbol, skipping line", lineno);
+				log_message(LOG_INFO, "Configuration line: %d: missing '=' symbol, skipping line", lineno);
 				continue;
 			}
 
@@ -104,35 +111,43 @@ Config *getConfig(pam_handle_t *pamh, const char *filename)
 			if (!strcmp(key, "url"))
 			{
 				cfg->url = strdup(val);
-				log_message(LOG_DEBUG, pamh, "url: %s", cfg->url);
+				log_message(LOG_DEBUG, "url: %s", cfg->url);
 			}
 
 			/* Check for token config */
-			if (!strcmp(key, "token"))
+			else if (!strcmp(key, "token"))
 			{
 				cfg->token = strdup(val);
-				log_message(LOG_DEBUG, pamh, "token: %s", cfg->token);
+				log_message(LOG_DEBUG, "token: %s", cfg->token);
 			}
 
 			/* Check for token config */
-			if (!strcmp(key, "attribute"))
+			else if (!strcmp(key, "attribute"))
 			{
 				cfg->attribute = strdup(val);
-				log_message(LOG_DEBUG, pamh, "attribute: %s", cfg->attribute);
+				log_message(LOG_DEBUG, "attribute: %s", cfg->attribute);
 			}
 
 			/* Check for cache_duration config */
-			if (!strcmp(key, "cache_duration"))
+			else if (!strcmp(key, "cache_duration"))
 			{
-				cfg->cache_duration = (unsigned)abs(atoi(val));
-				log_message(LOG_DEBUG, pamh, "cache_duration: %d", cfg->cache_duration);
+				long cache_duration = strtol(val, NULL, 10);
+				if (   ( cache_duration == 0        && errno == EINVAL )
+				    || ( cache_duration == LONG_MAX && errno == ERANGE )
+					||   cache_duration < 0 )
+				{
+					log_message(LOG_INFO, "Configuration file line %d: parse error (%s)", lineno, strerror(errno));
+					continue;
+				}
+				cfg->cache_duration = (unsigned int)labs(strtol(val, NULL, 10));
+				log_message(LOG_DEBUG, "cache_duration: %d", cfg->cache_duration);
 			}
 
 			/* Check for retries config */
-			if (!strcmp(key, "retries"))
+			else if (!strcmp(key, "retries"))
 			{
-				cfg->retries = (unsigned)abs(atoi(val));
-				log_message(LOG_DEBUG, pamh, "retries: %d", cfg->retries);
+				cfg->retries = (unsigned int)labs(strtol(val, NULL, 10));
+				log_message(LOG_DEBUG, "retries: %d", cfg->retries);
 			}
 		}
 		fclose(fp);
@@ -144,15 +159,15 @@ Config *getConfig(pam_handle_t *pamh, const char *filename)
 		return cfg;
 	}
 
-	// Fail if either url or token is unset
+	/* Fail if either url or token is unset */
 	if (!cfg->url)
-		log_message(LOG_ERR, pamh, "Missing 'url' in configuration!");
+		log_message(LOG_ERR, "Missing 'url' in configuration!");
 
 	if (!cfg->token)
-		log_message(LOG_ERR, pamh, "Missing 'token' in configuration!");
+		log_message(LOG_ERR, "Missing 'token' in configuration!");
 
 	if (!cfg->attribute)
-		log_message(LOG_ERR, pamh, "Missing 'attribute' in configuration!");
+		log_message(LOG_ERR, "Missing 'attribute' in configuration!");
 
 	freeConfig(cfg);
 	return NULL;

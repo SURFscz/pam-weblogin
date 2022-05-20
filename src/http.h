@@ -1,8 +1,8 @@
 #ifndef HTTP_H
 #define HTTP_H
 
-#include "defs.h"
+#define USER_AGENT "pam-weblogin version v1"
 
-int postURL(const char* url, const char* token, const char* data, char** result);
+char *API(const char* url, const char *method, char *headers[], const char* data, long expected_response_code);
 
-#endif
+#endif /* HTTP_H */
