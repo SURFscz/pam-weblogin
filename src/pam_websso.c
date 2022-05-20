@@ -95,7 +95,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	free(challenge_response);
 
 	cached = getBool(challenge_json, "cached");
-	
+
 	if (!cached) {
 		session_id = getString(challenge_json, "session_id");
 		challenge = getString(challenge_json, "challenge");
@@ -180,9 +180,12 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	}
 
 finalize:
-	free(authorization);
-	free(challenge);
-	free(session_id);
+	if (authorization!=NULL)
+		free(authorization);
+	if (challenge!=NULL)
+		free(challenge);
+	if (session_id!=NULL)
+		free(session_id);
 	freeConfig(cfg);
 
 	return pam_result;
