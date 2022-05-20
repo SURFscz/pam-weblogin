@@ -1,5 +1,5 @@
-# pam-websso-c
-PAM WebSSO module in C
+# pam-weblogin
+PAM WebLogin module in C
 
 ## Installation
 Dependancies: libpam and libcurl. Install the dev packages for these libraries, then
