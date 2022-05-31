@@ -21,3 +21,13 @@ clean: clean-src clean-json-parser
 clean-json-parser: json-parser/Makefile
 clean-json-parser clean-src: clean-%:
 	$(MAKE) -C $* clean
+
+# Install...
+.PHONY: install
+install: src
+	$(MAKE) -C src install
+
+# Test...
+.PHONY: test
+test: install
+	$(MAKE) -C src test

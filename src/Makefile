@@ -3,7 +3,6 @@
 -include .env
 
 URL ?= http://localhost:5001
-prefix ?= /usr/local/
 
 # override default variable, bt leave it alone if set in environment
 ifeq ($(origin CC),default)
@@ -18,7 +17,7 @@ CFLAGS += -Wall -Wextra -Wshadow -Wpedantic -Wuninitialized -Wformat=2
 CFLAGS += -Werror
 CFLAGS += -fstack-protector-strong
 
-# gcc only
+# gcc only1
 ifneq "$(shell $(CC) --version | grep gcc)" ""
   CFLAGS += -Wformat-overflow=2 -Wformat-truncation=2
 
@@ -60,10 +59,10 @@ pam_websso.so: $(OBJS) ../json-parser/libjsonparser.a
 
 .PHONY: install
 install: pam_websso.so
-	install -d $(prefix)/lib/security/
-	install pam_websso.so $(prefix)/lib/security/
-	echo "url=${URL}\ntoken = Bearer ${TOKEN}\nretries = ${RETRIES}\nattribute=${ATTRIBUTE}\n" | tee "/etc/pam-websso.conf"
-	echo "auth required $(prefix)/pam_websso.so /etc/pam-websso.conf" | tee "/etc/pam.d/websso"
+	sudo install -d /lib/security/
+	sudo install pam_websso.so /lib/security/
+	echo "url=${URL}\ntoken = Bearer ${TOKEN}\nretries = ${RETRIES}\nattribute=${ATTRIBUTE}\n" | sudo tee "/etc/pam-websso.conf"
+	echo "auth required pam_websso.so /etc/pam-websso.conf" | sudo tee "/etc/pam.d/websso"
 
 .PHONY: clean
 clean:
