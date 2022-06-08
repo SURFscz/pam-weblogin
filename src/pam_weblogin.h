@@ -4,7 +4,7 @@
 #define API_CHECK_PIN_PATH "check-pin"
 #define API_CHECK_PIN_RESPONSE_CODE 201
 
-#define DEFAULT_CONF_FILE "/etc/pam-websso.conf"
+#define DEFAULT_CONF_FILE "/etc/pam-weblogin.conf"
 
 #define PROMPT_USERNAME "Username: "
 #define PROMPT_PIN "Pin: "

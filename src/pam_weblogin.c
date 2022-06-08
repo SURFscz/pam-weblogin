@@ -16,7 +16,7 @@
 #include "utils.h"
 #include "tty.h"
 
-#include "pam_websso.h"
+#include "pam_weblogin.h"
 
 PAM_EXTERN int pam_sm_setcred(UNUSED pam_handle_t *pamh, UNUSED int flags, UNUSED int argc, UNUSED const char *argv[])
 {
@@ -36,7 +36,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	bool cached = false;
 	int pam_result = PAM_AUTH_ERR;
 
-	log_message(LOG_INFO, "Start of pam_websso");
+	log_message(LOG_INFO, "Start of pam_weblogin");
 
 	/* Read username */
 	const char *username;
@@ -53,13 +53,13 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		tty_output(pamh, "Error reading conf");
 		return PAM_SYSTEM_ERR;
 	}
-	/*
-		log_message(LOG_INFO, "cfg->url: '%s'\n", cfg->url);
-		log_message(LOG_INFO, "cfg->token: '%s'\n", cfg->token);
-		log_message(LOG_INFO, "cfg->attribute: '%s'\n", cfg->attribute);
-		log_message(LOG_INFO, "cfg->cache_duration: '%d'\n", cfg->cache_duration);
-		log_message(LOG_INFO, "cfg->retries: '%d'\n", cfg->retries);
-	*/
+
+	log_message(LOG_INFO, "cfg->url: '%s'\n", cfg->url);
+	log_message(LOG_INFO, "cfg->token: '%s'\n", cfg->token);
+	log_message(LOG_INFO, "cfg->attribute: '%s'\n", cfg->attribute);
+	log_message(LOG_INFO, "cfg->cache_duration: '%d'\n", cfg->cache_duration);
+	log_message(LOG_INFO, "cfg->retries: '%d'\n", cfg->retries);
+
 
 	authorization = str_printf("Authorization: %s", cfg->token);
 
@@ -80,6 +80,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		data,
 		API_START_RESPONSE_CODE
 	);
+	log_message(LOG_INFO, "challenge: '%s'\n", challenge_response);
 	free(url);
 	free(data);
 
