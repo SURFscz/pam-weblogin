@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'cpp', 'python' ]  # see https://git.io/codeql-language-support
+        language: [ 'cpp' ]  # see https://git.io/codeql-language-support
 
     steps:
     - name: Checkout repository
