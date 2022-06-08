@@ -53,13 +53,13 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		tty_output(pamh, "Error reading conf");
 		return PAM_SYSTEM_ERR;
 	}
-
+/*
 	log_message(LOG_INFO, "cfg->url: '%s'\n", cfg->url);
 	log_message(LOG_INFO, "cfg->token: '%s'\n", cfg->token);
 	log_message(LOG_INFO, "cfg->attribute: '%s'\n", cfg->attribute);
 	log_message(LOG_INFO, "cfg->cache_duration: '%d'\n", cfg->cache_duration);
 	log_message(LOG_INFO, "cfg->retries: '%d'\n", cfg->retries);
-
+*/
 
 	authorization = str_printf("Authorization: %s", cfg->token);
 
@@ -80,7 +80,6 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		data,
 		API_START_RESPONSE_CODE
 	);
-	log_message(LOG_INFO, "challenge: '%s'\n", challenge_response);
 	free(url);
 	free(data);
 
