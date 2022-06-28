@@ -102,7 +102,7 @@ def auth():
         if rpin == pin:
             reply = {
                 'result': 'SUCCESS',
-                'msg': f'Authenticated on attribute {attribute}'
+                'debug_msg': f'Authenticated on attribute {attribute}'
             }
             cached[user_id] = True
             pop_auth(session_id)
@@ -110,12 +110,12 @@ def auth():
         else:
             reply = {
                 'result': 'FAIL',
-                'msg': 'Pin failed'
+                'debug_msg': 'Pin failed'
             }
     else:
         reply = {
             'result': 'TIMEOUT',
-            'msg': 'Authentication failed'
+            'debug_msg': 'Authentication failed'
         }
 
     response = Response(status=201)
