@@ -47,3 +47,19 @@ user: martin
 auth_result: SUCCESS
 pamtester: successfully authenticated
 ```
+
+## Production
+Insert the pam-weblogin module below common-auth
+```
+# Standard Un*x authentication.
+@include common-auth
+auth required /usr/local/lib/security/pam_weblogin.so /etc/pam-weblogin.conf
+```
+Set sshd ```ChallengeResponseAuthentication``` and ```UsePAM``` to ```yes``` and restart sshd
+```
+# Change to yes to enable challenge-response passwords (beware issues with
+# some PAM modules and threads)
+ChallengeResponseAuthentication yes
+...
+UsePAM yes
+```
