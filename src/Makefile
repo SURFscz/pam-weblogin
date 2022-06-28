@@ -2,10 +2,10 @@
 
 -include .env
 
-URL ?= http://localhost:5001/pam-websso
+URL ?= http://localhost:5001/pam-weblogin
 TOKEN ?= 1234
 RETRIES ?= 3
-ATTRIBUTE ?= uid
+ATTRIBUTE ?= username
 prefix ?= /usr/local
 
 # override default variable, bt leave it alone if set in environment
@@ -46,6 +46,11 @@ OBJS := $(SOURCES:%.c=%.o)
 
 CFLAGS += -I..
 
+GIT_COMMIT = "$(shell git describe --abbrev=6 --always 2>/dev/null || echo 'Error')"
+JSONPARSER_GIT_COMMIT = "$(shell git -C json-parser describe --abbrev=6 --always 2>/dev/null || echo 'Error')"
+CFLAGS += -DGIT_COMMIT=$(GIT_COMMIT)
+CFLAGS += -DJSONPARSER_GIT_COMMIT=$(JSONPARSER_GIT_COMMIT)
+
 # default target
 .PHONY: all
 all: pam_weblogin.so
@@ -65,8 +70,8 @@ pam_weblogin.so: $(OBJS) ../json-parser/libjsonparser.a
 install: pam_weblogin.so
 	install -d $(prefix)/lib/security/
 	install pam_weblogin.so $(prefix)/lib/security/
-	echo "url=${URL}\ntoken = Bearer ${TOKEN}\nretries = ${RETRIES}\nattribute=${ATTRIBUTE}\n" | tee "/etc/pam-weblogin.conf"
-	echo "auth required $(prefix)/lib/security/pam_weblogin.so /etc/pam-weblogin.conf" | tee "/etc/pam.d/weblogin"
+	if [ ! -f /etc/pam-weblogin.conf ]; then echo "url=${URL}\ntoken = Bearer ${TOKEN}\nretries = ${RETRIES}\nattribute=${ATTRIBUTE}\n" | tee "/etc/pam-weblogin.conf"; fi
+	if [ ! -f /etc/pam.d/weblogin ]; then echo "auth required $(prefix)/lib/security/pam_weblogin.so /etc/pam-weblogin.conf" | tee "/etc/pam.d/weblogin"; fi
 
 .PHONY: clean
 clean:

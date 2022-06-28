@@ -47,7 +47,7 @@ def authorized(headers):
         return False
 
 
-@app.route('/pam-websso/start', methods=['POST'])
+@app.route('/pam-weblogin/start', methods=['POST'])
 def req():
     if not authorized(request.headers):
         return Response(response="Unauthorized", status=401)
@@ -62,7 +62,7 @@ def req():
     auths[new_session_id] = {
         'session_id': new_session_id,
         'challenge': f'Hello {user_id}. To continue, '
-                     f'visit {url}/pam-websso/login/{new_session_id} and enter pin',
+                     f'visit {url}/pam-weblogin/login/{new_session_id} and enter pin',
         'cached': cached.get(user_id, False)
     }
 
@@ -77,14 +77,14 @@ def req():
     auths[new_session_id]['cache_duration'] = cache_duration
     Timer(TIMEOUT, pop_auth, [new_session_id]).start()
 
-    logging.debug(f'/pam-websso/start <- {data}\n'
+    logging.debug(f'/pam-weblogin/start <- {data}\n'
                   f' -> {response.data.decode()}\n'
                   f'  pin: {new_pin}')
 
     return response
 
 
-@app.route('/pam-websso/check-pin', methods=['POST'])
+@app.route('/pam-weblogin/check-pin', methods=['POST'])
 def auth():
     if not authorized(request.headers):
         return Response(response="Unauthorized", status=401)
@@ -122,14 +122,14 @@ def auth():
     response.headers['Content-Type'] = "application/json"
     response.data = json.dumps(reply)
 
-    logging.debug(f'/pam-websso/check-pin <- {data}\n -> {response.data.decode()}')
+    logging.debug(f'/pam-weblogin/check-pin <- {data}\n -> {response.data.decode()}')
 
     return response
 
 
-@app.route('/pam-websso/login/<session_id>', methods=['GET', 'POST'])
+@app.route('/pam-weblogin/login/<session_id>', methods=['GET', 'POST'])
 def login(session_id):
-    logging.info(f'/pam-websso/login {session_id}')
+    logging.info(f'/pam-weblogin/login {session_id}')
 
     this_auth = auths.get(session_id)
     if this_auth:

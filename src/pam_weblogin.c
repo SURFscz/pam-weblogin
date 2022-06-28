@@ -18,6 +18,18 @@
 
 #include "pam_weblogin.h"
 
+#define STR(x) #x
+#define TOSTR(X) STR(x)
+
+#ifndef GIT_COMMIT
+#DEFINE GIT_COMMIT 0000
+#endif
+
+#ifndef JSONPARSER_GIT_COMMIT
+#DEFINE JSONPARSER_GIT_COMMIT 0000
+#endif
+
+
 PAM_EXTERN int pam_sm_setcred(UNUSED pam_handle_t *pamh, UNUSED int flags, UNUSED int argc, UNUSED const char *argv[])
 {
 	return PAM_SUCCESS;
@@ -69,8 +81,8 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 
 	/* Prepare start input data... */
 	char *data = NULL;
-	data = str_printf("{\"user_id\":\"%s\",\"attribute\":\"%s\",\"cache_duration\":\"%d\"}",
-			 username, cfg->attribute, cfg->cache_duration);
+	data = str_printf("{\"user_id\":\"%s\",\"attribute\":\"%s\",\"cache_duration\":\"%d\",\"GIT_COMMIT\":\"%s\",\"JSONPARSER_GIT_COMMIT\":\"%s\"}",
+			 username, cfg->attribute, cfg->cache_duration, TOSTR(GIT_COMMIT), TOSTR(JSONPARSER_GIT_COMMIT));
 
 	/* Request auth session_id/challenge */
 	json_char *challenge_response = (json_char *) API(
