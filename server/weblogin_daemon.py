@@ -59,11 +59,13 @@ def req():
     cache_duration = data.get('cache_duration')
     new_session_id = session_id()
     url = os.environ.get("URL", "http://localhost:5001")
+    cache = cached.get(user_id, False)
     auths[new_session_id] = {
         'session_id': new_session_id,
         'challenge': f'Hello {user_id}. To continue, '
                      f'visit {url}/pam-weblogin/login/{new_session_id} and enter pin',
-        'cached': cached.get(user_id, False)
+        'cached': cache,
+        'info': 'Login was cached' if cache else 'Sign in'
     }
 
     response = Response(status=201)
@@ -102,7 +104,7 @@ def auth():
         if rpin == pin:
             reply = {
                 'result': 'SUCCESS',
-                'debug_msg': f'Authenticated on attribute {attribute}'
+                'info': f'Authenticated on attribute {attribute}'
             }
             cached[user_id] = True
             pop_auth(session_id)
@@ -110,12 +112,12 @@ def auth():
         else:
             reply = {
                 'result': 'FAIL',
-                'debug_msg': 'Pin failed'
+                'info': 'Pin failed'
             }
     else:
         reply = {
             'result': 'TIMEOUT',
-            'debug_msg': 'Authentication failed'
+            'info': 'Authentication failed'
         }
 
     response = Response(status=201)

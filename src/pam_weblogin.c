@@ -44,6 +44,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 {
 	char *session_id = NULL;
 	char *challenge = NULL;
+	char *info = NULL;
 	char *authorization = NULL;
 	bool cached = false;
 	int pam_result = PAM_AUTH_ERR;
@@ -107,6 +108,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	free(challenge_response);
 
 	cached = getBool(challenge_json, "cached");
+	info = getString(challenge_json, "info");
 
 	if (!cached) {
 		session_id = getString(challenge_json, "session_id");
@@ -117,7 +119,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	/* Login was cached, continue successful */
 	if (cached)
 	{
-		tty_output(pamh, "You were cached!");
+		tty_output(pamh, info);
 		pam_result = PAM_SUCCESS;
 		goto finalize;
 	}
@@ -171,14 +173,13 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		free(verify_response);
 
 		char *result = getString(verify_json, "result");
-		char *debug_msg = getString(verify_json, "debug_msg");
+		info = getString(verify_json, "info");
 		json_value_free(verify_json);
 
-		if (debug_msg)
+		if (info)
 		{
-			tty_output(pamh, debug_msg);
-			log_message(LOG_INFO, "debug_msg: %s\n", debug_msg);
-			free(debug_msg);
+			tty_output(pamh, info);
+			log_message(LOG_INFO, "info: %s\n", info);
 		}
 
 		if (result)
@@ -192,6 +193,8 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	}
 
 finalize:
+	if (info!=NULL)
+		free(info);
 	if (authorization!=NULL)
 		free(authorization);
 	if (challenge!=NULL)

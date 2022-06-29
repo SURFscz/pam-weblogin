@@ -80,7 +80,7 @@ Config *getConfig(const char *filename)
 			memset(buffer, 0, MAXLINE);
 
 			if (fgets(buffer, MAXLINE, fp) == NULL) {
-				log_message(LOG_ERR, "Error reading line from: %s", filename);
+				log_message(LOG_ERR, "No more lines in: %s", filename);
 				break;
 			}
 
