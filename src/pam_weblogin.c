@@ -18,6 +18,8 @@
 
 #include "pam_weblogin.h"
 
+/* see https://stackoverflow.com/questions/2410976/how-to-define-a-string-literal-in-gcc-command-line
+ * and note that # is the CPP "stringizing" operator */
 #define STR(x) #x
 #define TOSTR(X) STR(x)
 
