@@ -8,58 +8,41 @@ Dependancies: libpam and libcurl. Install the dev packages for these libraries, 
 $ make
 $ make install
 ```
-
-Add this file to ```/etc/pam.d/weblogin```
-
-```
-auth required pam_weblogin.so /etc/pam-weblogin.conf
-```
-
-Add pam-weblogin.conf configuration file to ```/etc/pam-weblogin.conf```
-
-```
-url = http://localhost:5001
-token = Bearer client:verysecret
-retries = 3
-```
+This copies the pam module to /usr/local/lib/security, creates an example configuration file in /etc/pam-weblogin.conf and a pam example configuration in ```/etc/pam.d/weblogin```:
 
 ## Testing
-Create python virtualenv, pip install Flask and run weblogin-daemon.py as a stub server on localhost:5001
+Change into the server directory.
 
-Install pamtester to test the module
+Create python virtualenv, ```pip install -r requirements.txt``` and run weblogin_daemon.py as a stub server on localhost:5001
 
+Install pamtester to test the module (see above under Installation)
 ```
-$ pamtester weblogin martin authenticate
-Authenticate
-config: /etc/pam-weblogin.conf
-config 'url' -> 'http://localhost:5001'
-cfg->url: http://localhost:5001
-http URL: http://localhost:5001/req
-http data: {"user":"martin"}
-req: {"nonce": "ji1bI8RJ", "pin": "6333", "challenge": "Hello martin. To continue, visit http://localhost:5001/login/ji1bI8RJ and enter pin:", "hot": false}
-Hello martin. To continue, visit http://localhost:5001/login/ji1bI8RJ and enter pin:
-Pin: 6333
-Pin matched!
-http URL: http://localhost:5001/auth
-http data: {"nonce":"ji1bI8RJ"}
-auth: {"uid": "martin", "result": "SUCCESS"}
-user: martin
-auth_result: SUCCESS
+$ pamtester weblogin [username] authenticate
+Hello mrvanes. To continue, visit http://localhost:5001/pam-weblogin/login/yqxvIDZV and enter pin
+Pin:
+Authenticated on attribute username
 pamtester: successfully authenticated
 ```
 
-## Production
-Insert the pam-weblogin module below common-auth
+## Production (example)
+This example enables PAM WebLogin *and* requires either publickey **or** password authentication:
+
+Edit /etc/pam.d/sshd as follows (add the line above @include common-auth)
 ```
+# PAM configuration for the Secure Shell service
+
+auth sufficient /usr/local/lib/security/pam_weblogin.so /etc/pam-weblogin.conf
 # Standard Un*x authentication.
 @include common-auth
-auth required /usr/local/lib/security/pam_weblogin.so /etc/pam-weblogin.conf
 ```
-Set sshd ```ChallengeResponseAuthentication``` and ```UsePAM``` to ```yes``` and restart sshd
+
+Set the following configurations in ```/etc/ssh/sshd_config``` and restart sshd
 ```
-# Change to yes to enable challenge-response passwords (beware issues with
-# some PAM modules and threads)
+PubkeyAuthentication yes
+PasswordAuthentication yes
+AuthenticationMethods publickey,keyboard-interactive password,keyboard-interactive
 ChallengeResponseAuthentication yes
-...
 UsePAM yes
 ```
+
+Mind that the line with AuthenticationMethods signifies the option of authenticating either via (publickey and keyboard-interactive (pam)) *or* (password and keyboard-interactive), depending on the succes of publickey.
