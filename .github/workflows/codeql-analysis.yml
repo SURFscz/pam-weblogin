@@ -28,7 +28,8 @@ jobs:
 
     - name: Install libraries
       run: |
-        sudo apt install libpam0g-dev libcurl4-nss-dev
+        sudo apt-get update
+        sudo apt-get install libpam0g-dev libcurl4-nss-dev
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2

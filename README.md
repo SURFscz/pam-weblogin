@@ -9,13 +9,13 @@ $ make
 $ make install
 ```
 
-Add this file to ```/etc/pam.d/websso```
+Add this file to ```/etc/pam.d/weblogin```
 
 ```
-auth required pam_websso.so /etc/pam-websso.conf
+auth required pam_weblogin.so /etc/pam-weblogin.conf
 ```
 
-Add pam-websso.conf configuration file to ```/etc/pam-websso.conf```
+Add pam-weblogin.conf configuration file to ```/etc/pam-weblogin.conf```
 
 ```
 url = http://localhost:5001
@@ -24,14 +24,14 @@ retries = 3
 ```
 
 ## Testing
-Create python virtualenv, pip install Flask and run websso-daemon.py as a stub server on localhost:5001
+Create python virtualenv, pip install Flask and run weblogin-daemon.py as a stub server on localhost:5001
 
 Install pamtester to test the module
 
 ```
-$ pamtester websso martin authenticate
+$ pamtester weblogin martin authenticate
 Authenticate
-config: /etc/pam-websso.conf
+config: /etc/pam-weblogin.conf
 config 'url' -> 'http://localhost:5001'
 cfg->url: http://localhost:5001
 http URL: http://localhost:5001/req
@@ -46,4 +46,20 @@ auth: {"uid": "martin", "result": "SUCCESS"}
 user: martin
 auth_result: SUCCESS
 pamtester: successfully authenticated
+```
+
+## Production
+Insert the pam-weblogin module below common-auth
+```
+# Standard Un*x authentication.
+@include common-auth
+auth required /usr/local/lib/security/pam_weblogin.so /etc/pam-weblogin.conf
+```
+Set sshd ```ChallengeResponseAuthentication``` and ```UsePAM``` to ```yes``` and restart sshd
+```
+# Change to yes to enable challenge-response passwords (beware issues with
+# some PAM modules and threads)
+ChallengeResponseAuthentication yes
+...
+UsePAM yes
 ```

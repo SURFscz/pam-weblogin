@@ -1,9 +1,9 @@
 ---
 openapi: 3.1.0
 info:
-  title: PAM-WebSSO
+  title: PAM-WebLogin
   version: '1.0'
-  summary: PAM-WebSSO API
+  summary: PAM-WebLogin API
   contact:
     name: SRAM Management
     url: 'https://surf.nl/sram'
@@ -12,17 +12,17 @@ info:
     name: Apache 2
     identifier: Apache-2.0
   description: |-
-    The Pam-WebSSO system is meant for the case in which a server admins want to allow users to log in to their server based on authentication in a web browser.  This can be used in place of or in addition to regular means of terminal-based authentication, such as ssh public keys or username/password.  It can also be used to enable use of advanced multi-factor authentication methods which would otherwise be unavailable or hard to use on terminal-based systems.
+    The Pam-WebLogin system is meant for the case in which a server admins want to allow users to log in to their server based on authentication in a web browser.  This can be used in place of or in addition to regular means of terminal-based authentication, such as ssh public keys or username/password.  It can also be used to enable use of advanced multi-factor authentication methods which would otherwise be unavailable or hard to use on terminal-based systems.
 
     Functionally, the user connects to the system in the regular fashion.  The system than shows a url the the users needs to visit in their web browser; this web site can implement any form of authentication desired.  Once the user is authenticated, their can continue logging in the the terminal by entering the pin code presented by the web site.
 servers:
   - url: 'http://localhost:3000/pam-websso'
-    description: websso
+    description: weblogin
 paths:
   /start:
     parameters: []
     post:
-      summary: Start new WebSSO request
+      summary: Start new WebLogin request
       operationId: post-req
       responses:
         '200':
@@ -77,7 +77,7 @@ paths:
                 example:
                   value:
                     result: Permission denied
-      description: Initiate a new WebSSO request
+      description: Initiate a new WebLogin request
       requestBody:
         content:
           application/json:
@@ -92,7 +92,7 @@ paths:
                   type: string
                   example: email
                   description: |-
-                    Identifier of an authentication attribute or claim from the WebSSO login
+                    Identifier of an authentication attribute or claim from the WebLogin login
                     When the use logs in to the web interface, this is the name of the attribute or claim that should match the `user_id` that the user uses to login to the pam module (e.g., the ssh username or UNIX login name)
                 cache_duration:
                   type: number
@@ -115,7 +115,7 @@ paths:
                   type: string
       parameters: []
       tags:
-        - websso
+        - weblogin
   /check-pin:
     parameters: []
     post:
@@ -191,7 +191,7 @@ paths:
                   type: string
       parameters: []
       tags:
-        - websso
+        - weblogin
 components:
   schemas: {}
   securitySchemes:
@@ -200,4 +200,4 @@ components:
       scheme: bearer
       description: Service API key
 tags:
-  - name: websso
+  - name: weblogin

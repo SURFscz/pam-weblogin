@@ -47,7 +47,7 @@ def authorized(headers):
         return False
 
 
-@app.route('/pam-websso/start', methods=['POST'])
+@app.route('/pam-weblogin/start', methods=['POST'])
 def req():
     if not authorized(request.headers):
         return Response(response="Unauthorized", status=401)
@@ -59,14 +59,16 @@ def req():
     cache_duration = data.get('cache_duration')
     new_session_id = session_id()
     url = os.environ.get("URL", "http://localhost:5001")
+    cache = cached.get(user_id, False)
     auths[new_session_id] = {
         'session_id': new_session_id,
         'challenge': f'Hello {user_id}. To continue, '
-                     f'visit {url}/pam-websso/login/{new_session_id} and enter pin',
-        'cached': cached.get(user_id, False)
+                     f'visit {url}/pam-weblogin/login/{new_session_id} and enter pin',
+        'cached': cache,
+        'info': 'Login was cached' if cache else 'Sign in'
     }
 
-    response = Response()
+    response = Response(status=201)
     response.headers['Content-Type'] = "application/json"
     response.data = json.dumps(auths[new_session_id])
 
@@ -77,21 +79,21 @@ def req():
     auths[new_session_id]['cache_duration'] = cache_duration
     Timer(TIMEOUT, pop_auth, [new_session_id]).start()
 
-    logging.debug(f'/pam-websso/start <- {data}\n'
+    logging.debug(f'/pam-weblogin/start <- {data}\n'
                   f' -> {response.data.decode()}\n'
                   f'  pin: {new_pin}')
 
     return response
 
 
-@app.route('/pam-websso/check-pin', methods=['POST'])
+@app.route('/pam-weblogin/check-pin', methods=['POST'])
 def auth():
     if not authorized(request.headers):
         return Response(response="Unauthorized", status=401)
 
     data = json.loads(request.data)
     session_id = data.get('session_id')
-    rpin = data.get('rpin')
+    rpin = data.get('pin')
 
     this_auth = auths.get(session_id)
     if this_auth:
@@ -102,7 +104,7 @@ def auth():
         if rpin == pin:
             reply = {
                 'result': 'SUCCESS',
-                'msg': f'Authenticated on attribute {attribute}'
+                'info': f'Authenticated on attribute {attribute}'
             }
             cached[user_id] = True
             pop_auth(session_id)
@@ -110,26 +112,26 @@ def auth():
         else:
             reply = {
                 'result': 'FAIL',
-                'msg': 'Pin failed'
+                'info': 'Pin failed'
             }
     else:
         reply = {
             'result': 'TIMEOUT',
-            'msg': 'Authentication failed'
+            'info': 'Authentication failed'
         }
 
-    response = Response()
+    response = Response(status=201)
     response.headers['Content-Type'] = "application/json"
     response.data = json.dumps(reply)
 
-    logging.debug(f'/pam-websso/check-pin <- {data}\n -> {response.data.decode()}')
+    logging.debug(f'/pam-weblogin/check-pin <- {data}\n -> {response.data.decode()}')
 
     return response
 
 
-@app.route('/pam-websso/login/<session_id>', methods=['GET', 'POST'])
+@app.route('/pam-weblogin/login/<session_id>', methods=['GET', 'POST'])
 def login(session_id):
-    logging.info(f'/pam-websso/login {session_id}')
+    logging.info(f'/pam-weblogin/login {session_id}')
 
     this_auth = auths.get(session_id)
     if this_auth:

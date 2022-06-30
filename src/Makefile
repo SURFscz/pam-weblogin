@@ -2,8 +2,11 @@
 
 -include .env
 
-URL ?= http://localhost:5001
-prefix ?= /usr/local/
+URL ?= http://localhost:5001/pam-weblogin
+TOKEN ?= 1234
+RETRIES ?= 3
+ATTRIBUTE ?= username
+prefix ?= /usr/local
 
 # override default variable, bt leave it alone if set in environment
 ifeq ($(origin CC),default)
@@ -38,38 +41,43 @@ ifneq "$(shell $(CC) --version | grep clang)" ""
   endif
 endif
 
-SOURCES := config.c http.c utils.c tty.c pam_websso.c
+SOURCES := config.c http.c utils.c tty.c pam_weblogin.c
 OBJS := $(SOURCES:%.c=%.o)
 
 CFLAGS += -I..
 
+GIT_COMMIT = "$(shell git describe --abbrev=6 --always 2>/dev/null || echo 'Error')"
+JSONPARSER_GIT_COMMIT = "$(shell git -C json-parser describe --abbrev=6 --always 2>/dev/null || echo 'Error')"
+CFLAGS += -DGIT_COMMIT=$(GIT_COMMIT)
+CFLAGS += -DJSONPARSER_GIT_COMMIT=$(JSONPARSER_GIT_COMMIT)
+
 # default target
 .PHONY: all
-all: pam_websso.so
+all: pam_weblogin.so
 
 # dependencies
 config.o: config.c config.h tty.h defs.h
 http.o: http.c http.h tty.h defs.h
 utils.o: utils.c utils.h tty.h defs.h
 tty.o: tty.c utils.h defs.h
-pam_websso.o: pam_websso.c config.h http.h utils.h tty.h defs.h
+pam_weblogin.o: pam_weblogin.c config.h http.h utils.h tty.h defs.h
 
-pam_websso.so: $(OBJS) ../json-parser/libjsonparser.a
+pam_weblogin.so: $(OBJS) ../json-parser/libjsonparser.a
 	$(CC) $(LDFLAGS) -shared -o $@ $^ -lcurl -lpam -lm
 	chmod 644 $@
 
 .PHONY: install
-install: pam_websso.so
+install: pam_weblogin.so
 	install -d $(prefix)/lib/security/
-	install pam_websso.so $(prefix)/lib/security/
-	echo "url=${URL}\ntoken = Bearer ${TOKEN}\nretries = ${RETRIES}\nattribute=${ATTRIBUTE}\n" | tee "/etc/pam-websso.conf"
-	echo "auth required $(prefix)/pam_websso.so /etc/pam-websso.conf" | tee "/etc/pam.d/websso"
+	install pam_weblogin.so $(prefix)/lib/security/
+	if [ ! -f /etc/pam-weblogin.conf ]; then echo "url=${URL}\ntoken = Bearer ${TOKEN}\nretries = ${RETRIES}\nattribute=${ATTRIBUTE}\n" | tee "/etc/pam-weblogin.conf"; fi
+	if [ ! -f /etc/pam.d/weblogin ]; then echo "auth required $(prefix)/lib/security/pam_weblogin.so /etc/pam-weblogin.conf" | tee "/etc/pam.d/weblogin"; fi
 
 .PHONY: clean
 clean:
-	-rm -f $(OBJS) pam_websso.so
+	-rm -f $(OBJS) pam_weblogin.so
 
 .PHONY: test
 test: install
-	pamtester websso "$${USERNAME:-unspecified}" authenticate
+	pamtester weblogin "$${USERNAME:-unspecified}" authenticate
 

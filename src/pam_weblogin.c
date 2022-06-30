@@ -16,7 +16,21 @@
 #include "utils.h"
 #include "tty.h"
 
-#include "pam_websso.h"
+#include "pam_weblogin.h"
+
+/* see https://stackoverflow.com/questions/2410976/how-to-define-a-string-literal-in-gcc-command-line
+ * and note that # is the CPP "stringizing" operator */
+#define STR(x) #x
+#define TOSTR(X) STR(x)
+
+#ifndef GIT_COMMIT
+#DEFINE GIT_COMMIT 0000
+#endif
+
+#ifndef JSONPARSER_GIT_COMMIT
+#DEFINE JSONPARSER_GIT_COMMIT 0000
+#endif
+
 
 PAM_EXTERN int pam_sm_setcred(UNUSED pam_handle_t *pamh, UNUSED int flags, UNUSED int argc, UNUSED const char *argv[])
 {
@@ -32,11 +46,12 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 {
 	char *session_id = NULL;
 	char *challenge = NULL;
+	char *info = NULL;
 	char *authorization = NULL;
 	bool cached = false;
 	int pam_result = PAM_AUTH_ERR;
 
-	log_message(LOG_INFO, "Start of pam_websso");
+	log_message(LOG_INFO, "Start of pam_weblogin");
 
 	/* Read username */
 	const char *username;
@@ -53,13 +68,13 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		tty_output(pamh, "Error reading conf");
 		return PAM_SYSTEM_ERR;
 	}
-	/*
-		log_message(LOG_INFO, "cfg->url: '%s'\n", cfg->url);
-		log_message(LOG_INFO, "cfg->token: '%s'\n", cfg->token);
-		log_message(LOG_INFO, "cfg->attribute: '%s'\n", cfg->attribute);
-		log_message(LOG_INFO, "cfg->cache_duration: '%d'\n", cfg->cache_duration);
-		log_message(LOG_INFO, "cfg->retries: '%d'\n", cfg->retries);
-	*/
+/*
+	log_message(LOG_INFO, "cfg->url: '%s'\n", cfg->url);
+	log_message(LOG_INFO, "cfg->token: '%s'\n", cfg->token);
+	log_message(LOG_INFO, "cfg->attribute: '%s'\n", cfg->attribute);
+	log_message(LOG_INFO, "cfg->cache_duration: '%d'\n", cfg->cache_duration);
+	log_message(LOG_INFO, "cfg->retries: '%d'\n", cfg->retries);
+*/
 
 	authorization = str_printf("Authorization: %s", cfg->token);
 
@@ -69,8 +84,8 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 
 	/* Prepare start input data... */
 	char *data = NULL;
-	data = str_printf("{\"user_id\":\"%s\",\"attribute\":\"%s\",\"cache_duration\":\"%d\"}",
-			 username, cfg->attribute, cfg->cache_duration);
+	data = str_printf("{\"user_id\":\"%s\",\"attribute\":\"%s\",\"cache_duration\":\"%d\",\"GIT_COMMIT\":\"%s\",\"JSONPARSER_GIT_COMMIT\":\"%s\"}",
+			 username, cfg->attribute, cfg->cache_duration, TOSTR(GIT_COMMIT), TOSTR(JSONPARSER_GIT_COMMIT));
 
 	/* Request auth session_id/challenge */
 	json_char *challenge_response = (json_char *) API(
@@ -95,6 +110,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	free(challenge_response);
 
 	cached = getBool(challenge_json, "cached");
+	info = getString(challenge_json, "info");
 
 	if (!cached) {
 		session_id = getString(challenge_json, "session_id");
@@ -105,7 +121,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	/* Login was cached, continue successful */
 	if (cached)
 	{
-		tty_output(pamh, "You were cached!");
+		tty_output(pamh, info);
 		pam_result = PAM_SUCCESS;
 		goto finalize;
 	}
@@ -159,14 +175,13 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		free(verify_response);
 
 		char *result = getString(verify_json, "result");
-		char *debug_msg = getString(verify_json, "debug_msg");
+		info = getString(verify_json, "info");
 		json_value_free(verify_json);
 
-		if (debug_msg)
+		if (info)
 		{
-			tty_output(pamh, debug_msg);
-			log_message(LOG_INFO, "debug_msg: %s\n", debug_msg);
-			free(debug_msg);
+			tty_output(pamh, info);
+			log_message(LOG_INFO, "info: %s\n", info);
 		}
 
 		if (result)
@@ -180,6 +195,8 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	}
 
 finalize:
+	if (info!=NULL)
+		free(info);
 	if (authorization!=NULL)
 		free(authorization);
 	if (challenge!=NULL)

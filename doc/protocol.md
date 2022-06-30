@@ -1,36 +1,36 @@
-# PAM-WebSSO protocol
+# PAM-WebLogin protocol
 
 ## Functional
 
-The Pam-WebSSO system is meant for the case in which a server admin wants to allow users to log in to their server based on authentication in a web browser.  This can be used in place of or in addition to regular means of terminal-based authentication, such as ssh public keys or username/password.  It can also be used to enable use of advanced multi-factor authentication methods which would otherwise be unavailable or hard to use on terminal-based systems.
+The Pam-WebLogin system is meant for the case in which a server admin wants to allow users to log in to their server based on authentication in a web browser.  This can be used in place of or in addition to regular means of terminal-based authentication, such as ssh public keys or username/password.  It can also be used to enable use of advanced multi-factor authentication methods which would otherwise be unavailable or hard to use on terminal-based systems.
 
 Functionally, the user connects to the system in the regular fashion.  The system then shows a url that the user needs to visit in their web browser; this web site can implement any form of authentication desired.  On successful authentication, a pin code is presented to the user, the user finalizes the login procedure by entering this pin code at the terminal prompt.
 
 ## Overview
-The picture below gives a schematic overview of the PAM-WebSSO protocol:
+The picture below gives a schematic overview of the PAM-WebLogin protocol:
 
 ![Flow overview](flow.svg "Technical design")
 
 The flow is as follows (more details below):
 1. User logs in to a terminal application (e.g. using ssh)
-1. SSH starts PAM-WebSSO module
-1. Pam-WebSSO initiates a backend call to the WebSSO-server (e.g., `https://websso.server/req` endpoint).  It sends the incoming `username` and receives a `session_id`, a `challenge_url` and a `sso_freshness`.
+1. SSH starts PAM-WebLogin module
+1. Pam-WebLogin initiates a backend call to the WebLogin-server (e.g., `https://weblogin.server/req` endpoint).  It sends the incoming `username` and receives a `session_id`, a `challenge_url` and a `sso_freshness`.
 1. based on the `sso_freshness`, the PAM module can decide to accept the connection right away
 1. If not, the pam module presents the `challenge_url` to the user and prompts for a pin
-1. The user copies the `challenge_url` (e.g. `https://websso.server/login/session`) to their browser.
-1. The WebSSO-server asks the user to log in (using local accounts, OpenID Connect, etc).
-1. If the user has successfully authenticated, the WebSSO server checks if the known (registered) username of this user matches the username that was provided to the `/req` endpoint.
-1. If everything checks out, the WebSSO-server generates a pin and presents it to the user.
+1. The user copies the `challenge_url` (e.g. `https://weblogin.server/login/session`) to their browser.
+1. The WebLogin-server asks the user to log in (using local accounts, OpenID Connect, etc).
+1. If the user has successfully authenticated, the WebLogin server checks if the known (registered) username of this user matches the username that was provided to the `/req` endpoint.
+1. If everything checks out, the WebLogin-server generates a pin and presents it to the user.
 1. The user enters the pin in the terminal
-1. The pam module initiates a new backend call to the WebSSO server; it send the users `sessions` and their entered `pin`; the WebSSO server verifies the pin and responds with a status code.
+1. The pam module initiates a new backend call to the WebLogin server; it send the users `sessions` and their entered `pin`; the WebLogin server verifies the pin and responds with a status code.
 1. Based on the status code, the pam module allows the user to log in, or denies access.
 
 ## API description
-The WebSSO server needs to implement two API endpoints and a user interface: the request endpoint, the authentication endpoint and the authentication UI.
+The WebLogin server needs to implement two API endpoints and a user interface: the request endpoint, the authentication endpoint and the authentication UI.
 
 Authentication to the API is managed via a bearer token.
 
-The full API specification is available as an [OpenAPI file](websso-api.yml).
+The full API specification is available as an [OpenAPI file](weblogin-api.yml).
 
 ### Request start endpoint
 To initiate a request, send a request to the `/start` endpoint with a json body.  The json object should have three members:
