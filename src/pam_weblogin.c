@@ -18,20 +18,6 @@
 
 #include "pam_weblogin.h"
 
-/* see https://stackoverflow.com/questions/2410976/how-to-define-a-string-literal-in-gcc-command-line
- * and note that # is the CPP "stringizing" operator */
-#define STR(x) #x
-#define TOSTR(X) STR(x)
-
-#ifndef GIT_COMMIT
-#DEFINE GIT_COMMIT 0000
-#endif
-
-#ifndef JSONPARSER_GIT_COMMIT
-#DEFINE JSONPARSER_GIT_COMMIT 0000
-#endif
-
-
 PAM_EXTERN int pam_sm_setcred(UNUSED pam_handle_t *pamh, UNUSED int flags, UNUSED int argc, UNUSED const char *argv[])
 {
 	return PAM_SUCCESS;
@@ -99,8 +85,8 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	free(data);
 
 	if (challenge_response == NULL) {
-		log_message(LOG_ERR, "Error making request");
-		tty_output(pamh, "Could not contact auth server");
+		log_message(LOG_ERR, SERVER_ERROR);
+		tty_output(pamh, SERVER_ERROR);
 		pam_result = PAM_SYSTEM_ERR;
 		goto finalize;
 	}
@@ -129,7 +115,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	/* Now we need to have a session_id and a challenge ! */
 	if (!session_id || !challenge)
 	{
-		tty_output(pamh, "Server error!");
+		tty_output(pamh, SERVER_ERROR);
 		goto finalize;
 	}
 
@@ -165,8 +151,8 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		free(data);
 
 		if (verify_response == NULL) {
-			log_message(LOG_ERR, "Error making request");
-			tty_output(pamh, "Could not contact auth server");
+			log_message(LOG_ERR, SERVER_ERROR);
+			tty_output(pamh, SERVER_ERROR);
 			pam_result = PAM_SYSTEM_ERR;
 			break;
 		}
