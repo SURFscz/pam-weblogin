@@ -1,10 +1,10 @@
-version: '3'
+version: "3"
 
 services:
-
   sandbox:
     build:
       context: .
+      dockerfile: Dockerfile.centos
       args:
         UID: ${UID:-1000}
         GID: ${GID:-1000}

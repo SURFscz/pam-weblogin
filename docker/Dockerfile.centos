@@ -1,0 +1,32 @@
+FROM centos:7
+
+ARG UID=1000
+ARG GID=1000
+
+RUN yum -y update
+RUN yum -y install openssh-server
+RUN echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config
+RUN mkdir /run/sshd
+
+RUN yum -y groupinstall 'Development Tools'
+RUN yum -y install vim ca-certificates git sudo rsyslog
+RUN yum -y install make autoconf pam-devel libcurl curl-devel pamtester
+
+RUN sed -i '/imklog/s/^/#/' /etc/rsyslog.conf
+RUN sed -i 's/^ChallengeResponseAuthentication no$/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config
+
+RUN ssh-keygen -A
+
+RUN groupadd --gid ${GID} workers \
+    && useradd --uid ${UID} --gid workers --shell /bin/bash --create-home worker \
+    && usermod -aG wheel worker
+
+RUN echo '%wheel ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+WORKDIR /home/worker/work
+
+USER ${UID}
+
+#ENTRYPOINT sudo rsyslogd && sudo service ssh restart && tail -f /dev/null
+
+CMD ["sudo","/usr/sbin/sshd","-D"]
