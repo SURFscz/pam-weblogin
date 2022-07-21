@@ -1,7 +1,6 @@
 SUBDIRS := json-parser src
 
 all: module
-	$(MAKE) -C $@
 
 .PHONY: module
 module: json-parser
