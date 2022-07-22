@@ -4,3 +4,4 @@ pyvenv.cfg
 .vscode/
 *.o
 *.so
+.project
