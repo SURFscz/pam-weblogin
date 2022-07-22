@@ -69,10 +69,10 @@ pam_weblogin.so: $(OBJS) ../json-parser/libjsonparser.a
 
 .PHONY: install
 install: pam_weblogin.so
-	install -d $(prefix)/lib/security/
-	install pam_weblogin.so $(prefix)/lib/security/
-	if [ ! -f /etc/pam-weblogin.conf ]; then echo "url=${URL}\ntoken = Bearer ${TOKEN}\nretries = ${RETRIES}\nattribute=${ATTRIBUTE}\ncache_duration=${CACHE_DURATION}\n" | tee "/etc/pam-weblogin.conf"; fi
-	if [ ! -f /etc/pam.d/weblogin ]; then echo "auth required $(prefix)/lib/security/pam_weblogin.so /etc/pam-weblogin.conf" | tee "/etc/pam.d/weblogin"; fi
+	install -d $(DESTDIR)$(prefix)/lib/security/
+	install pam_weblogin.so $(DESTDIR)$(prefix)/lib/security/
+	if [ ! -f $(DESTDIR)/etc/pam-weblogin.conf ]; then echo "url=${URL}\ntoken = Bearer ${TOKEN}\nretries = ${RETRIES}\nattribute=${ATTRIBUTE}\ncache_duration=${CACHE_DURATION}\n" | tee "$(DESTDIR)/etc/pam-weblogin.conf"; fi
+	if [ ! -f $(DESTDIR)/etc/pam.d/weblogin ]; then echo "auth required $(prefix)/lib/security/pam_weblogin.so /etc/pam-weblogin.conf" | tee "$(DESTDIR)/etc/pam.d/weblogin"; fi
 
 .PHONY: clean
 clean:
