@@ -107,7 +107,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	/* Login was cached, continue successful */
 	if (cached)
 	{
-		tty_output(pamh, info);
+		log_message(LOG_INFO, "%s", info);
 		pam_result = PAM_SUCCESS;
 		goto finalize;
 	}
