@@ -1,6 +1,8 @@
 #include "defs.h"
 
 #include <stdio.h>
+#include <unistd.h>
+#include <sys/stat.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -57,6 +59,8 @@ Config *getConfig(const char *filename)
 {
 	int lineno = 0;
 	FILE *fp = NULL;
+	struct stat sb;
+	long unsigned mode;
 
 	Config *cfg = malloc(sizeof(Config));
 	if (cfg == NULL)
@@ -70,6 +74,26 @@ Config *getConfig(const char *filename)
 	cfg->attribute = NULL;
 	cfg->cache_duration = DEFAULT_CACHE_DURATION;
 	cfg->retries = DEFAULT_RETRIES;
+
+	// Check filename access and permissions
+	if (access(filename, F_OK) == -1)
+	{
+		log_message(LOG_INFO, "config not accessible");
+		return NULL;
+	}
+
+	if (stat(filename, &sb) == -1)
+	{
+		log_message(LOG_INFO, "config stat error");
+		return NULL;
+	}
+
+	mode = sb.st_mode & 0777;
+	if (mode > 0600)
+	{
+		log_message(LOG_INFO, "config permissions too wide");
+		return NULL;
+	}
 
 	if ((fp = fopen(filename, "r")) != NULL)
 	{
