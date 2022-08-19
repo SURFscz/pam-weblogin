@@ -1,9 +1,10 @@
 SUBDIRS := json-parser src
 
-.PHONY: all src
-all: src
-src: json-parser
-	$(MAKE) -C $@
+all: module
+
+.PHONY: module
+module: json-parser
+	$(MAKE) -C src/
 
 .PHONY: json-parser
 json-parser: json-parser/libjsonparser.a
@@ -15,7 +16,6 @@ json-parser/configure:
 	git submodule init
 	git submodule update
 
-
 .PHONY: clean clean-src clean-json-parser
 clean: clean-src clean-json-parser
 clean-json-parser: json-parser/Makefile
@@ -23,5 +23,9 @@ clean-json-parser clean-src: clean-%:
 	$(MAKE) -C $* clean
 
 .PHONY: install
-install:
+install: module
 	$(MAKE) -C src install
+
+.PHONY: test
+test: module
+	$(MAKE) -C src test

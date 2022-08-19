@@ -24,9 +24,8 @@ CFLAGS += -fstack-protector-strong
 
 # gcc only
 ifneq "$(shell $(CC) --version | grep gcc)" ""
-  CFLAGS += -Wformat-overflow=2 -Wformat-truncation=2
-
   ifeq "$(shell expr '$(CC_MAJOR)' '>=' '10')" "1"
+    CFLAGS += -Wformat-overflow=2 -Wformat-truncation=2
     CFLAGS += -ftree-vrp -fanalyzer
   endif
 endif
@@ -71,7 +70,7 @@ pam_weblogin.so: $(OBJS) ../json-parser/libjsonparser.a
 install: pam_weblogin.so
 	install -d $(prefix)/lib/security/
 	install pam_weblogin.so $(prefix)/lib/security/
-	if [ ! -f /etc/pam-weblogin.conf ]; then echo "url=${URL}\ntoken = Bearer ${TOKEN}\nretries = ${RETRIES}\nattribute=${ATTRIBUTE}\ncache_duration=${CACHE_DURATION}\n" | tee "/etc/pam-weblogin.conf"; fi
+	if [ ! -f /etc/pam-weblogin.conf ]; then printf "url=${URL}\ntoken = Bearer ${TOKEN}\nretries = ${RETRIES}\nattribute=${ATTRIBUTE}\ncache_duration=${CACHE_DURATION}\n" | tee "/etc/pam-weblogin.conf"; fi
 	if [ ! -f /etc/pam.d/weblogin ]; then echo "auth required $(prefix)/lib/security/pam_weblogin.so /etc/pam-weblogin.conf" | tee "/etc/pam.d/weblogin"; fi
 
 .PHONY: clean
@@ -79,6 +78,6 @@ clean:
 	-rm -f $(OBJS) pam_weblogin.so
 
 .PHONY: test
-test: install
+test:
 	pamtester weblogin "$${USERNAME:-unspecified}" authenticate
 

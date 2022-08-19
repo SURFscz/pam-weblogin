@@ -1,0 +1,24 @@
+version: "3"
+
+services:
+  sandbox:
+    build:
+      context: .
+      # dockerfile: Dockerfile.ubuntu
+      dockerfile: Dockerfile.centos
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    container_name: sandbox
+    hostname: sandbox
+    volumes:
+      - ../:/home/worker/work
+      - ~/.gitconfig:/home/worker/.gitconfig:ro
+      - ~/.ssh:/home/worker/.ssh:ro
+    environment:
+      URL: ${URL:-https://sram.surf.nl/pam-weblogin}
+      TOKEN: ${TOKEN:-undefined}
+      RETRIES: ${RETRIES:-3}
+      ATTRIBUTE: ${ATTRIBUTE:-email}
+      CACHE_DURATION: ${CACHE_DURATION:-30}
+      USERNAME: ${USERNAME:-unspecified}
