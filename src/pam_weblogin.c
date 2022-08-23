@@ -124,28 +124,28 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 
 	bool timeout = false;
 
-	/* Now User has to return to the prompted and anter the correct PIN !... */
+	/* Now User has to return to the prompted and anter the correct CODE !... */
 	for (unsigned retry = 0; (retry < cfg->retries) &&
 							 (pam_result != PAM_SUCCESS) &&
 							 !timeout;
 		 ++retry)
 	{
-		char *pin = tty_input(pamh, PROMPT_PIN, PAM_PROMPT_ECHO_OFF);
+		char *code = tty_input(pamh, PROMPT_CODE, PAM_PROMPT_ECHO_OFF);
 
 		/* Prepare URL... */
-		url = str_printf("%s/%s", cfg->url, API_CHECK_PIN_PATH);
+		url = str_printf("%s/%s", cfg->url, API_CHECK_CODE_PATH);
 
-		/* Prepare check pin input data... */
-		data = str_printf("{\"session_id\":\"%s\",\"pin\":\"%s\"}", session_id, pin);
-		free(pin);
+		/* Prepare check code input data... */
+		data = str_printf("{\"session_id\":\"%s\",\"pin\":\"%s\"}", session_id, code);
+		free(code);
 
-		/* Request check pin result */
+		/* Request check code result */
 		json_char *verify_response = (json_char *) API(
 			url,
 			"POST",
 			(char *[]){ "Content-Type: application/json", authorization, NULL},
 			data,
-			API_CHECK_PIN_RESPONSE_CODE
+			API_CHECK_CODE_RESPONSE_CODE
 		);
 		free(url);
 		free(data);
