@@ -35,7 +35,7 @@ def session_id(length=8):
     return ''.join([str(random.choice(chars)) for i in range(length)])
 
 
-def pin(length=4):
+def code(length=4):
     return ''.join([str(random.choice(numbers)) for i in range(length)])
 
 
@@ -63,7 +63,7 @@ def req():
     auths[new_session_id] = {
         'session_id': new_session_id,
         'challenge': f'Hello {user_id}. To continue, '
-                     f'visit {url}/pam-weblogin/login/{new_session_id} and enter pin',
+                     f'visit {url}/pam-weblogin/login/{new_session_id} and enter verification code',
         'cached': cache,
         'info': 'Login was cached' if cache else 'Sign in'
     }
@@ -72,16 +72,16 @@ def req():
     response.headers['Content-Type'] = "application/json"
     response.data = json.dumps(auths[new_session_id])
 
-    new_pin = pin()
+    new_code = code()
     auths[new_session_id]['user_id'] = user_id
     auths[new_session_id]['attribute'] = attribute
-    auths[new_session_id]['pin'] = new_pin
+    auths[new_session_id]['code'] = new_code
     auths[new_session_id]['cache_duration'] = cache_duration
     Timer(TIMEOUT, pop_auth, [new_session_id]).start()
 
     logging.debug(f'/pam-weblogin/start <- {data}\n'
                   f' -> {response.data.decode()}\n'
-                  f'  pin: {new_pin}')
+                  f'  code: {new_code}')
 
     return response
 
@@ -93,15 +93,15 @@ def auth():
 
     data = json.loads(request.data)
     session_id = data.get('session_id')
-    rpin = data.get('pin')
+    rcode = data.get('pin')
 
     this_auth = auths.get(session_id)
     if this_auth:
         user_id = this_auth.get('user_id')
         attribute = this_auth.get('attribute')
-        pin = this_auth.get('pin')
+        code = this_auth.get('code')
         cache_duration = this_auth.get('cache_duration')
-        if rpin == pin:
+        if rcode == code:
             reply = {
                 'result': 'SUCCESS',
                 'info': f'Authenticated on attribute {attribute}'
@@ -112,7 +112,7 @@ def auth():
         else:
             reply = {
                 'result': 'FAIL',
-                'info': 'Pin failed'
+                'info': 'Verification failed'
             }
     else:
         reply = {
@@ -144,10 +144,10 @@ def login(session_id):
         else:
             request.data
             user_id = this_auth['user_id']
-            pin = this_auth['pin']
+            code = this_auth['code']
             content = "<html>\n<body>\n"
             content += f"{session_id}/{user_id} successfully authenticated<br />\n"
-            content += f"PIN: {pin}<br />\n"
+            content += f"Verification code: {code}<br />\n"
             content += "This window may be closed\n"
             content += "</body>\n</html>\n"
     else:

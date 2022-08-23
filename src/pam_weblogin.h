@@ -12,7 +12,7 @@
 #define DEFAULT_CONF_FILE "/etc/pam-weblogin.conf"
 
 #define PROMPT_USERNAME "Username: "
-#define PROMPT_PIN "Pin: "
+#define PROMPT_PIN "Verification code: "
 
 #define SERVER_ERROR "Server error!"
 
