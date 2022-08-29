@@ -23,9 +23,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-bionic, compiler: gcc,   version: 4.8 }
-          - { os: ubuntu-bionic, compiler: gcc,   version:   5 }
-          - { os: ubuntu-bionic, compiler: gcc,   version:   6 }
+#          - { os: ubuntu-bionic, compiler: gcc,   version: 4.8 }
+#          - { os: ubuntu-bionic, compiler: gcc,   version:   5 }
+#          - { os: ubuntu-bionic, compiler: gcc,   version:   6 }
           - { os: ubuntu-latest, compiler: gcc,   version:   7 }
           - { os: ubuntu-latest, compiler: gcc,   version:   8 }
           - { os: ubuntu-latest, compiler: gcc,   version:   9 }
