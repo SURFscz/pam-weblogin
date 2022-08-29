@@ -4,7 +4,7 @@ import os
 import json
 import random
 import logging
-from flask import Flask, Response, request
+from flask import Flask, Response, request, Markup
 from threading import Timer
 
 logging.getLogger().setLevel(logging.DEBUG)
@@ -137,6 +137,7 @@ def login(session_id):
     if this_auth:
         if request.method == 'GET':
             user_id = this_auth.get('user_id')
+            user_id = Markup.escape(user_id)
             content = "<html>\n<body>\n<form method=POST>\n"
             content += f"Please authorize SSH login for user {user_id}<br />\n"
             content += "<input name=action type=submit value=login>\n"
@@ -144,7 +145,9 @@ def login(session_id):
         else:
             request.data
             user_id = this_auth['user_id']
+            user_id = Markup.escape(user_id)
             pin = this_auth['pin']
+            pin = Markup.escape(pin)
             content = "<html>\n<body>\n"
             content += f"{session_id}/{user_id} successfully authenticated<br />\n"
             content += f"PIN: {pin}<br />\n"
