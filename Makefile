@@ -19,7 +19,7 @@ json-parser/configure:
 
 .PHONY: clean clean-src clean-json-parser
 clean: clean-src clean-json-parser
-clean-json-parser: json-parser-build
+clean-json-parser:
 	rm -rf json-parser-build/
 clean-src: clean-%:
 	$(MAKE) -C $* clean
