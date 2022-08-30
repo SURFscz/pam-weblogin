@@ -8,6 +8,7 @@
 #include <ctype.h>
 #include <limits.h>
 #include <errno.h>
+#include <stdbool.h>
 
 #include "tty.h"
 
@@ -45,6 +46,47 @@ void freeConfig(Config *cfg)
 	}
 }
 
+/* Check config file access and permissions */
+static bool check_file(const char * const filename)
+{
+	struct stat sb;
+	unsigned int mode;
+	char buf[256];
+
+	if (access(filename, R_OK) == -1)
+	{
+		log_message(LOG_ERR, "config file not accessible");
+		return false;
+	}
+
+	if (stat(filename, &sb) == -1)
+	{
+		buf[0] = '\0';
+		if (strerror_r(errno, buf, sizeof(buf)))
+			log_message(LOG_ERR, "config file stat error %i: %s", errno, buf);
+		else
+			log_message(LOG_ERR, "unknown error while checking config file");
+		return false;
+	}
+
+	if (!S_ISREG(sb.st_mode))
+	{
+		log_message(LOG_ERR, "config file is not a regular file");
+		return false;
+	}
+
+	mode = sb.st_mode & 07777;
+	/* this check is also safe for setfacl() &co, because the group bits
+	   acts as masks for ACL operation */
+	if (mode&07177)
+	{
+		log_message(LOG_ERR, "config file permissions too wide: %03o (expected 0600 or 0400)", mode);
+		return false;
+	}
+
+	return true;
+}
+
 /*
  * getConfig reads config file
  * key value pairs are separated by =, whitespace is removed
@@ -59,8 +101,6 @@ Config *getConfig(const char *filename)
 {
 	int lineno = 0;
 	FILE *fp = NULL;
-	struct stat sb;
-	long unsigned mode;
 
 	Config *cfg = malloc(sizeof(Config));
 	if (cfg == NULL)
@@ -75,23 +115,8 @@ Config *getConfig(const char *filename)
 	cfg->cache_duration = DEFAULT_CACHE_DURATION;
 	cfg->retries = DEFAULT_RETRIES;
 
-	// Check filename access and permissions
-	if (access(filename, F_OK) == -1)
+	if (!check_file(filename))
 	{
-		log_message(LOG_INFO, "config not accessible");
-		return NULL;
-	}
-
-	if (stat(filename, &sb) == -1)
-	{
-		log_message(LOG_INFO, "config stat error");
-		return NULL;
-	}
-
-	mode = sb.st_mode & 0777;
-	if (mode > 0600)
-	{
-		log_message(LOG_INFO, "config permissions too wide");
 		return NULL;
 	}
 
