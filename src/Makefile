@@ -62,7 +62,7 @@ utils.o: utils.c utils.h tty.h defs.h
 tty.o: tty.c utils.h defs.h
 pam_weblogin.o: pam_weblogin.c config.h http.h utils.h tty.h defs.h
 
-pam_weblogin.so: $(OBJS) ../json-parser/libjsonparser.a
+pam_weblogin.so: $(OBJS) ../json-parser-build/libjsonparser.a
 	$(CC) $(LDFLAGS) -shared -o $@ $^ -lcurl -lpam -lm
 	chmod 644 $@
 
