@@ -15,6 +15,7 @@
 #define PROMPT_CODE "Verification code: "
 
 #define SERVER_ERROR "Server error!"
+#define SERVER_NO_MESSAGE "Server didn't send reason"
 
 #ifndef GIT_COMMIT
 #DEFINE GIT_COMMIT 0000

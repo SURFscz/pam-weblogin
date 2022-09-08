@@ -15,7 +15,8 @@ typedef struct {
 	size_t size;
 } CURL_FETCH;
 
-static size_t curl_callback(void* contents, size_t size, size_t nmemb, void* userp) {
+static size_t curl_callback(void* contents, size_t size, size_t nmemb, void* userp)
+{
 	size_t realsize = size * nmemb;         /* calculate buffer size */
 	CURL_FETCH *p = (CURL_FETCH *) userp;   /* cast pointer to fetch struct */
 
@@ -50,14 +51,16 @@ static size_t curl_callback(void* contents, size_t size, size_t nmemb, void* use
 /*
  * API to URL url and returns the result
  */
-char *API(const char* url, const char *method, char *headers[], const char* data, long expected_response_code) {
+char *API(const char* url, const char *method, char *headers[], const char* data)
+{
 	CURL* curl;
 	CURL_FETCH fetcher;
 
 	/* Prepare Headers... */
 	struct curl_slist* request_headers = NULL;
 
-	for (int i=0; headers[i]; i++) {
+	for (int i=0; headers[i]; i++)
+	{
 		request_headers = curl_slist_append(request_headers, headers[i]);
 	}
 
@@ -67,7 +70,8 @@ char *API(const char* url, const char *method, char *headers[], const char* data
 
 	/* Prepare API request... */
 	curl = curl_easy_init();
-	if (curl) {
+	if (curl)
+	{
 		long response_code;
 
 		curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -78,14 +82,17 @@ char *API(const char* url, const char *method, char *headers[], const char* data
 		curl_easy_setopt(curl, CURLOPT_USERAGENT, USER_AGENT);
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, data ? strnlen(data, 1024) : 0);
+//  		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
 
 		/* Perform the request */
-		if (curl_easy_perform(curl) != CURLE_OK) {
+		if (curl_easy_perform(curl) != CURLE_OK)
+		{
 			return NULL;
 		}
 
 		/* Check response */
-		if (curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code) != CURLE_OK) {
+		if (curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code) != CURLE_OK)
+		{
 			return NULL;
 		}
 
@@ -93,10 +100,7 @@ char *API(const char* url, const char *method, char *headers[], const char* data
 		log_message(LOG_INFO, "Request to %s, %ld, %s", url, response_code, fetcher.payload);
 		curl_easy_cleanup(curl);
 
-
-		if (response_code == expected_response_code) {
-			return fetcher.payload;
-		}
+		return fetcher.payload;
 	}
 
 	free(fetcher.payload);

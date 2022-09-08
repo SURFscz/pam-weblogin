@@ -49,10 +49,14 @@ def authorized(headers):
 
 @app.route('/pam-weblogin/start', methods=['POST'])
 def req():
-    if not authorized(request.headers):
-        return Response(response="Unauthorized", status=401)
-
     data = json.loads(request.data)
+    logging.debug(f"/pam-weblogin/start\n <- {data}")
+    if not authorized(request.headers):
+        response = Response(status=404)
+        msg = {'error': True, 'message': 'Unauthorized'}
+        response.data = json.dumps(msg)
+        logging.debug(f" -> {msg}")
+        return response
 
     user_id = data.get('user_id')
     attribute = data.get('attribute')
@@ -79,8 +83,7 @@ def req():
     auths[new_session_id]['cache_duration'] = cache_duration
     Timer(TIMEOUT, pop_auth, [new_session_id]).start()
 
-    logging.debug(f'/pam-weblogin/start <- {data}\n'
-                  f' -> {response.data.decode()}\n'
+    logging.debug(f' -> {response.data.decode()}\n'
                   f'  code: {new_code}')
 
     return response
@@ -89,7 +92,11 @@ def req():
 @app.route('/pam-weblogin/check-pin', methods=['POST'])
 def auth():
     if not authorized(request.headers):
-        return Response(response="Unauthorized", status=401)
+        response = Response(status=401)
+        msg = {'error': True, 'message': 'Unauthorized'}
+        response.data = json.dumps(msg)
+        logging.debug(f" -> {msg}")
+        return response
 
     data = json.loads(request.data)
     session_id = data.get('session_id')
