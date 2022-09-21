@@ -35,8 +35,6 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	char *info = NULL;
 	char *authorization = NULL;
 	bool cached = false;
-	bool error = false;
-	char *message = NULL;
 	int pam_result = PAM_AUTH_ERR;
 
 	log_message(LOG_INFO, "Start of pam_weblogin");
@@ -80,7 +78,8 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		url,
 		"POST",
 		(char *[]){ "Content-Type: application/json", authorization, NULL},
-		data
+		data,
+		pamh
 	);
 	free(url);
 	free(data);
@@ -88,8 +87,6 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	/* Something went wrong on the server */
 	if (challenge_response == NULL)
 	{
-		log_message(LOG_ERR, SERVER_ERROR);
-		tty_output(pamh, SERVER_ERROR);
 		pam_result = PAM_SYSTEM_ERR;
 		goto finalize;
 	}
@@ -97,26 +94,6 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	/* Parse response */
 	json_value *challenge_json = json_parse(challenge_response, strnlen(challenge_response, BUFSIZ));
 	free(challenge_response);
-
-	error = getBool(challenge_json, "error");
-
-	/* See if the response contains an error */
-	if (error)
-	{
-		/* See if the response contains a message */
-		message = getString(challenge_json, "message");
-		if (message != NULL)
-		{
-			log_message(LOG_INFO, "%s", message);
-			tty_output(pamh, message);
-		} else
-		{
-			log_message(LOG_INFO, "%s", SERVER_NO_MESSAGE);
-			tty_output(pamh, SERVER_NO_MESSAGE);
-		}
-		json_value_free(challenge_json);
-		goto finalize;
-	}
 
 	cached = getBool(challenge_json, "cached");
 	info = getString(challenge_json, "info");
@@ -168,7 +145,8 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 			url,
 			"POST",
 			(char *[]){ "Content-Type: application/json", authorization, NULL},
-			data
+			data,
+			pamh
 		);
 		free(url);
 		free(data);
@@ -176,34 +154,12 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		/* Something went wrong on the server */
 		if (verify_response == NULL)
 		{
-			log_message(LOG_ERR, SERVER_ERROR);
-			tty_output(pamh, SERVER_ERROR);
-			pam_result = PAM_SYSTEM_ERR;
 			break;
 		}
 
 		/* Parse auth result */
 		json_value *verify_json = json_parse(verify_response, strnlen(verify_response, BUFSIZ));
 		free(verify_response);
-
-		/* See if the response contains an error */
-		error = getBool(verify_json, "error");
-		if (error)
-		{
-			/* See if the response contains a message */
-			message = getString(verify_json, "message");
-			if (message != NULL)
-			{
-				log_message(LOG_INFO, "%s", message);
-				tty_output(pamh, message);
-			} else
-			{
-				log_message(LOG_INFO, "%s", SERVER_NO_MESSAGE);
-				tty_output(pamh, SERVER_NO_MESSAGE);
-			}
-			pam_result = PAM_SYSTEM_ERR;
-			break;
-		}
 
 		char *result = getString(verify_json, "result");
 		info = getString(verify_json, "info");
@@ -234,8 +190,6 @@ finalize:
 		free(challenge);
 	if (session_id!=NULL)
 		free(session_id);
-	if (message!=NULL)
-		free(message);
 	freeConfig(cfg);
 
 	return pam_result;

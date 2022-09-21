@@ -51,7 +51,7 @@ static size_t curl_callback(void* contents, size_t size, size_t nmemb, void* use
 /*
  * API to URL url and returns the result
  */
-char *API(const char* url, const char *method, char *headers[], const char* data)
+char *API(const char* url, const char *method, char *headers[], const char* data, pam_handle_t *pamh)
 {
 	CURL* curl;
 	CURL_FETCH fetcher;
@@ -87,20 +87,34 @@ char *API(const char* url, const char *method, char *headers[], const char* data
 		/* Perform the request */
 		if (curl_easy_perform(curl) != CURLE_OK)
 		{
+			log_message(LOG_ERR, SERVER_UNREACHABLE);
+			tty_output(pamh, SERVER_UNREACHABLE);
 			return NULL;
 		}
 
 		/* Check response */
 		if (curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code) != CURLE_OK)
 		{
-			return NULL;
+			log_message(LOG_ERR, SERVER_ERROR);
+			tty_output(pamh, SERVER_ERROR);
 		}
 
 		/* always cleanup */
-		log_message(LOG_INFO, "Request to %s, %ld, %s", url, response_code, fetcher.payload);
 		curl_easy_cleanup(curl);
+		log_message(LOG_INFO, "Request to %s, %ld, %s", url, response_code, fetcher.payload);
 
-		return fetcher.payload;
+		if (response_code < 300)
+		{
+			return fetcher.payload;
+		} else if (response_code < 500)
+		{
+			log_message(LOG_ERR, PERMISSION_DENIED);
+			tty_output(pamh, PERMISSION_DENIED);
+		} else
+		{
+			log_message(LOG_ERR, SERVER_ERROR);
+			tty_output(pamh, SERVER_ERROR);
+		}
 	}
 
 	free(fetcher.payload);
