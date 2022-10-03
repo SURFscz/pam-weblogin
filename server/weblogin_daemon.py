@@ -8,7 +8,7 @@ import yaml
 from threading import Timer
 from datetime import timedelta
 
-from flask import Flask, Response, request, Markup, session
+from flask import Flask, Response, request, Markup, session, render_template
 from flask_pyoidc import OIDCAuthentication
 from flask_pyoidc.provider_configuration import ProviderConfiguration, ClientMetadata
 from flask_pyoidc.user_session import UserSession
@@ -21,7 +21,7 @@ logging.getLogger('jwkest').setLevel(logging.ERROR)
 logging.getLogger('urllib3').setLevel(logging.ERROR)
 logging.getLogger('werkzeug').setLevel(logging.ERROR)
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='templates', static_folder='static')
 
 with open(sys.argv[1]) as f:
     config = yaml.safe_load(f)
@@ -192,24 +192,17 @@ def __login(session_id):
             attribute_id = Markup.escape(attribute_id)
             code = this_auth['code']
             code = Markup.escape(code)
-            auths.pop(session_id, None)
-            content = "<html>\n<body>\n"
-            content += f"SSH request {session_id}/{user_id}<br>\n"
-            content += f"{attribute_id} successfully authenticated<br>\n"
-            content += f"Verification code: {code}<br><br>\n"
-            content += "<i>This window may be closed</i>\n"
-            content += "</body>\n</html>\n"
+            message = f"<h1>SSH request</h1>\n"
+            message += f"for session {session_id}/{user_id}<br>\n"
+            message += f"{attribute_id} successfully authenticated<br>\n"
+            message += f"Verification code: {code}<br><br>\n"
+            message += "<i>This window may be closed</i>\n"
         else:
-            content = "<html>\n<body>\n"
-            content += f"user_id {user_id} not found\n"
-            content += "</body>\n</html>\n"
+            message = f"user_id {user_id} not found\n"
     else:
-        content = "<html>\n<body>\n"
-        content += "session_id not found\n"
-        content += "</body>\n</html>\n"
+        message = "session_id not found\n"
 
-    response = Response()
-    response.data = content
+    response = render_template('login.j2', message=message)
 
     return response
 
