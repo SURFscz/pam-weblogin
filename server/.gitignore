@@ -1,5 +1,4 @@
 # created by virtualenv automatically
-*.example
 *.yml
 flask_session
 
