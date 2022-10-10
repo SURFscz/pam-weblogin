@@ -186,7 +186,7 @@ def __login(session_id):
         logging.info(f"user_id: {user_id}, attribute_id: {attribute_id}")
         if (user_id
             and attribute_id
-            and user_id == attribute_id
+            and user_id in attribute_id
             or not oidc_enabled):
             user_id = Markup.escape(user_id)
             attribute_id = Markup.escape(attribute_id)
