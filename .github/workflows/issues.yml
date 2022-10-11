@@ -1,0 +1,23 @@
+---
+name: Project automation
+
+on:
+  issues:
+    types:
+      - opened
+      - reopened
+      - closed
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - review_requested
+      - closed
+
+jobs:
+  project_management:
+    uses: SURFscz/SCZ-deploy/.github/workflows/project.yml@main
+    with:
+      event: ${{ github.event_name }}
+      action: ${{ github.event.action }}
+    secrets: inherit

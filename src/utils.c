@@ -1,3 +1,5 @@
+#include "defs.h"
+
 #include <stdarg.h>
 
 #include "tty.h"

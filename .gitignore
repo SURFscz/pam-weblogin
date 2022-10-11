@@ -2,6 +2,9 @@ lib/
 bin/
 pyvenv.cfg
 .vscode/
+json-parser-build/
 *.o
 *.so
 .project
+.env
+docker/.env

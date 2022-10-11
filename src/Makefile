@@ -24,9 +24,8 @@ CFLAGS += -fstack-protector-strong
 
 # gcc only
 ifneq "$(shell $(CC) --version | grep gcc)" ""
-  CFLAGS += -Wformat-overflow=2 -Wformat-truncation=2
-
   ifeq "$(shell expr '$(CC_MAJOR)' '>=' '10')" "1"
+    CFLAGS += -Wformat-overflow=2 -Wformat-truncation=2
     CFLAGS += -ftree-vrp -fanalyzer
   endif
 endif
@@ -63,7 +62,7 @@ utils.o: utils.c utils.h tty.h defs.h
 tty.o: tty.c utils.h defs.h
 pam_weblogin.o: pam_weblogin.c config.h http.h utils.h tty.h defs.h
 
-pam_weblogin.so: $(OBJS) ../json-parser/libjsonparser.a
+pam_weblogin.so: $(OBJS) ../json-parser-build/libjsonparser.a
 	$(CC) $(LDFLAGS) -shared -o $@ $^ -lcurl -lpam -lm
 	chmod 644 $@
 
@@ -71,7 +70,7 @@ pam_weblogin.so: $(OBJS) ../json-parser/libjsonparser.a
 install: pam_weblogin.so
 	install -d $(DESTDIR)$(prefix)/lib/security/
 	install pam_weblogin.so $(DESTDIR)$(prefix)/lib/security/
-	if [ ! -f $(DESTDIR)/etc/pam-weblogin.conf ]; then echo "url=${URL}\ntoken = Bearer ${TOKEN}\nretries = ${RETRIES}\nattribute=${ATTRIBUTE}\ncache_duration=${CACHE_DURATION}\n" | tee "$(DESTDIR)/etc/pam-weblogin.conf"; fi
+	if [ ! -f $(DESTDIR)/etc/pam-weblogin.conf ]; then printf "url=${URL}\ntoken = Bearer ${TOKEN}\nretries = ${RETRIES}\nattribute=${ATTRIBUTE}\ncache_duration=${CACHE_DURATION}\n" | tee "$(DESTDIR)/etc/pam-weblogin.conf"; fi
 	if [ ! -f $(DESTDIR)/etc/pam.d/weblogin ]; then echo "auth required $(prefix)/lib/security/pam_weblogin.so /etc/pam-weblogin.conf" | tee "$(DESTDIR)/etc/pam.d/weblogin"; fi
 
 .PHONY: clean
@@ -79,6 +78,6 @@ clean:
 	-rm -f $(OBJS) pam_weblogin.so
 
 .PHONY: test
-test: install
+test:
 	pamtester weblogin "$${USERNAME:-unspecified}" authenticate
 
