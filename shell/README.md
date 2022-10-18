@@ -26,13 +26,11 @@ individual files in /usr/share/doc/*/copyright.
 Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
 permitted by applicable law.
 Last login: Tue Oct 18 14:48:52 2022 from 192.168.56.1
-before bash
 Hello myshell. To continue, visit http://localhost:5001/pam-weblogin/login/k4vI3DOT and enter verification code
 code:
 myshell@weblogin:~$ id
 uid=1002(myshell) gid=1002(myshell) groups=1002(myshell)
 myshell@weblogin:~$
 logout
-after bash
 Connection to weblogin closed.
 ```

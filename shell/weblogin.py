@@ -32,6 +32,5 @@ while True:
     answer = response.json()
     result = answer['result']
     if result == 'SUCCESS':
+        subprocess.call(['sudo', '-iu', 'myshell'])
         break
-
-subprocess.call(['sudo', '-iu', 'myshell'])
