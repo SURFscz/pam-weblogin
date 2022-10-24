@@ -1,11 +1,9 @@
 # PAM Weblogin via smart shell
 sshd subprocess shell test
 
-- Copy weblogin.py to /usr/bin/weblogin.py and chmod +x
+Given you have checked out pam-weblogin in /opt/pam-weblogin
 
-```4 -rwxr-xr-x 1 root root 129 Oct 18 11:21 /usr/bin/weblogin.py```
-
-- Add functional user account 'weblogin' and set shell to /usr/bin/weblogin.py
+- Add functional user account 'weblogin' and set shell to /opt/pam-weblogin/shell/weblogin.py
 
 ```weblogin:x:1003:1003:Weblogin,,,:/home/weblogin:/usr/bin/weblogin.py```
 
@@ -13,9 +11,28 @@ sshd subprocess shell test
 
 ```weblogin ALL=(ALL:ALL) NOPASSWD:/usr/bin/bash```
 
+- Add sshd AuthorizedKeysCommand config
+
+```
+AuthorizedKeysCommand /opt/pam-weblogin/shell/authorized_keys.py
+AuthorizedKeysCommandUser root
+```
+
 - Add target account myshell (shell /usr/bin/bash)
 
 ```
+# adduser myshell
+```
+
+Create /etc/pam-weblogin.conf and make it readable to the ```weblogin``` user:
+```
+url=https://sram.surf.nl/pam-weblogin
+token = Bearer <token>
+retries = 3
+attribute=username
+cache_duration = 60
+```
+
 $ ssh weblogin@weblogin
 Linux weblogin 5.10.0-15-amd64 #1 SMP Debian 5.10.120-1 (2022-06-09) x86_64
 
