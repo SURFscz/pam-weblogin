@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import requests
 
-
 def read_conf(f):
     c = {}
     while True:
@@ -16,11 +15,11 @@ def read_conf(f):
 
     return c
 
-
-def get_authorized_keys(url, auth):
-    response = requests.get(f"{url}/ssh_keys", headers=auth, verify='/opt/pam-weblogin/scz-vm.net.crt')
-    return response.json()
-
+def get_authorized_keys(url, auth, verify):
+    keys = []
+    response = requests.get(f"{url}/ssh_keys", headers=auth, verify=verify)
+    answer = response.json()
+    return answer
 
 def main():
     config_file = '/etc/pam-weblogin.conf'
@@ -28,16 +27,16 @@ def main():
         config = read_conf(f)
 
     token = config.get('token')
+    url = config['url'].rstrip('/')
+    verify = config.get('verify')
     auth = {
         'Authorization': token
     }
-    url = config['url'].rstrip('/')
-
-    keys = get_authorized_keys(url, auth)
+    keys = get_authorized_keys(url, auth, verify)
 
     for key in keys:
         print(key)
 
-
 if __name__ == "__main__":
     main()
+

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 import os
+import sys
 import subprocess
 import requests
 import json
 import getpass
-
 
 def read_conf(f):
     c = {}
@@ -80,3 +80,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

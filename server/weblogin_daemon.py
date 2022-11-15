@@ -56,9 +56,9 @@ def req():
 
     user_id = data.get('user_id')
     attribute = data.get('attribute')
-    cache_duration = data.get('cache_duration')
+    cache_duration = data.get('cache_duration', 0)
     new_session_id = session_id()
-    url = os.environ.get("URL", "http://localhost:5001")
+    url = os.environ.get("URL", "http://localhost:8080")
     cache = cached.get(user_id, False)
     auths[new_session_id] = {
         'session_id': new_session_id,
@@ -71,6 +71,10 @@ def req():
     response = Response(status=201)
     response.headers['Content-Type'] = "application/json"
     response.data = json.dumps(auths[new_session_id])
+
+    # The Smart Shell testcase
+    if not user_id:
+        user_id = attribute
 
     new_code = code()
     auths[new_session_id]['user_id'] = user_id
@@ -104,6 +108,7 @@ def auth():
         if rcode == code:
             reply = {
                 'result': 'SUCCESS',
+                'username': user_id,
                 'info': f'Authenticated on attribute {attribute}'
             }
             cached[user_id] = True
@@ -165,4 +170,4 @@ def login(session_id):
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5001, debug=False)
+    app.run(host='0.0.0.0', port=8080, debug=False)
