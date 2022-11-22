@@ -32,7 +32,7 @@ retries = 3
 attribute=username
 cache_duration = 60
 ```
-
+```
 $ ssh weblogin@weblogin
 Linux weblogin 5.10.0-15-amd64 #1 SMP Debian 5.10.120-1 (2022-06-09) x86_64
 

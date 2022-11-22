@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 import os
+import sys
 import subprocess
 import requests
 import json
 import getpass
-
 
 def read_conf(f):
     c = {}
@@ -28,8 +28,9 @@ def main():
 
     token = config['token']
     url = config['url'].rstrip('/')
-    cache_duration = int(config.get('cache_duration', 60))
+    attribute = config.get('attribute')
     retries = int(config.get('retries', 3))
+    verify = config.get('verify')
     path = os.path.dirname(__file__)
     try:
         git_commit = subprocess.check_output(['git', '-C', path, 'describe', '--abbrev=6', '--always']).decode().strip()
@@ -42,19 +43,14 @@ def main():
     }
 
     start = {
-        'cache_duration': cache_duration,
+        'attribute': attribute,
         'GIT_COMMIT': git_commit
     }
 
     response = requests.post(f"{url}/start", data=json.dumps(start), headers=auth,
-                             verify='/opt/pam-weblogin/scz-vm.net.crt')
+                             verify=verify)
     #print(response.text)
     answer = response.json()
-    username = answer.get('username')
-    if answer.get('cached') and username:
-        subprocess.call(['sudo', '-iu', username])
-        exit(0)
-
     print(answer['challenge'])
 
     session_id = answer['session_id']
@@ -68,7 +64,7 @@ def main():
         code = getpass.getpass("code: ")
         check['pin'] = code
         response = requests.post(f"{url}/check-pin", data=json.dumps(check), headers=auth,
-                                 verify='/opt/pam-weblogin/scz-vm.net.crt')
+                                 verify=verify)
         #print(response.text)
         answer = response.json()
         result = answer.get('result')
@@ -80,3 +76,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

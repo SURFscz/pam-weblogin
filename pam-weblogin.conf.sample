@@ -3,3 +3,4 @@ token = Bearer <replace with SRAM API TOKEN for your service>
 retries = 3
 attribute = email
 cache_duration = 30
+verify = /etc/ssl/ca.crt
