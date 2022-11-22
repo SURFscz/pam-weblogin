@@ -72,7 +72,7 @@ char *API(const char* url, const char *method, char *headers[], const char* data
 	curl = curl_easy_init();
 	if (curl)
 	{
-		long response_code;
+		long response_code = 999;
 
 		curl_easy_setopt(curl, CURLOPT_URL, url);
 		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method);
@@ -89,11 +89,9 @@ char *API(const char* url, const char *method, char *headers[], const char* data
 		{
 			log_message(LOG_ERR, SERVER_UNREACHABLE);
 			tty_output(pamh, SERVER_UNREACHABLE);
-			return NULL;
 		}
-
 		/* Check response */
-		if (curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code) != CURLE_OK)
+		else if (curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code) != CURLE_OK)
 		{
 			log_message(LOG_ERR, SERVER_ERROR);
 			tty_output(pamh, SERVER_ERROR);
@@ -106,11 +104,13 @@ char *API(const char* url, const char *method, char *headers[], const char* data
 		if (response_code < 300)
 		{
 			return fetcher.payload;
-		} else if (response_code < 500)
+		}
+		else if (response_code < 500)
 		{
 			log_message(LOG_ERR, PERMISSION_DENIED);
 			tty_output(pamh, PERMISSION_DENIED);
-		} else
+		}
+		else
 		{
 			log_message(LOG_ERR, SERVER_ERROR);
 			tty_output(pamh, SERVER_ERROR);
