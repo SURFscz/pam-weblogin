@@ -21,6 +21,9 @@ CFLAGS += -fPIC
 CFLAGS += -Wall -Wextra -Wshadow -Wpedantic -Wuninitialized -Wformat=2
 CFLAGS += -Werror
 CFLAGS += -fstack-protector-strong
+ifdef NOVERIFY
+CFLAGS += -DNOVERIFY
+endif
 
 # gcc only
 ifneq "$(shell $(CC) --version | grep gcc)" ""

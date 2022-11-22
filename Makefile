@@ -1,10 +1,13 @@
 SUBDIRS := json-parser src
 
 all: module
+ifdef NOVERIFY
+FLAGS := NOVERIFY=1
+endif
 
 .PHONY: module
 module: json-parser
-	$(MAKE) -C src/
+	$(FLAGS) $(MAKE) -C src/
 
 .PHONY: json-parser
 json-parser: json-parser-build/libjsonparser.a
