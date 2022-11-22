@@ -96,7 +96,7 @@ def req():
 
     user_id = data.get('user_id')
     attribute = data.get('attribute')
-    cache_duration = data.get('cache_duration')
+    cache_duration = data.get('cache_duration', 0)
     new_session_id = session_id()
     url = os.environ.get("URL", config['url']).rstrip('/')
     cache = cached.get(user_id, False)
@@ -111,6 +111,10 @@ def req():
     response = Response(status=201)
     response.headers['Content-Type'] = "application/json"
     response.data = json.dumps(auths[new_session_id])
+
+    # The Smart Shell testcase
+    if not user_id:
+        user_id = attribute
 
     new_code = code()
     auths[new_session_id]['user_id'] = user_id
@@ -144,6 +148,7 @@ def check_pin():
         if rcode == code:
             reply = {
                 'result': 'SUCCESS',
+                'username': user_id,
                 'info': f'Authenticated on attribute {attribute}'
             }
             cached[user_id] = True
