@@ -27,16 +27,27 @@ pamtester: successfully authenticated
 ## Production (example)
 This example enables PAM WebLogin *and* requires either publickey **or** password authentication:
 
-Edit /etc/pam.d/sshd as follows (add the line above @include common-auth)
+Edit `sshd` as follows (add the line above @include common-auth)
+### /etc/pam.d/sshd
 ```
 # PAM configuration for the Secure Shell service
 
-auth sufficient /usr/local/lib/security/pam_weblogin.so /etc/pam-weblogin.conf
+auth required /usr/local/lib/security/pam_weblogin.so /etc/pam-weblogin.conf
 # Standard Un*x authentication.
 @include common-auth
 ```
 
-Set the following configurations in ```/etc/ssh/sshd_config``` and restart sshd
+If you put these lines *above* the `auth required` line:
+```
+auth [success=4 default=ignore] pam_access.so accessfile=/etc/security/exclude_iprange.conf
+auth [success=3 default=ignore] pam_succeed_if.so quiet user ingroup admin
+auth [success=2 default=ignore] pam_succeed_if.so quiet uid < 70000000
+auth [success=1 default=ignore] pam_succeed_if.so quiet uid > 72999999
+```
+Logins coming from exclude range, users in the admin group and uids between 70000000 and 72999999 are allowed to continue without pam-weblogin.
+
+Set the following configurations in `sshd_config` and restart sshd
+### /etc/ssh/sshd_config
 ```
 PubkeyAuthentication yes
 PasswordAuthentication yes
@@ -45,4 +56,20 @@ ChallengeResponseAuthentication yes
 UsePAM yes
 ```
 
-Mind that the line with AuthenticationMethods signifies the option of authenticating either via (publickey and keyboard-interactive (pam)) *or* (password and keyboard-interactive), depending on the succes of publickey.
+Mind that in this example the line AuthenticationMethods signifies the option of authenticating either via (publickey and keyboard-interactive (pam)) *or* (password and keyboard-interactive), depending on the success of publickey.
+
+Add the `pam-weblogin.conf` and make it readable only for root (`chmod 600 /etc/pam-weblogin.conf, chown root.root /etc/pam-weblogin.conf`).
+### /etc/pam-weblogin.conf
+```
+url = https://sram.surf.nl/pam-weblogin
+token = Bearer <replace with SRAM API TOKEN for your service>
+retries = 3
+attribute = email
+cache_duration = 30
+verify = /etc/ssl/ca.crt
+```
+- `url` is the pam-weblogin endpoint of the weblogin server
+- `token` is the complete HTTP `Authorization` header, including `Bearer`
+- `retries` is the number of verification code retries allowed
+- `cache_duration` is the time the server should respond with a cached answer instead of reauthenticating the user, in seconds
+- `verify` alternative SSL CA, for debug purposes
