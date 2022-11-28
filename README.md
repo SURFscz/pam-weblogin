@@ -73,3 +73,6 @@ verify = /etc/ssl/ca.crt
 - `retries` is the number of verification code retries allowed
 - `cache_duration` is the time the server should respond with a cached answer instead of reauthenticating the user, in seconds
 - `verify` alternative SSL CA, for debug purposes
+
+## Locking yourself out
+Please make sure to create a way of accessing the machine in case you create a configuration that effectively locks you out of the machine. Practice on a local VM first.
