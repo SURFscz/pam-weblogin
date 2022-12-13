@@ -7,7 +7,7 @@ endif
 
 .PHONY: module
 module: json-parser
-	$(FLAGS) $(MAKE) -C src/
+	$(MAKE) -C src/ $(FLAGS)
 
 .PHONY: json-parser
 json-parser: json-parser-build/libjsonparser.a
