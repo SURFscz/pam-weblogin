@@ -21,6 +21,10 @@ CFLAGS += -fPIC
 CFLAGS += -Wall -Wextra -Wshadow -Wpedantic -Wuninitialized -Wformat=2
 CFLAGS += -Werror
 
+ifdef NOVERIFY
+CFLAGS += -DNOVERIFY
+endif
+
 # gcc only
 ifneq "$(shell $(CC) --version | grep gcc)" ""
   ifeq "$(shell expr '$(CC_MAJOR)' '>=' '5')" "1"

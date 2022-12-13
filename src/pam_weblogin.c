@@ -79,14 +79,14 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		"POST",
 		(char *[]){ "Content-Type: application/json", authorization, NULL},
 		data,
-		API_START_RESPONSE_CODE
+		pamh
 	);
 	free(url);
 	free(data);
 
-	if (challenge_response == NULL) {
-		log_message(LOG_ERR, SERVER_ERROR);
-		tty_output(pamh, SERVER_ERROR);
+	/* Something went wrong on the server */
+	if (challenge_response == NULL)
+	{
 		pam_result = PAM_SYSTEM_ERR;
 		goto finalize;
 	}
@@ -98,7 +98,8 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	cached = getBool(challenge_json, "cached");
 	info = getString(challenge_json, "info");
 
-	if (!cached) {
+	if (!cached)
+	{
 		session_id = getString(challenge_json, "session_id");
 		challenge = getString(challenge_json, "challenge");
 	}
@@ -145,17 +146,17 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 			"POST",
 			(char *[]){ "Content-Type: application/json", authorization, NULL},
 			data,
-			API_CHECK_CODE_RESPONSE_CODE
+			pamh
 		);
 		free(url);
 		free(data);
 
-		if (verify_response == NULL) {
-			log_message(LOG_ERR, SERVER_ERROR);
-			tty_output(pamh, SERVER_ERROR);
-			pam_result = PAM_SYSTEM_ERR;
+		/* Something went wrong on the server */
+		if (verify_response == NULL)
+		{
 			break;
 		}
+
 		/* Parse auth result */
 		json_value *verify_json = json_parse(verify_response, strnlen(verify_response, BUFSIZ));
 		free(verify_response);
