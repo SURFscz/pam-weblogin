@@ -38,6 +38,7 @@ jobs:
           - { os: ubuntu-20.04,  compiler: clang, version:  12 }
           - { os: ubuntu-22.04,  compiler: clang, version:  13 }
           - { os: ubuntu-22.04,  compiler: clang, version:  14 }
+          - { os: ubuntu-22.04,  compiler: clang, version:  15 }
           - { os: macos-10.15,   compiler: native              }
           - { os: macos-11,      compiler: native              }
           - { os: macos-12,      compiler: native              }
