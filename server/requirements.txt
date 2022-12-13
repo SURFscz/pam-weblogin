@@ -1,1 +1,4 @@
+pyyaml
 Flask
+Flask-pyoidc
+Flask-Session

@@ -1,2 +1,4 @@
+# created by virtualenv automatically
+*.yml
 flask_session/
 weblogin_daemon.yml

@@ -1,0 +1,11 @@
+---
+host: '0.0.0.0'
+port: 8080
+url: 'http://localhost:8080'
+timeout: 60
+oidc:
+  enabled: True
+  issuer: '<OIDC Provider base url>'
+  client_id: '<client>'
+  client_secret: '<secret>'
+  redirect_uri: 'https://<server>>/redirect_uri
