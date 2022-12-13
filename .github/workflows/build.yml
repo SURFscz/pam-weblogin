@@ -129,6 +129,9 @@ jobs:
       - source-dist
     runs-on: "ubuntu-latest"
     steps:
+      - name: Create dir
+        run: "pwd; ls -la; mkdir -p /github/home/rpmbuild/SOURCES/"
+
       - name: Fetch build
         id: fetch_artifact
         uses: actions/download-artifact@v3
