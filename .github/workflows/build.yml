@@ -23,14 +23,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-#          - { os: ubuntu-bionic, compiler: gcc,   version: 4.8 }
-#          - { os: ubuntu-bionic, compiler: gcc,   version:   5 }
-#          - { os: ubuntu-bionic, compiler: gcc,   version:   6 }
+          - { os: ubuntu-18.04,  compiler: gcc,   version: 4.8 }
+          - { os: ubuntu-18.04,  compiler: gcc,   version:   5 }
+          - { os: ubuntu-18.04,  compiler: gcc,   version:   6 }
           - { os: ubuntu-20.04,  compiler: gcc,   version:   7 }
           - { os: ubuntu-20.04,  compiler: gcc,   version:   8 }
           - { os: ubuntu-22.04,  compiler: gcc,   version:   9 }
           - { os: ubuntu-22.04,  compiler: gcc,   version:  10 }
           - { os: ubuntu-22.04,  compiler: gcc,   version:  11 }
+          - { os: ubuntu-22.04,  compiler: gcc,   version:  12 }
           - { os: ubuntu-20.04,  compiler: clang, version:   9 }
           - { os: ubuntu-20.04,  compiler: clang, version:  10 }
           - { os: ubuntu-20.04,  compiler: clang, version:  11 }
