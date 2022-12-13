@@ -129,15 +129,19 @@ jobs:
       - source-dist
     runs-on: "ubuntu-latest"
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
       - name: Fetch build
         id: fetch_artifact
         uses: actions/download-artifact@v3
         with:
           name: "dist-source"
-          path: "./"
+          path: "/github/home/rpmbuild/SOURCES/"
+
+      - name: cache docker containers
+        uses: satackey/action-docker-layer-caching@v0.0.11
+        continue-on-error: true
+
+      - name: Checkout
+        uses: actions/checkout@v3
 
       - name: build RPM package
         id: rpm
