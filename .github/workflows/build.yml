@@ -14,7 +14,7 @@ on:
 
 jobs:
   Build:
-    name: Test building
+    name: Build
     if: always()
 
     runs-on: ${{ matrix.os }}
@@ -87,13 +87,58 @@ jobs:
           rm -rf json-parser/
           make clean
 
-  RPM:
-    name: Build packages
+
+  source-dist:
+    name: "Source dist"
+    if: >
+      github.actor!='dependabot[bot]' &&
+      github.event_name!='pull_request' &&
+      ( github.ref_type=='tag' || github.ref_name=='main' )
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        if: "github.ref_name=='main'"
+        uses: actions/checkout@v3
+
+      - name: Save version info
+        run: |
+          git log -1 > .//git.info
+
+      - name: Create source tarball
+        run: |
+          tar -cJ -f /tmp/pam-weblogin.tar.xz \
+            --transform 's,^\./,pam-weblogin/,' --sort=name \
+            --owner=0 --group=0 --mode=u=rwX,go=rX \
+            --exclude=./.git \
+            .
+
+      - name: Show what we are shipping
+        run: |
+          tar tvJf /tmp/pam-weblogin.tar.xz
+
+      - name: Create Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: "dist-source"
+          path: "/tmp/pam-weblogin.tar.xz"
+
+
+  rpm:
+    name: Build RPM
     if: always()
-    runs-on: "ubuntu-22.04"
+    needs:
+      - source-dist
+    runs-on: "ubuntu-latest"
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Fetch build
+        id: fetch_artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: "dist-source"
+          path: "./"
 
       - name: build RPM package
         id: rpm
@@ -106,4 +151,54 @@ jobs:
         with:
           name: Binary RPM
           path: ${{ steps.rpm.outputs.rpm_dir_path }}
+
+
+  release:
+    name: Release
+    if: >
+      github.actor!='dependabot[bot]' &&
+      github.event_name!='pull_request' &&
+      ( github.ref_type=='tag' || github.ref_name=='main' )
+    runs-on: ubuntu-latest
+    needs:
+      - source-dist
+    steps:
+      - name: Fetch build
+        id: fetch_artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: "source-dist"
+          path: "artifacts/"
+
+      - name: Create Release
+        if: "github.ref_type=='tag'"
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "${{steps.fetch_artifact.outputs.download-path}}/*"
+
+      - name: Advance latest tag
+        if: "github.ref_name=='main'"
+        uses: EndBug/latest-tag@v1
+        with:
+          tag-name: "latest"
+          description: "Latest commit in the main branch"
+
+      - name: remove all previous "latest" releases
+        if: "github.ref_name=='main'"
+        uses: dev-drprasad/delete-older-releases@v0.2.0
+        with:
+          keep_latest: 0
+          delete_tag_pattern: "latest"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Release for main/latest
+        if: "github.ref_name=='main'"
+        uses: softprops/action-gh-release@v1
+        with:
+          name: "latest"
+          tag_name: "latest"
+          prerelease: true
+          files: "/tmp/sbs.tar.xz"
+
 

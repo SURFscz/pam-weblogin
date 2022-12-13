@@ -1,15 +1,14 @@
-Name:		pam-weblogin
-Version:	v0.1
-%define rel 1
-Release:	%{rel}%{?dist}
-Summary:	PAM WebLogin plugin
-Group:      System Environment/Base
-License:    Apache License 2.0
-URL:        https://github.com/SURFscz/pam-weblogin
-%global source_dir %{name}-%{version}
-Source0:		%{source_dir}.tar.gz
+Name:		    pam-weblogin
+Version:	    v0.1
+%define         rel 1
+Release:	    %{rel}%{?dist}
+Summary:	    PAM WebLogin plugin
+Group:          System Environment/Base
+License:        Apache License 2.0
+URL:            https://github.com/SURFscz/pam-weblogin
+Source0:		%{name}.tar.xz
 BuildRequires:	libcurl-devel pam-devel
-Requires:	libcurl pam
+Requires:	    libcurl pam
 
 %description
 Allows a user to login via ssh to a server by logging in on a web page instead of (or in addition to) to usual ssh authentication process.
