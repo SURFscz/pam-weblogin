@@ -88,10 +88,13 @@ jobs:
           make clean
 
   RPM:
-    name: Test building
+    name: Build packages
     if: always()
     runs-on: "ubuntu-22.04"
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: build RPM package
         id: rpm
         uses: naveenrajm7/rpmbuild@master
