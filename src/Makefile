@@ -20,13 +20,16 @@ CFLAGS += -std=c11
 CFLAGS += -fPIC
 CFLAGS += -Wall -Wextra -Wshadow -Wpedantic -Wuninitialized -Wformat=2
 CFLAGS += -Werror
-CFLAGS += -fstack-protector-strong
+
 ifdef NOVERIFY
 CFLAGS += -DNOVERIFY
 endif
 
 # gcc only
 ifneq "$(shell $(CC) --version | grep gcc)" ""
+  ifeq "$(shell expr '$(CC_MAJOR)' '>=' '5')" "1"
+    CFLAGS += -fstack-protector-strong
+  endif
   ifeq "$(shell expr '$(CC_MAJOR)' '>=' '10')" "1"
     CFLAGS += -Wformat-overflow=2 -Wformat-truncation=2
     CFLAGS += -ftree-vrp -fanalyzer
