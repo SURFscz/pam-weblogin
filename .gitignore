@@ -6,5 +6,6 @@ json-parser/
 json-parser-build/
 *.o
 *.so
+.project
 .env
 docker/.env
