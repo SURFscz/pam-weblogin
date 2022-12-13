@@ -1,0 +1,9 @@
+setuptools
+PyYAML
+future-fstrings
+pytest
+pytest-dotenv
+pytest-order
+python-ldap
+pytest-cov
+coveralls

@@ -1,0 +1,19 @@
+version: "3"
+
+services:
+  sandbox:
+    build: .
+    container_name: demo
+    hostname: demo
+    environment:
+      LOG_LEVEL: INFO
+
+      LDAP_HOST: ${LDAP_HOST:-ldaps://ldap.sram.surf.nl}
+      LDAP_BASE_DN: "dc=flat,dc=${SERVICE_ENTITY_ID},dc=services,dc=sram,dc=surf,dc=nl"
+      LDAP_BIND_DN: "cn=admin,dc=${SERVICE_ENTITY_ID},dc=services,dc=sram,dc=surf,dc=nl"
+      LDAP_PASSWORD: ${SERVICE_LDAP_PASSWORD}
+
+      URL: ${URL:-https://sram.surf.nl/pam-weblogin}
+      TOKEN: ${SERVICE_BEARER_TOKEN}
+    ports:
+      - "2222:22"

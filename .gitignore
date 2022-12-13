@@ -8,4 +8,6 @@ json-parser-build/
 *.so
 .project
 .env
+docker-sandbox/.env
+docker-ssh-demo/.env
 docker/.env
