@@ -130,14 +130,14 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: Create dir
-        run: "pwd; ls -la; mkdir -p /github/home/rpmbuild/SOURCES/"
+        run: "pwd; ls -la; mkdir -p ./rpmbuild/SOURCES/"
 
       - name: Fetch build
         id: fetch_artifact
         uses: actions/download-artifact@v3
         with:
           name: "dist-source"
-          path: "/github/home/rpmbuild/SOURCES/"
+          path: "./rpmbuild/SOURCES/"
 
       - name: cache docker containers
         uses: satackey/action-docker-layer-caching@v0.0.11
@@ -157,6 +157,13 @@ jobs:
         with:
           name: Binary RPM
           path: ${{ steps.rpm.outputs.rpm_dir_path }}
+
+      - name: Setup tmate session
+        if: "failure()"
+        uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true
+        timeout-minutes: 15
 
 
   release:
