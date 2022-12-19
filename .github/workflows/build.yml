@@ -189,7 +189,7 @@ jobs:
             COPY pam-weblogin.spec /tmp/pwl.spec
             RUN yum-builddep -y /tmp/pwl.spec
             RUN rm /tmp/pwl.spec
-          " > Dockerfile.centos7
+          " > Dockerfile.centos7;
           docker build -f Dockerfile.centos7 .
 
       - name: build RPM package for CentOS 7
