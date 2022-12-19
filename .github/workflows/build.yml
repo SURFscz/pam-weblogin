@@ -90,6 +90,10 @@ jobs:
 
   source_dist:
     name: "Source dist"
+    if: >
+      github.actor!='dependabot[bot]' &&
+      github.event_name!='pull_request' &&
+      ( github.ref_type=='tag' || github.ref_type=='branch' )
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -105,9 +109,9 @@ jobs:
 
       - name: Get tag/branch name
         run: |
-          if [ $GITHUB_REF_TYPE eq 'tag' ]; then
+          if [ "$GITHUB_REF_TYPE" eq 'tag' ]; then
             echo "PWL_VERSION=0.branch-$GITHUB_REF_NAME" >> $GITHUB_ENV
-          elif [ $GITHUB_REF_TYPE eq 'branch']; then
+          elif [ "$GITHUB_REF_TYPE" eq 'branch']; then
             echo "PWL_VERSION=$GITHUB_REF_NAME" >> $GITHUB_ENV
           else
             exit 1
@@ -140,9 +144,9 @@ jobs:
     steps:
       - name: Get tag/branch name
         run: |
-          if [ $GITHUB_REF_TYPE eq 'tag' ]; then
+          if [ "$GITHUB_REF_TYPE" eq 'tag' ]; then
             echo "PWL_VERSION=0.branch-$GITHUB_REF_NAME" >> $GITHUB_ENV
-          elif [ $GITHUB_REF_TYPE eq 'branch']; then
+          elif [ "$GITHUB_REF_TYPE" eq 'branch']; then
             echo "PWL_VERSION=$GITHUB_REF_NAME" >> $GITHUB_ENV
           else
             exit 1
@@ -200,10 +204,6 @@ jobs:
 
   release:
     name: Release
-    if: >
-      github.actor!='dependabot[bot]' &&
-      github.event_name!='pull_request' &&
-      ( github.ref_type=='tag' || github.ref_name=='main' )
     runs-on: ubuntu-latest
     needs:
       - source_dist
