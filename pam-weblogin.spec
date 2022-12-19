@@ -1,6 +1,8 @@
 Name:		    pam-weblogin
-Version:	    v1
-Release:	    centos7
+%define pwl_version 0
+%define pwl_distro unknown
+Version:	    %{pwl_version}
+Release:	    %{pwl_distro}
 Summary:	    PAM WebLogin plugin
 Group:          System Environment/Base
 License:        Apache License 2.0

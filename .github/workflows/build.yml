@@ -103,23 +103,33 @@ jobs:
         uses: olegtarasov/get-tag@v2.1.2
         id: tagName
 
+      - name: Get tag/branch name
+        run: |
+          if [ $GITHUB_REF_TYPE eq 'tag' ]; then
+            echo "PWL_VERSION=0.branch-$GITHUB_REF_NAME" >> $GITHUB_ENV
+          elif [ $GITHUB_REF_TYPE eq 'branch']; then
+            echo "PWL_VERSION=$GITHUB_REF_NAME" >> $GITHUB_ENV
+          else
+            exit 1
+          fi
+
       - name: Create source tarball
         run: |
-          tar -cJ -f /tmp/pam-weblogin-${GIT_TAG_NAME}.tar.xz \
-            --transform "s,^\./,pam-weblogin-${GIT_TAG_NAME}/," --sort=name \
+          tar -cJ -f /tmp/pam-weblogin-${PWL_VERSION}.tar.xz \
+            --transform "s,^\./,pam-weblogin-${PWL_VERSION}/," --sort=name \
             --owner=0 --group=0 --mode=u=rwX,go=rX \
             --exclude=./.git \
             .
 
       - name: Show what we are shipping
         run: |
-          tar tvJf /tmp/pam-weblogin-${GIT_TAG_NAME}.tar.xz
+          tar tvJf /tmp/pam-weblogin-${PWL_VERSION}.tar.xz
 
       - name: Create Artifact
         uses: actions/upload-artifact@v3
         with:
           name: "dist-source"
-          path: "/tmp/pam-weblogin-${{env.GIT_TAG_NAME}}.tar.xz"
+          path: "/tmp/pam-weblogin-${{env.PWL_VERSION}}.tar.xz"
 
 
   rpm_centos7:
@@ -128,9 +138,15 @@ jobs:
       - source_dist
     runs-on: "ubuntu-latest"
     steps:
-      - name: Get tag name
-        uses: olegtarasov/get-tag@v2.1.2
-        id: tagName
+      - name: Get tag/branch name
+        run: |
+          if [ $GITHUB_REF_TYPE eq 'tag' ]; then
+            echo "PWL_VERSION=0.branch-$GITHUB_REF_NAME" >> $GITHUB_ENV
+          elif [ $GITHUB_REF_TYPE eq 'branch']; then
+            echo "PWL_VERSION=$GITHUB_REF_NAME" >> $GITHUB_ENV
+          else
+            exit 1
+          fi
 
       - name: Fetch source
         id: fetch_source
@@ -141,15 +157,15 @@ jobs:
 
       - name: Show source-dist
         run: |
-          ls -la ${{steps.fetch_artifact.outputs.download-path}}
-          sha1sum ${{steps.fetch_artifact.outputs.download-path}}/* || true
-          sha256sum ${{steps.fetch_artifact.outputs.download-path}}/* || true
+          ls -la ${{steps.fetch_source.outputs.download-path}}
+          sha1sum ${{steps.fetch_source.outputs.download-path}}/* || true
+          sha256sum ${{steps.fetch_source.outputs.download-path}}/* || true
 
       - name: Prepare build dir
         run: |
           mkdir -p rpmbuild/SOURCES
-          cp ${{steps.fetch_artifact.outputs.download-path}}/pam-weblogin-${GIT_TAG_NAME}.tar.xz rpmbuild/SOURCES
-          tar xvJf ${{steps.fetch_artifact.outputs.download-path}}/pam-weblogin-${GIT_TAG_NAME}.tar.xz '*.spec'
+          cp ${{steps.fetch_source.outputs.download-path}}/pam-weblogin-${PWL_VERSION}.tar.xz rpmbuild/SOURCES
+          tar xvJf ${{steps.fetch_source.outputs.download-path}}/pam-weblogin-${PWL_VERSION}.tar.xz '*.spec'
 
       - name: build RPM package
         run: >
@@ -162,7 +178,7 @@ jobs:
               touch /root/rpmbuild/bla &&
               yum install -y rpm-build &&
               yum-builddep -y pam-weblogin.spec &&
-              rpmbuild -ba pam-weblogin.spec
+              rpmbuild -ba --define "pwl_version ${PWL_VERSION}" --define "pwl_distro centos7" pam-weblogin.spec
             '
 
       - name: debug
