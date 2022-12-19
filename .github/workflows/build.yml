@@ -198,7 +198,7 @@ jobs:
       - name: gather generated rpms
         run: |
           mkdir results
-          cp rpmbuild/RPMS/x86_64/*.rpm rpmbuild/SRPM/*.rpm results/
+          cp rpmbuild/RPMS/x86_64/*.rpm rpmbuild/SRPMS/*.rpm results/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
