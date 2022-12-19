@@ -126,7 +126,7 @@ jobs:
           tar -cJ -f /tmp/pam-weblogin-${PWL_VERSION}.tar.xz \
             --transform "s,^\./,pam-weblogin-${PWL_VERSION}/," --sort=name \
             --owner=0 --group=0 --mode=u=rwX,go=rX \
-            --exclude=.git/ \
+            --exclude-vcs \
             .
 
       - name: Show what we are shipping
@@ -198,16 +198,10 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v1.0.0
         with:
-          name: Binary RPM
-          path: ${{ steps.rpm.outputs.rpm_dir_path }}
-
-      - name: Setup tmate session
-        if: "failure()"
-        uses: mxschmitt/action-tmate@v3
-        with:
-          limit-access-to-actor: true
-        timeout-minutes: 15
-
+          name: rpm_centos7
+          path: |
+            rpmbuild/RPMS/x86_64/*.rpm
+            rpmbuild/SRPM/*.rpm
 
   release:
     name: Release
@@ -216,11 +210,10 @@ jobs:
       - source_dist
       - rpm_centos7
     steps:
-      - name: Fetch build
+      - name: Fetch artifacts
         id: fetch_artifact
         uses: actions/download-artifact@v3
         with:
-          name: "source-dist"
           path: "artifacts/"
 
       - name: Create Release
@@ -252,6 +245,6 @@ jobs:
           name: "latest"
           tag_name: "latest"
           prerelease: true
-          files: "/tmp/sbs.tar.xz"
+          files: "${{steps.fetch_artifact.outputs.download-path}}/*"
 
 
