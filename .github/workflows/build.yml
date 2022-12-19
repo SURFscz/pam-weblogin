@@ -226,6 +226,11 @@ jobs:
         with:
           path: "artifacts/"
 
+      - name: Gather artifsacts for release
+        run: |
+          mkdir ~/to_release
+          cp -v artifacts/**/* ~/to_release
+
       - name: Create Release
         if: "github.ref_type=='tag'"
         uses: softprops/action-gh-release@v1
@@ -255,5 +260,5 @@ jobs:
           name: "Latest from branch ${{github.ref_name}}"
           tag_name: "branch+${{github.ref_name}}"
           prerelease: true
-          files: "${{steps.fetch_artifact.outputs.download-path}}/*"
+          files: "~/to_release/*"
 
