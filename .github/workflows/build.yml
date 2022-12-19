@@ -175,11 +175,10 @@ jobs:
       - name: build RPM package
         run: >
           docker pull centos:7;
-          docker run -ti
-            -v `pwd`/rpmbuild:/root/rpmbuild/
-            -v $(pwd)/pam-weblogin.spec:/pam-weblogin.spec
-            centos:7
-            /bin/sh -c '
+          docker run -ti -v `pwd`/rpmbuild:/root/rpmbuild/ \
+                         -v $(pwd)/pam-weblogin.spec:/pam-weblogin.spec \
+                         centos:7 \
+                         /bin/sh -c '
               touch /root/rpmbuild/bla &&
               yum install -y rpm-build &&
               yum-builddep -y pam-weblogin.spec &&
