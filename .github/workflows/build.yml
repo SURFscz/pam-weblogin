@@ -125,7 +125,7 @@ jobs:
   rpm_centos7:
     name: Build RPM for CentOS7
     needs:
-      - source-dist
+      - source_dist
     runs-on: "ubuntu-latest"
     steps:
       - name: Get tag name
