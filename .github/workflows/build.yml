@@ -103,15 +103,14 @@ jobs:
         run: |
           git log -1 > .//git.info
 
-      - name: Get tag name
-        uses: olegtarasov/get-tag@v2.1.2
-        id: tagName
+      - name: debug
+        run: env
 
       - name: Get tag/branch name
         run: |
-          if [ "$GITHUB_REF_TYPE" eq 'tag' ]; then
+          if [ "$GITHUB_REF_TYPE" = 'tag' ]; then
             echo "PWL_VERSION=0.branch-$GITHUB_REF_NAME" >> $GITHUB_ENV
-          elif [ "$GITHUB_REF_TYPE" eq 'branch']; then
+          elif [ "$GITHUB_REF_TYPE" = 'branch']; then
             echo "PWL_VERSION=$GITHUB_REF_NAME" >> $GITHUB_ENV
           else
             exit 1
@@ -144,9 +143,9 @@ jobs:
     steps:
       - name: Get tag/branch name
         run: |
-          if [ "$GITHUB_REF_TYPE" eq 'tag' ]; then
+          if [ "$GITHUB_REF_TYPE" = 'tag' ]; then
             echo "PWL_VERSION=0.branch-$GITHUB_REF_NAME" >> $GITHUB_ENV
-          elif [ "$GITHUB_REF_TYPE" eq 'branch']; then
+          elif [ "$GITHUB_REF_TYPE" = 'branch']; then
             echo "PWL_VERSION=$GITHUB_REF_NAME" >> $GITHUB_ENV
           else
             exit 1
