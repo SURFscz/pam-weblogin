@@ -169,7 +169,8 @@ jobs:
       - name: Prepare build dir
         run: |
           mkdir -p rpmbuild/SOURCES
-          cp ${{steps.fetch_source.outputs.download-path}}/pam-weblogin-${PWL_VERSION}.tar.xz rpmbuild/SOURCES
+          cp -v ${{steps.fetch_source.outputs.download-path}}/pam-weblogin-${PWL_VERSION}.tar.xz rpmbuild/SOURCES
+          ls -la rpmbuild/SOURCES
           tar -xvJ --wildcards --strip-components 1 -f ${{steps.fetch_source.outputs.download-path}}/pam-weblogin-${PWL_VERSION}.tar.xz '*.spec'
 
       - name: build RPM package
