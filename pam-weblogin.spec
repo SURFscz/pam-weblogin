@@ -1,6 +1,6 @@
 Name:		    pam-weblogin
-%define pwl_version 0
-%define pwl_distro unknown
+%{!?pwl_version: %define pwl_version 0      }
+%{!?pwl_distro:  %define pwl_distro unknown }
 Version:	    %{pwl_version}
 Release:	    %{pwl_distro}
 Summary:	    PAM WebLogin plugin
