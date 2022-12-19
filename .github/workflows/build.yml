@@ -195,13 +195,16 @@ jobs:
       - name: debug
         run: ls -laR rpmbuild
 
+      - name: gather generated rpms
+        run: |
+          mkdir results
+          cp rpmbuild/RPMS/x86_64/*.rpm rpmbuild/SRPM/*.rpm results/
+
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: rpm_centos7
-          path: |
-            rpmbuild/RPMS/x86_64/*.rpm
-            rpmbuild/SRPM/*.rpm
+          path: "results/*"
 
   release:
     name: Release
@@ -226,10 +229,10 @@ jobs:
         if: "github.ref_type=='branch'"
         uses: EndBug/latest-tag@v1
         with:
-          tag-name: "branch+${{github.ref_name}}"
+          ref: "branch+${{github.ref_name}}"
           description: "Latest commit in the main branch"
 
-      - name: remove all previous "latest" releases
+      - name: Remove all previous "latest" releases
         if: "github.ref_type=='branch'"
         uses: dev-drprasad/delete-older-releases@v0.2.0
         with:
