@@ -184,13 +184,13 @@ jobs:
       - name: Prepare dockerfile
         run: >
           echo "
-            FROM centos:7 as pwl-centos7
+            FROM centos:7
             RUN yum install -y rpm-build
             COPY pam-weblogin.spec /tmp/pwl.spec
             RUN yum-builddep -y /tmp/pwl.spec
             RUN rm /tmp/pwl.spec
           " > Dockerfile.centos7;
-          docker build -f Dockerfile.centos7 .
+          docker build -f Dockerfile.centos7 -t pwl-centos7 .
 
       - name: build RPM package for CentOS 7
         run: >
