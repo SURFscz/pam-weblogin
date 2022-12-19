@@ -1,12 +1,12 @@
 Name:		    pam-weblogin
-Version:	    v0.1
-%define         rel 1
-Release:	    %{rel}%{?dist}
+Version:	    v1
+Release:	    centos7
 Summary:	    PAM WebLogin plugin
 Group:          System Environment/Base
 License:        Apache License 2.0
 URL:            https://github.com/SURFscz/pam-weblogin
-BuildRequires:	libcurl-devel pam-devel
+Source0:        %{name}-%{version}.tar.xz
+BuildRequires:	make gcc libcurl-devel pam-devel
 Requires:	    libcurl pam
 
 %description

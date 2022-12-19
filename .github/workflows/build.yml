@@ -103,10 +103,14 @@ jobs:
         run: |
           git log -1 > .//git.info
 
+      - name: Get tag name
+        uses: olegtarasov/get-tag@v2.1.2
+        id: tagName
+
       - name: Create source tarball
         run: |
-          tar -cJ -f /tmp/pam-weblogin.tar.xz \
-            --transform 's,^\./,pam-weblogin/,' --sort=name \
+          tar -cJ -f /tmp/pam-weblogin-${GIT_TAG_NAME}.tar.xz \
+            --transform "s,^\./,pam-weblogin-${GIT_TAG_NAME}/," --sort=name \
             --owner=0 --group=0 --mode=u=rwX,go=rX \
             --exclude=./.git \
             .
@@ -119,24 +123,55 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: "dist-source"
-          path: "/tmp/pam-weblogin.tar.xz"
+          path: "/tmp/pam-weblogin-${{env.GIT_TAG_NAME}}.tar.xz"
 
 
-  rpm:
-    name: Build RPM
+  rpm_centos7:
+    name: Build RPM for CentOS7
     if: always()
     needs:
       - source-dist
     runs-on: "ubuntu-latest"
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Get tag name
+        uses: olegtarasov/get-tag@v2.1.2
+        id: tagName
+
+      - name: Fetch source
+        id: fetch_source
+        uses: actions/download-artifact@v3
+        with:
+          name: "dist-source"
+          path: "."
+
+      - name: Show source-dist
+        run: |
+          ls -la ${{steps.fetch_artifact.outputs.download-path}}
+          sha1sum ${{steps.fetch_artifact.outputs.download-path}}/* || true
+          sha256sum ${{steps.fetch_artifact.outputs.download-path}}/* || true
+
+      - name: Prepare build dir
+        run: |
+          mkdir -p rpmbuild/SOURCES
+          cp ${{steps.fetch_artifact.outputs.download-path}}/pam-weblogin-${GIT_TAG_NAME}.tar.xz rpmbuild/SOURCES
+          tar xvJf ${{steps.fetch_artifact.outputs.download-path}}/pam-weblogin-${GIT_TAG_NAME}.tar.xz '*.spec'
 
       - name: build RPM package
-        id: rpm
-        uses: naveenrajm7/rpmbuild@master
-        with:
-          spec_file: "pam-weblogin.spec"
+        run: >
+          docker pull centos:7;
+          docker run -ti
+            -v `pwd`/rpmbuild:/root/rpmbuild/
+            -v $(pwd)/pam-weblogin.spec:/pam-weblogin.spec
+            centos:7
+            /bin/sh -c '
+              touch /root/rpmbuild/bla &&
+              yum install -y rpm-build &&
+              yum-builddep -y pam-weblogin.spec &&
+              rpmbuild -ba pam-weblogin.spec
+            '
+
+      - name: debug
+        run: ls -laR rpmbuild
 
       - name: Upload artifact
         uses: actions/upload-artifact@v1.0.0
