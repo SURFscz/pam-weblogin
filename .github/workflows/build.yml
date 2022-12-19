@@ -113,7 +113,7 @@ jobs:
 
       - name: Show what we are shipping
         run: |
-          tar tvJf /tmp/pam-weblogin.tar.xz
+          tar tvJf /tmp/pam-weblogin-${GIT_TAG_NAME}.tar.xz
 
       - name: Create Artifact
         uses: actions/upload-artifact@v3
