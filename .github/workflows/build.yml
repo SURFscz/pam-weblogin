@@ -145,7 +145,7 @@ jobs:
       - name: Get tag/branch name
         run: |
           if [ "$GITHUB_REF_TYPE" = 'branch' ]; then
-            echo -n "0+branch-$GITHUB_REF_NAME" > /tmp/version
+            echo -n "0+branch+$GITHUB_REF_NAME" > /tmp/version
           elif [ "$GITHUB_REF_TYPE" = 'tag' ]; then
             echo -n "$GITHUB_REF_NAME" > /tmp/version
           else
