@@ -108,13 +108,14 @@ jobs:
 
       - name: Get tag/branch name
         run: |
-          if [ "$GITHUB_REF_TYPE" = 'tag' ]; then
-            echo "PWL_VERSION=0.branch-$GITHUB_REF_NAME" >> $GITHUB_ENV
-          elif [ "$GITHUB_REF_TYPE" = 'branch' ]; then
-            echo "PWL_VERSION=$GITHUB_REF_NAME" >> $GITHUB_ENV
+          if [ "$GITHUB_REF_TYPE" = 'branch' ]; then
+            echo "PWL_VERSION=0.branch-$GITHUB_REF_NAME" > /tmp/my_env
+          elif [ "$GITHUB_REF_TYPE" = 'tag' ]; then
+            echo "PWL_VERSION=$GITHUB_REF_NAME" > /tmp/my_env
           else
             exit 1
           fi
+          cat /tmp/my_env | tr -C 'a-zA-Z0-9_-' '_' >> $GITHUB_ENV
 
       - name: Create source tarball
         run: |
@@ -143,13 +144,14 @@ jobs:
     steps:
       - name: Get tag/branch name
         run: |
-          if [ "$GITHUB_REF_TYPE" = 'tag' ]; then
-            echo "PWL_VERSION=0.branch-$GITHUB_REF_NAME" >> $GITHUB_ENV
-          elif [ "$GITHUB_REF_TYPE" = 'branch' ]; then
-            echo "PWL_VERSION=$GITHUB_REF_NAME" >> $GITHUB_ENV
+          if [ "$GITHUB_REF_TYPE" = 'branch' ]; then
+            echo "PWL_VERSION=0.branch-$GITHUB_REF_NAME" > /tmp/my_env
+          elif [ "$GITHUB_REF_TYPE" = 'tag' ]; then
+            echo "PWL_VERSION=$GITHUB_REF_NAME" > /tmp/my_env
           else
             exit 1
           fi
+          cat /tmp/my_env | tr -C 'a-zA-Z0-9_-' '_' >> $GITHUB_ENV
 
       - name: Fetch source
         id: fetch_source
