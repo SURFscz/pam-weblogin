@@ -146,6 +146,10 @@ jobs:
       - source_dist
     runs-on: "ubuntu-latest"
     steps:
+      - name: Docker caching
+        uses: satackey/action-docker-layer-caching@v0.0.11
+        continue-on-error: true
+
       - name: Get tag/branch name
         run: |
           if [ "$GITHUB_REF_TYPE" = 'branch' ]; then
