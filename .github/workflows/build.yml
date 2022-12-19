@@ -196,7 +196,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - source-dist
-      - rpm
+      - rpm_centos7
     steps:
       - name: Fetch build
         id: fetch_artifact
