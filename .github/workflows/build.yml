@@ -227,10 +227,10 @@ jobs:
         with:
           path: "artifacts/"
 
-      - name: Gather artifsacts for release
+      - name: Gather artifacts for release
         run: |
-          mkdir ~/to_release
-          cp -v artifacts/**/* ~/to_release
+          mkdir to_release
+          cp -v artifacts/**/* to_release/
 
       - name: Create Release
         if: "github.ref_type=='tag'"
@@ -261,5 +261,5 @@ jobs:
           name: "Latest from branch ${{github.ref_name}}"
           tag_name: "branch+${{github.ref_name}}"
           prerelease: true
-          files: "~/to_release/*"
+          files: "to_release/*"
 
