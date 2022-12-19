@@ -170,7 +170,7 @@ jobs:
         run: |
           mkdir -p rpmbuild/SOURCES
           cp ${{steps.fetch_source.outputs.download-path}}/pam-weblogin-${PWL_VERSION}.tar.xz rpmbuild/SOURCES
-          tar -xvJ --wildcards -f ${{steps.fetch_source.outputs.download-path}}/pam-weblogin-${PWL_VERSION}.tar.xz '*.spec'
+          tar -xvJ --wildcards --strip-components 1 -f ${{steps.fetch_source.outputs.download-path}}/pam-weblogin-${PWL_VERSION}.tar.xz '*.spec'
 
       - name: build RPM package
         run: >
@@ -180,9 +180,11 @@ jobs:
                         centos:7 \
                         /bin/sh -c '
                           touch /root/rpmbuild/bla &&
+                          ls -la /*.spec &&
+                          cat /*.spec &&
                           yum install -y rpm-build &&
                           yum-builddep -y pam-weblogin.spec &&
-                          rpmbuild -ba --define "pwl_version ${PWL_VERSION}" --define "pwl_distro centos7" pam-weblogin.spec
+                          rpmbuild -ba --define "pwl_version ${{env.PWL_VERSION}}" --define "pwl_distro centos7" pam-weblogin.spec
                         '
 
       - name: debug
