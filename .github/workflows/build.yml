@@ -181,18 +181,23 @@ jobs:
           ls -la rpmbuild/SOURCES
           tar -xvJ --wildcards --strip-components 1 -f ${{steps.fetch_source.outputs.download-path}}/pam-weblogin-${PWL_VERSION}.tar.xz '*.spec'
 
+      - name: Prepare dockerfile
+        run: >
+          echo "
+            FROM centos:7 as pwl-centos7
+            RUN yum install -y rpm-build
+            COPY pam-weblogin.spec /tmp/pwl.spec
+            RUN yum-builddep -y /tmp/pwl.spec
+            RUN rm /tmp/pwl.spec
+          " > Dockerfile.centos7
+          docker build -f Dockerfile.centos7 .
+
       - name: build RPM package for CentOS 7
         run: >
-          docker pull centos:7;
           docker run -v `pwd`/rpmbuild:/root/rpmbuild/ \
                      -v $(pwd)/pam-weblogin.spec:/pam-weblogin.spec \
-                        centos:7 \
+                        pwl-centos7 \
                         /bin/sh -c '
-                          touch /root/rpmbuild/bla &&
-                          ls -la /*.spec &&
-                          cat /*.spec &&
-                          yum install -y rpm-build &&
-                          yum-builddep -y pam-weblogin.spec &&
                           rpmbuild -ba --define "pwl_version ${{env.PWL_VERSION}}" --define "pwl_distro centos7" pam-weblogin.spec
                         '
 
