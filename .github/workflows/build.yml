@@ -177,7 +177,7 @@ jobs:
           ls -la rpmbuild/SOURCES
           tar -xvJ --wildcards --strip-components 1 -f ${{steps.fetch_source.outputs.download-path}}/pam-weblogin-${PWL_VERSION}.tar.xz '*.spec'
 
-      - name: build RPM package
+      - name: build RPM package for CentOS 7
         run: >
           docker pull centos:7;
           docker run -v `pwd`/rpmbuild:/root/rpmbuild/ \
@@ -196,7 +196,7 @@ jobs:
         run: ls -laR rpmbuild
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v1.0.0
+        uses: actions/upload-artifact@v3
         with:
           name: rpm_centos7
           path: |
