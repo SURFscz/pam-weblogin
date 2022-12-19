@@ -109,13 +109,13 @@ jobs:
       - name: Get tag/branch name
         run: |
           if [ "$GITHUB_REF_TYPE" = 'branch' ]; then
-            echo "0.branch-$GITHUB_REF_NAME" > /tmp/version
+            echo "0+branch-$GITHUB_REF_NAME" > /tmp/version
           elif [ "$GITHUB_REF_TYPE" = 'tag' ]; then
             echo "$GITHUB_REF_NAME" > /tmp/version
           else
             exit 1
           fi
-          echo PWL_VERSION=$(cat /tmp/version | tr -C 'a-zA-Z0-9_+-' '_') >> $GITHUB_ENV
+          echo PWL_VERSION=$(cat /tmp/version | tr -C 'a-zA-Z0-9._+-' '_') >> $GITHUB_ENV
 
       - name: Create source tarball
         run: |
@@ -145,13 +145,13 @@ jobs:
       - name: Get tag/branch name
         run: |
           if [ "$GITHUB_REF_TYPE" = 'branch' ]; then
-            echo "0.branch-$GITHUB_REF_NAME" > /tmp/version
+            echo "0+branch-$GITHUB_REF_NAME" > /tmp/version
           elif [ "$GITHUB_REF_TYPE" = 'tag' ]; then
             echo "$GITHUB_REF_NAME" > /tmp/version
           else
             exit 1
           fi
-          echo PWL_VERSION=$(cat /tmp/version | tr -C 'a-zA-Z0-9_+-' '_') >> $GITHUB_ENV
+          echo PWL_VERSION=$(cat /tmp/version | tr -C 'a-zA-Z0-9._+-' '_') >> $GITHUB_ENV
 
       - name: Fetch source
         id: fetch_source
