@@ -148,8 +148,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { name: "centos7", container: "centos:7" }
-          - { name: "centos8", container: "centos:8" }
+          - { name: "centos7",  container: "centos:7"  }
+          - { name: "fedora37", container: "fedora:37" }
     runs-on: "ubuntu-latest"
     steps:
       - name: Docker caching
