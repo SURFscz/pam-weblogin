@@ -249,7 +249,7 @@ jobs:
         if: "github.ref_type=='tag'"
         uses: softprops/action-gh-release@v1
         with:
-          files: "${{steps.fetch_artifact.outputs.download-path}}/*"
+          files: "to_release/*"
 
       - name: Advance latest tag
         if: "github.ref_type=='branch'"
