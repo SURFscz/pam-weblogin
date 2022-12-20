@@ -193,6 +193,7 @@ jobs:
             FROM ${{matrix.container}}
             RUN yum install -y rpm-build
             COPY pam-weblogin.spec /tmp/pwl.spec
+            RUN command -v dnf && dnf install -y 'dnf-command(builddep)' || true
             RUN command -v dnf && dnf builddep -y /tmp/pwl.spec || yum-builddep -y /tmp/pwl.spec
             RUN rm /tmp/pwl.spec
           " > Dockerfile;
