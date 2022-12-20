@@ -140,10 +140,16 @@ jobs:
           path: "/tmp/pam-weblogin-${{env.PWL_VERSION}}.tar.xz"
 
 
-  rpm_centos7:
-    name: Build RPM for CentOS7
+  build_rpm:
+    name: Build RPMs
     needs:
       - source_dist
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: "centos7", container: "centos:7" }
+          - { name: "centos8", container: "centos:8" }
     runs-on: "ubuntu-latest"
     steps:
       - name: Docker caching
@@ -181,24 +187,24 @@ jobs:
           ls -la rpmbuild/SOURCES
           tar -xvJ --wildcards --strip-components 1 -f ${{steps.fetch_source.outputs.download-path}}/pam-weblogin-${PWL_VERSION}.tar.xz '*.spec'
 
-      - name: Prepare dockerfile
+      - name: Prepare container image
         run: >
           echo "
-            FROM centos:7
+            FROM ${{matrix.container}}
             RUN yum install -y rpm-build
             COPY pam-weblogin.spec /tmp/pwl.spec
             RUN yum-builddep -y /tmp/pwl.spec
             RUN rm /tmp/pwl.spec
-          " > Dockerfile.centos7;
-          docker build -f Dockerfile.centos7 -t pwl-centos7 .
+          " > Dockerfile;
+          docker build -f Dockerfile -t pwl-${{matrix.name}} .
 
       - name: build RPM package for CentOS 7
         run: >
           docker run -v `pwd`/rpmbuild:/root/rpmbuild/ \
                      -v $(pwd)/pam-weblogin.spec:/pam-weblogin.spec \
-                        pwl-centos7 \
+                        pwl-${{matrix.name}} \
                         /bin/sh -c '
-                          rpmbuild -ba --define "pwl_version ${{env.PWL_VERSION}}" --define "pwl_distro centos7" pam-weblogin.spec
+                          rpmbuild -ba --define "pwl_version ${{env.PWL_VERSION}}" --define "pwl_distro ${{matrix.name}}" pam-weblogin.spec
                         '
 
       - name: debug
@@ -212,7 +218,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: rpm_centos7
+          name: rpm_${{matrix.name}}
           path: "results/*"
 
   release:
@@ -221,7 +227,7 @@ jobs:
     needs:
       - build_tests
       - source_dist
-      - rpm_centos7
+      - build_rpm
     steps:
       - name: Checkout
         uses: actions/checkout@v3
