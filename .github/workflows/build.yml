@@ -196,10 +196,11 @@ jobs:
             RUN command -v dnf && dnf install -y 'dnf-command(builddep)' || true
             RUN command -v dnf && dnf builddep -y /tmp/pwl.spec || yum-builddep -y /tmp/pwl.spec
             RUN rm /tmp/pwl.spec
+            RUN gcc --version
           " > Dockerfile;
           docker build -f Dockerfile -t pwl-${{matrix.name}} .
 
-      - name: build RPM package for CentOS 7
+      - name: build RPM package
         run: >
           docker run -v `pwd`/rpmbuild:/root/rpmbuild/ \
                      -v $(pwd)/pam-weblogin.spec:/pam-weblogin.spec \
