@@ -117,7 +117,8 @@ Config *getConfig(const char *filename)
 
 	if (!check_file(filename))
 	{
-		return NULL;
+		/* hah! Look mom, no hands! */
+		goto fail;
 	}
 
 	if ((fp = fopen(filename, "r")) != NULL)
@@ -218,6 +219,7 @@ Config *getConfig(const char *filename)
 	if (!cfg->attribute)
 		log_message(LOG_ERR, "Missing 'attribute' in configuration!");
 
+fail:
 	freeConfig(cfg);
 	return NULL;
 }
