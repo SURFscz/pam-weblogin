@@ -13,8 +13,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  Build:
-    name: Test building
+  build_tests:
+    name: Build tests
     if: always()
 
     runs-on: ${{ matrix.os }}
@@ -86,4 +86,193 @@ jobs:
           make clean
           rm -rf json-parser/
           make clean
+
+
+  source_dist:
+    name: "Source dist"
+    if: >
+      github.actor!='dependabot[bot]' &&
+      github.event_name!='pull_request' &&
+      ( github.ref_type=='tag' || github.ref_type=='branch' )
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Save version info
+        run: |
+          git log -1 > ./git.info
+
+      - name: Fetch json-parser
+        run: |
+          make json-parser/configure
+
+      - name: debug
+        run: "env | sort"
+
+      - name: Get tag/branch name
+        run: |
+          if [ "$GITHUB_REF_TYPE" = 'branch' ]; then
+            echo -n "0+branch+$GITHUB_REF_NAME" > /tmp/version
+          elif [ "$GITHUB_REF_TYPE" = 'tag' ]; then
+            echo -n "$GITHUB_REF_NAME" > /tmp/version
+          else
+            exit 1
+          fi
+          echo PWL_VERSION=$(cat /tmp/version | tr -C 'a-zA-Z0-9._+-' '_') >> $GITHUB_ENV
+
+      - name: Create source tarball
+        run: |
+          tar -cJ -f /tmp/pam-weblogin-${PWL_VERSION}.tar.xz \
+            --transform "s,^\./,pam-weblogin-${PWL_VERSION}/," --sort=name \
+            --owner=0 --group=0 --mode=u=rwX,go=rX \
+            --exclude-vcs \
+            .
+
+      - name: Show what we are shipping
+        run: |
+          tar tvJf /tmp/pam-weblogin-${PWL_VERSION}.tar.xz
+
+      - name: Create Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: "dist-source"
+          path: "/tmp/pam-weblogin-${{env.PWL_VERSION}}.tar.xz"
+
+
+  build_rpm:
+    name: Build RPMs
+    needs:
+      - source_dist
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: "centos7",  container: "centos:7"  }
+          - { name: "fedora37", container: "fedora:37" }
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Docker caching
+        uses: satackey/action-docker-layer-caching@v0.0.11
+        continue-on-error: true
+
+      - name: Get tag/branch name
+        run: |
+          if [ "$GITHUB_REF_TYPE" = 'branch' ]; then
+            echo -n "0+branch+$GITHUB_REF_NAME" > /tmp/version
+          elif [ "$GITHUB_REF_TYPE" = 'tag' ]; then
+            echo -n "$GITHUB_REF_NAME" > /tmp/version
+          else
+            exit 1
+          fi
+          echo PWL_VERSION=$(cat /tmp/version | tr -C 'a-zA-Z0-9._+-' '_') >> $GITHUB_ENV
+
+      - name: Fetch source
+        id: fetch_source
+        uses: actions/download-artifact@v3
+        with:
+          name: "dist-source"
+          path: "."
+
+      - name: Show source-dist
+        run: |
+          ls -la ${{steps.fetch_source.outputs.download-path}}
+          sha1sum ${{steps.fetch_source.outputs.download-path}}/* || true
+          sha256sum ${{steps.fetch_source.outputs.download-path}}/* || true
+
+      - name: Prepare build dir
+        run: |
+          mkdir -p rpmbuild/SOURCES
+          cp -v ${{steps.fetch_source.outputs.download-path}}/pam-weblogin-${PWL_VERSION}.tar.xz rpmbuild/SOURCES
+          ls -la rpmbuild/SOURCES
+          tar -xvJ --wildcards --strip-components 1 -f ${{steps.fetch_source.outputs.download-path}}/pam-weblogin-${PWL_VERSION}.tar.xz '*.spec'
+
+      - name: Prepare container image
+        run: >
+          echo "
+            FROM ${{matrix.container}}
+            RUN yum install -y rpm-build
+            COPY pam-weblogin.spec /tmp/pwl.spec
+            RUN command -v dnf && dnf install -y 'dnf-command(builddep)' || true
+            RUN command -v dnf && dnf builddep -y /tmp/pwl.spec || yum-builddep -y /tmp/pwl.spec
+            RUN rm /tmp/pwl.spec
+            RUN gcc --version
+          " > Dockerfile;
+          docker build -f Dockerfile -t pwl-${{matrix.name}} .
+
+      - name: build RPM package
+        run: >
+          docker run -v `pwd`/rpmbuild:/root/rpmbuild/ \
+                     -v $(pwd)/pam-weblogin.spec:/pam-weblogin.spec \
+                        pwl-${{matrix.name}} \
+                        /bin/sh -c '
+                          rpmbuild -ba --define "pwl_version ${{env.PWL_VERSION}}" --define "pwl_distro ${{matrix.name}}" pam-weblogin.spec
+                        '
+
+      - name: debug
+        run: ls -laR rpmbuild
+
+      - name: gather generated rpms
+        run: |
+          mkdir results
+          cp rpmbuild/RPMS/x86_64/*.rpm rpmbuild/SRPMS/*.rpm results/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: rpm_${{matrix.name}}
+          path: "results/*"
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs:
+      - build_tests
+      - source_dist
+      - build_rpm
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Fetch artifacts
+        id: fetch_artifact
+        uses: actions/download-artifact@v3
+        with:
+          path: "artifacts/"
+
+      - name: Gather artifacts for release
+        run: |
+          mkdir to_release
+          cp -v artifacts/**/* to_release/
+
+      - name: Create Release
+        if: "github.ref_type=='tag'"
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "${{steps.fetch_artifact.outputs.download-path}}/*"
+
+      - name: Advance latest tag
+        if: "github.ref_type=='branch'"
+        uses: EndBug/latest-tag@v1
+        with:
+          ref: "branch+${{github.ref_name}}"
+          description: "Latest commit in the main branch"
+
+      - name: Remove all previous "latest" releases
+        if: "github.ref_type=='branch'"
+        uses: dev-drprasad/delete-older-releases@v0.2.0
+        with:
+          keep_latest: 0
+          delete_tag_pattern: "branch+${{github.ref_name}}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Release for branch
+        if: "github.ref_type=='branch'"
+        uses: softprops/action-gh-release@v1
+        with:
+          name: "Latest from branch ${{github.ref_name}}"
+          tag_name: "branch+${{github.ref_name}}"
+          prerelease: true
+          files: "to_release/*"
 

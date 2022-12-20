@@ -1,3 +1,6 @@
+[![Build status](https://github.com/SURFscz/pam-weblogin/actions/workflows/build.yml/badge.svg)](https://github.com/SURFscz/pam-weblogin/actions)
+
+
 # pam-weblogin
 PAM WebLogin module in C
 
