@@ -123,7 +123,7 @@ jobs:
 
       - name: Create source tarball
         run: |
-          tar -cJ -f /tmp/pam-weblogin-${PWL_VERSION}.tar.xz \
+          tar -cJ -f /tmp/pam-weblogin-${PWL_VERSION}.source.tar.xz \
             --transform "s,^\./,pam-weblogin-${PWL_VERSION}/," --sort=name \
             --owner=0 --group=0 --mode=u=rwX,go=rX \
             --exclude-vcs \
@@ -137,7 +137,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: "dist-source"
-          path: "/tmp/pam-weblogin-${{env.PWL_VERSION}}.tar.xz"
+          path: "/tmp/pam-weblogin-${{env.PWL_VERSION}}.source.tar.xz"
 
 
   build_rpm:
