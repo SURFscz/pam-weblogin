@@ -131,7 +131,7 @@ jobs:
 
       - name: Show what we are shipping
         run: |
-          tar tvJf /tmp/pam-weblogin-${PWL_VERSION}.tar.xz
+          tar tvJf /tmp/pam-weblogin-${PWL_VERSION}.source.tar.xz
 
       - name: Create Artifact
         uses: actions/upload-artifact@v3
