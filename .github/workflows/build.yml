@@ -126,7 +126,7 @@ jobs:
           tar -cJ -f /tmp/pam-weblogin-${PWL_VERSION}.source.tar.xz \
             --transform "s,^\./,pam-weblogin-${PWL_VERSION}/," --sort=name \
             --owner=0 --group=0 --mode=u=rwX,go=rX \
-            --exclude-vcs \
+            --exclude-vcs --exclude='**/.github' \
             .
 
       - name: Show what we are shipping
