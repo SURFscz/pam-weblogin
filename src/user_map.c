@@ -1,33 +1,11 @@
 /*
-  Pam module to change user names arbitrarily in the pam stack.
-
-  Compile as
-
-     gcc pam_user_map.c -shared -lpam -fPIC -o pam_user_map.so
-
-  Install as appropriate (for example, in /lib/security/).
-  Add to your /etc/pam.d/mysql (preferably, at the end) this line:
-=========================================================
-auth            required        pam_user_map.so
-=========================================================
-
-  And create /etc/security/user_map.conf with the desired mapping
-  in the format:  orig_user_name: mapped_user_name
-                  @user's_group_name: mapped_user_name
+if  create /etc/security/user_map.conf with the desired mapping
 =========================================================
 #comments and empty lines are ignored
-john: jack
-bob:  admin
-top:  accounting
-@group_ro: readonly
+bastiaan: basvandervlies
+dennis: joedoe
 =========================================================
 
-If something doesn't work as expected you can get verbose
-comments with the 'debug' option like this
-=========================================================
-auth            required        pam_user_map.so debug
-=========================================================
-These comments are written to the syslog as 'authpriv.debug'
 and usually end up in /var/log/secure file.
 */
 
