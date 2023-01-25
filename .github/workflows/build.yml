@@ -185,7 +185,7 @@ jobs:
           mkdir -p rpmbuild/SOURCES
           cp -v ${{steps.fetch_source.outputs.download-path}}/pam-weblogin-${PWL_VERSION}.tar.xz rpmbuild/SOURCES
           ls -la rpmbuild/SOURCES
-          tar -xvJ --wildcards --strip-components 1 -f ${{steps.fetch_source.outputs.download-path}}/pam-weblogin-${PWL_VERSION}.tar.xz '*.spec'
+          tar -xvJ --wildcards --strip-components 1 -f ${{steps.fetch_source.outputs.download-path}}/pam-weblogin-${PWL_VERSION}.source.tar.xz '*.spec'
 
       - name: Prepare container image
         run: >
