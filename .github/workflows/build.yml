@@ -139,7 +139,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: "dist-source"
-          path: "/tmp/${SRC_FILE}"
+          path: "/tmp/${{env.SRC_FILE}}"
 
 
   build_rpm:
