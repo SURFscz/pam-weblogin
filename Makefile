@@ -17,8 +17,8 @@ json-parser-build/Makefile: json-parser/configure
 	mkdir -p json-parser-build
 	cd json-parser-build && ../json-parser/configure
 json-parser/configure:
-	git submodule init
-	git submodule update
+	git clone https://github.com/json-parser/json-parser.git json-parser/
+	git -c advice.detachedHead=false -C json-parser/ checkout 531a49062975d6d2cd5d69b75ad5481a8c0e18c5
 
 .PHONY: clean clean-src clean-json-parser
 clean: clean-src clean-json-parser

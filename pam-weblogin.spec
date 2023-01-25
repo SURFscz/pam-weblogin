@@ -7,7 +7,7 @@ Summary:	    PAM WebLogin plugin
 Group:          System Environment/Base
 License:        Apache License 2.0
 URL:            https://github.com/SURFscz/pam-weblogin
-Source0:        %{name}-%{version}.tar.xz
+Source0:        %{name}-%{version}.source.tar.xz
 BuildRequires:	make gcc libcurl-devel pam-devel
 Requires:	    libcurl pam
 
