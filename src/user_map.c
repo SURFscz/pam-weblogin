@@ -29,19 +29,11 @@ int user_map(const char *name, Config *cfg)
   FILE *f;
   int line = 0;
 
-  /*
-  SYSLOG_DEBUG(pamh, LOG_DEBUG, "Opening file '%s'.\n", FILENAME);
-  */
-
   f= fopen(FILENAME, "r");
   if (f == NULL)
   {
     return 0;
   }
-
-  /*
-  SYSLOG_DEBUG(pamh, LOG_DEBUG, "Incoming username '%s'.\n", username);
-  */
 
   while (fgets(buf, sizeof(buf), f) != NULL)
   {
@@ -73,9 +65,6 @@ int user_map(const char *name, Config *cfg)
     skip(isalnum(*s) || (*s == '_') || (*s == '.') || (*s == '-') ||
          (*s == '$'));
     end_to= s;
-    /* HvB
-    if (end_to == to) goto syntax_error;
-    */
 
     *end_from= *end_to= 0;
 
