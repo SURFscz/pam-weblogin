@@ -15,6 +15,7 @@
 #include "http.h"
 #include "utils.h"
 #include "tty.h"
+#include "user_map.h"
 
 #include "pam_weblogin.h"
 
@@ -47,6 +48,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		return PAM_SYSTEM_ERR;
 	}
 
+
 	/* Read configuration file */
 	Config *cfg = NULL;
 	if (!(cfg = getConfig((argc > 0) ? argv[0] : DEFAULT_CONF_FILE)))
@@ -61,8 +63,18 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	log_message(LOG_INFO, "cfg->cache_duration: '%d'\n", cfg->cache_duration);
 	log_message(LOG_INFO, "cfg->retries: '%d'\n", cfg->retries);
 */
+authorization = str_printf("Authorization: %s", cfg->token);
 
-	authorization = str_printf("Authorization: %s", cfg->token);
+    if ( user_map(username, cfg) )
+    {
+		log_message(LOG_INFO, "HvB User mapped to other user");
+		log_message(LOG_INFO, "User mapped to other user: %s", cfg->username);
+    }
+    else
+    {
+		log_message(LOG_INFO, "User is NOT mapped to other user");
+		log_message(LOG_INFO, "User is: %s", cfg->username);
+    }
 
 	/* Prepare full start url... */
 	char *url = NULL;
@@ -71,7 +83,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	/* Prepare start input data... */
 	char *data = NULL;
 	data = str_printf("{\"user_id\":\"%s\",\"attribute\":\"%s\",\"cache_duration\":\"%d\",\"GIT_COMMIT\":\"%s\",\"JSONPARSER_GIT_COMMIT\":\"%s\"}",
-			 username, cfg->attribute, cfg->cache_duration, TOSTR(GIT_COMMIT), TOSTR(JSONPARSER_GIT_COMMIT));
+			 cfg->username, cfg->attribute, cfg->cache_duration, TOSTR(GIT_COMMIT), TOSTR(JSONPARSER_GIT_COMMIT));
 
 	/* Request auth session_id/challenge */
 	json_char *challenge_response = (json_char *) API(

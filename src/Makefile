@@ -47,7 +47,7 @@ ifneq "$(shell $(CC) --version | grep clang)" ""
   endif
 endif
 
-SOURCES := config.c http.c utils.c tty.c pam_weblogin.c
+SOURCES := config.c http.c utils.c tty.c pam_weblogin.c user_map.c
 OBJS := $(SOURCES:%.c=%.o)
 
 CFLAGS += -I..
@@ -66,7 +66,8 @@ config.o: config.c config.h tty.h defs.h
 http.o: http.c http.h tty.h defs.h
 utils.o: utils.c utils.h tty.h defs.h
 tty.o: tty.c utils.h defs.h
-pam_weblogin.o: pam_weblogin.c config.h http.h utils.h tty.h defs.h
+uaer_map.o: user_map.c user_map.h config.h
+pam_weblogin.o: pam_weblogin.c config.h http.h utils.h tty.h defs.h user_map.h
 
 pam_weblogin.so: $(OBJS) ../json-parser-build/libjsonparser.a
 	$(CC) $(LDFLAGS) -shared -o $@ $^ -lcurl -lpam -lm

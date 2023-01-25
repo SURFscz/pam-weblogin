@@ -9,6 +9,7 @@ typedef struct
 	char *url;
 	char *token;
 	char *attribute;
+	char *username;
 	unsigned int cache_duration;
 	unsigned int retries;
 } Config;
