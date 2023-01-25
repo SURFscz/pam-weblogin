@@ -119,11 +119,13 @@ jobs:
           else
             exit 1
           fi
-          echo PWL_VERSION=$(cat /tmp/version | tr -C 'a-zA-Z0-9._+-' '_') >> $GITHUB_ENV
+          export PWL_VERSION=$(cat /tmp/version | tr -C 'a-zA-Z0-9._+-' '_')
+          echo PWL_VERSION=${PWL_VERSION} >> $GITHUB_ENV
+          echo SRC_FILE=pam-weblogin-${PWL_VERSION}.source.tar.xz  >> $GITHUB_ENV
 
       - name: Create source tarball
         run: |
-          tar -cJ -f /tmp/pam-weblogin-${PWL_VERSION}.source.tar.xz \
+          tar -cJ -f /tmp/${SRC_FILE} \
             --transform "s,^\./,pam-weblogin-${PWL_VERSION}/," --sort=name \
             --owner=0 --group=0 --mode=u=rwX,go=rX \
             --exclude-vcs --exclude='**/.github' \
@@ -131,13 +133,13 @@ jobs:
 
       - name: Show what we are shipping
         run: |
-          tar tvJf /tmp/pam-weblogin-${PWL_VERSION}.source.tar.xz
+          tar tvJf /tmp/${SRC_FILE}
 
       - name: Create Artifact
         uses: actions/upload-artifact@v3
         with:
           name: "dist-source"
-          path: "/tmp/pam-weblogin-${{env.PWL_VERSION}}.source.tar.xz"
+          path: "/tmp/${SRC_FILE}"
 
 
   build_rpm:
@@ -165,7 +167,9 @@ jobs:
           else
             exit 1
           fi
-          echo PWL_VERSION=$(cat /tmp/version | tr -C 'a-zA-Z0-9._+-' '_') >> $GITHUB_ENV
+          export PWL_VERSION=$(cat /tmp/version | tr -C 'a-zA-Z0-9._+-' '_')
+          echo PWL_VERSION=${PWL_VERSION} >> $GITHUB_ENV
+          echo SRC_FILE=pam-weblogin-${PWL_VERSION}.source.tar.xz  >> $GITHUB_ENV
 
       - name: Fetch source
         id: fetch_source
@@ -183,9 +187,9 @@ jobs:
       - name: Prepare build dir
         run: |
           mkdir -p rpmbuild/SOURCES
-          cp -v ${{steps.fetch_source.outputs.download-path}}/pam-weblogin-${PWL_VERSION}.tar.xz rpmbuild/SOURCES
+          cp -v ${{steps.fetch_source.outputs.download-path}}/${SRC_FILE} rpmbuild/SOURCES
           ls -la rpmbuild/SOURCES
-          tar -xvJ --wildcards --strip-components 1 -f ${{steps.fetch_source.outputs.download-path}}/pam-weblogin-${PWL_VERSION}.source.tar.xz '*.spec'
+          tar -xvJ --wildcards --strip-components 1 -f ${{steps.fetch_source.outputs.download-path}}/${SRC_FILE} '*.spec'
 
       - name: Prepare container image
         run: >
