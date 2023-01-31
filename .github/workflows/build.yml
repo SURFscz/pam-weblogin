@@ -257,22 +257,10 @@ jobs:
           echo BUILD_DIR=pam-weblogin_${PWL_VERSION}-${{matrix.name}}-1_amd64 >> $GITHUB_ENV
           echo SRC_FILE=pam-weblogin-${PWL_VERSION}.source.tar.xz  >> $GITHUB_ENV
 
-      - name: Fetch source
-        id: fetch_source
-        uses: actions/download-artifact@v3
+      - name: Checkout
+        uses: actions/checkout@v3
         with:
-          name: "dist-source"
-          path: "."
-
-      - name: Show source-dist
-        run: |
-          ls -la ${{steps.fetch_source.outputs.download-path}}
-          sha1sum ${{steps.fetch_source.outputs.download-path}}/* || true
-          sha256sum ${{steps.fetch_source.outputs.download-path}}/* || true
-
-      - name: Prepare build dir
-        run: |
-          tar -xvJ --wildcards --strip-components 1 -f ${{steps.fetch_source.outputs.download-path}}/${SRC_FILE} pam-weblogin
+          path: pam-weblogin
 
       - name: Prepare container image
         run: >
