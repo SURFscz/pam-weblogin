@@ -281,7 +281,7 @@ jobs:
         run: >
           docker run -v `pwd`/pwl-checkout:/root/pam-weblogin \
                         pwl-${{matrix.name}} \
-                        /bin/sh -c 'pwd; cd /root/pam-weblogin; make'
+                        /bin/sh -c 'cd /root/pam-weblogin; make'
 
       - name: debug
         run: ls -laR pwl-checkout/src/*.so
@@ -293,8 +293,7 @@ jobs:
           mkdir -p ${BUILD_DIR}/usr/local/lib/security
           cp pwl-checkout/src/pam_weblogin.so ${BUILD_DIR}/usr/local/lib/security/pam_weblogin.so
           cp pwl-checkout/pam-weblogin.conf.sample ${BUILD_DIR}/etc/pam-weblogin.conf
-          echo "
-            Package: pam-weblogin
+          echo "Package: pam-weblogin
             Version: ${PWL_VERSION}
             Section: custom
             Priority: optional
@@ -303,6 +302,7 @@ jobs:
             Maintainer: surf.nl
             Description: Pam weblogin module
           " > ${BUILD_DIR}/DEBIAN/control
+          cat ${BUILD_DIR}/DEBIAN/control
           dpkg-deb --build --root-owner-group ${BUILD_DIR}
 
       - name: gather generated debs
