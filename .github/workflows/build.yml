@@ -259,8 +259,12 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          path: pam-weblogin
+
+      - name: debug
+        run: |
+          echo $GITHUB_WORKSPACE
+          ls -sla $GITHUB_WORKSPACE
+          ls -lsa .
 
       - name: Prepare container image
         run: >
@@ -272,9 +276,9 @@ jobs:
           " > Dockerfile;
           docker build -f Dockerfile -t pwl-${{matrix.name}} .
 
-      - name: build RPM package
+      - name: build DEB package
         run: >
-          docker run -v `pwd`/pam-weblogin:/root/pam-weblogin/ \
+          docker run -v $GITHUB_WORKSPACE/pam-weblogin:/root/pam-weblogin/ \
                         pwl-${{matrix.name}} \
                         /bin/sh -c 'cd pam-weblogin; make'
 
@@ -286,8 +290,8 @@ jobs:
           mkdir -p ${BUILD_DIR}/DEBIAN
           mkdir -p ${BUILD_DIR}/etc/pam.d
           mkdir -p ${BUILD_DIR}/usr/local/lib/security
-          cp pam-weblogin/src/pam_weblogin.so ${BUILD_DIR}/usr/local/lib/security/pam_weblogin.so
-          cp pam-weblogin/pam-weblogin.conf.example ${BUILD_DIR}/etc/pam-weblogin.conf
+          cp $GITHUB_WORKSPACE/pam-weblogin/src/pam_weblogin.so ${BUILD_DIR}/usr/local/lib/security/pam_weblogin.so
+          cp $GITHUB_WORKSPACE/pam-weblogin/pam-weblogin.conf.example ${BUILD_DIR}/etc/pam-weblogin.conf
           echo "
             Package: pam-weblogin
             Version: ${PWL_VERSION}
@@ -308,7 +312,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: rpm_${{matrix.name}}
+          name: deb_${{matrix.name}}
           path: "results/*"
 
   release:
