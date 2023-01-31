@@ -227,6 +227,101 @@ jobs:
           name: rpm_${{matrix.name}}
           path: "results/*"
 
+  build_deb:
+    name: Build DEBs
+    needs:
+      - source_dist
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: "debian10",  container: "debian:10"  }
+          - { name: "ubuntu2204", container: "ubuntu:22.04" }
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Docker caching
+        uses: satackey/action-docker-layer-caching@v0.0.11
+        continue-on-error: true
+
+      - name: Get tag/branch name
+        run: |
+          if [ "$GITHUB_REF_TYPE" = 'branch' ]; then
+            echo -n "0+branch+$GITHUB_REF_NAME" > /tmp/version
+          elif [ "$GITHUB_REF_TYPE" = 'tag' ]; then
+            echo -n "$GITHUB_REF_NAME" > /tmp/version
+          else
+            exit 1
+          fi
+          export PWL_VERSION=$(cat /tmp/version | tr -C 'a-zA-Z0-9._+-' '_')
+          echo PWL_VERSION=${PWL_VERSION} >> $GITHUB_ENV
+          echo BUILD_DIR=pam-weblogin_${PWL_VERSION}-${{matrix.name}}-1_amd64 >> $GITHUB_ENV
+          echo SRC_FILE=pam-weblogin-${PWL_VERSION}.source.tar.xz  >> $GITHUB_ENV
+
+      - name: Fetch source
+        id: fetch_source
+        uses: actions/download-artifact@v3
+        with:
+          name: "dist-source"
+          path: "."
+
+      - name: Show source-dist
+        run: |
+          ls -la ${{steps.fetch_source.outputs.download-path}}
+          sha1sum ${{steps.fetch_source.outputs.download-path}}/* || true
+          sha256sum ${{steps.fetch_source.outputs.download-path}}/* || true
+
+      - name: Prepare build dir
+        run: |
+          tar -xvJ --wildcards --strip-components 1 -f ${{steps.fetch_source.outputs.download-path}}/${SRC_FILE} pam-weblogin
+
+      - name: Prepare container image
+        run: >
+          echo "
+            FROM ${{matrix.container}}
+            RUN apt install -y build-essential libpam0g-dev libcurl4-openssl-dev
+            RUN gcc --version
+          " > Dockerfile;
+          docker build -f Dockerfile -t pwl-${{matrix.name}} .
+
+      - name: build RPM package
+        run: >
+          docker run -v `pwd`/pam-weblogin:/root/pam-weblogin/ \
+                        pwl-${{matrix.name}} \
+                        /bin/sh -c 'cd pam-weblogin; make'
+
+      - name: debug
+        run: ls -laR pam-weblogin/src/*.so
+
+      - name: Prepare build dir
+        run: |
+          mkdir -p ${BUILD_DIR}/DEBIAN
+          mkdir -p ${BUILD_DIR}/etc/pam.d
+          mkdir -p ${BUILD_DIR}/usr/local/lib/security
+          cp pam-weblogin/src/pam_weblogin.so ${BUILD_DIR}/usr/local/lib/security/pam_weblogin.so
+          cp pam-weblogin/pam-weblogin.conf.example ${BUILD_DIR}/etc/pam-weblogin.conf
+          echo "
+            Package: pam-weblogin
+            Version: ${PWL_VERSION}
+            Section: custom
+            Priority: optional
+            Architecture: amd64
+            Depends: libcurl3-gnutls, libpam0g
+            Maintainer: surf.nl
+            Description: Pam weblogin module
+          " > ${BUILD_DIR}/DEBIAN/control
+          dpkg-deb --build --root-owner-group ${BUILD_DIR}
+
+      - name: gather generated debs
+        run: |
+          mkdir results
+          cp *.deb results/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: rpm_${{matrix.name}}
+          path: "results/*"
+
   release:
     name: Release
     runs-on: ubuntu-latest
@@ -234,6 +329,7 @@ jobs:
       - build_tests
       - source_dist
       - build_rpm
+      - build_deb
     steps:
       - name: Checkout
         uses: actions/checkout@v3
