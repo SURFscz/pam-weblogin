@@ -259,12 +259,13 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          path: pwl-checkout
 
       - name: debug
         run: |
-          echo $GITHUB_WORKSPACE
-          ls -sla $GITHUB_WORKSPACE
           ls -lsa .
+          ls -sla pwl-checkout
 
       - name: Prepare container image
         run: >
@@ -278,20 +279,20 @@ jobs:
 
       - name: build DEB package
         run: >
-          docker run -v $GITHUB_WORKSPACE/pam-weblogin:/root/pam-weblogin/ \
+          docker run -v `pwd`/pwl-checkout:/root/pam-weblogin \
                         pwl-${{matrix.name}} \
-                        /bin/sh -c 'cd pam-weblogin; make'
+                        /bin/sh -c 'pwd; cd /root/pam-weblogin; make'
 
       - name: debug
-        run: ls -laR pam-weblogin/src/*.so
+        run: ls -laR pwl-checkout/src/*.so
 
       - name: Prepare build dir
         run: |
           mkdir -p ${BUILD_DIR}/DEBIAN
           mkdir -p ${BUILD_DIR}/etc/pam.d
           mkdir -p ${BUILD_DIR}/usr/local/lib/security
-          cp $GITHUB_WORKSPACE/pam-weblogin/src/pam_weblogin.so ${BUILD_DIR}/usr/local/lib/security/pam_weblogin.so
-          cp $GITHUB_WORKSPACE/pam-weblogin/pam-weblogin.conf.example ${BUILD_DIR}/etc/pam-weblogin.conf
+          cp pwl-checkout/src/pam_weblogin.so ${BUILD_DIR}/usr/local/lib/security/pam_weblogin.so
+          cp pwl-checkout/pam-weblogin.conf.example ${BUILD_DIR}/etc/pam-weblogin.conf
           echo "
             Package: pam-weblogin
             Version: ${PWL_VERSION}
