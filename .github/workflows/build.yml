@@ -119,7 +119,7 @@ jobs:
           else
             exit 1
           fi
-          export PWL_VERSION=$(cat /tmp/version | tr -C 'a-zA-Z0-9._-' '_')
+          export PWL_VERSION=$(cat /tmp/version | tr -C 'a-zA-Z0-9._+' '_')
           echo PWL_VERSION=${PWL_VERSION} >> $GITHUB_ENV
           echo SRC_FILE=pam-weblogin-${PWL_VERSION}.source.tar.xz  >> $GITHUB_ENV
 
@@ -167,7 +167,7 @@ jobs:
           else
             exit 1
           fi
-          export PWL_VERSION=$(cat /tmp/version | tr -C 'a-zA-Z0-9._-' '_')
+          export PWL_VERSION=$(cat /tmp/version | tr -C 'a-zA-Z0-9._+' '_')
           echo PWL_VERSION=${PWL_VERSION} >> $GITHUB_ENV
           echo SRC_FILE=pam-weblogin-${PWL_VERSION}.source.tar.xz  >> $GITHUB_ENV
 
