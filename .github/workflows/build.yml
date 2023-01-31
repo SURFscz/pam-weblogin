@@ -262,11 +262,6 @@ jobs:
         with:
           path: pwl-checkout
 
-      - name: debug
-        run: |
-          ls -lsa .
-          ls -sla pwl-checkout
-
       - name: Prepare container image
         run: >
           echo "
@@ -294,14 +289,13 @@ jobs:
           cp pwl-checkout/src/pam_weblogin.so ${BUILD_DIR}/usr/local/lib/security/pam_weblogin.so
           cp pwl-checkout/pam-weblogin.conf.sample ${BUILD_DIR}/etc/pam-weblogin.conf
           echo "Package: pam-weblogin
-            Version: ${PWL_VERSION}
-            Section: custom
-            Priority: optional
-            Architecture: amd64
-            Depends: libcurl3-gnutls, libpam0g
-            Maintainer: surf.nl
-            Description: Pam weblogin module
-          " > ${BUILD_DIR}/DEBIAN/control
+          Version: ${PWL_VERSION}
+          Section: custom
+          Priority: optional
+          Architecture: amd64
+          Depends: libcurl3-gnutls, libpam0g
+          Maintainer: surf.nl
+          Description: Pam weblogin module" > ${BUILD_DIR}/DEBIAN/control
           cat ${BUILD_DIR}/DEBIAN/control
           dpkg-deb --build --root-owner-group ${BUILD_DIR}
 
