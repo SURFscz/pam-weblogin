@@ -266,7 +266,8 @@ jobs:
         run: >
           echo "
             FROM ${{matrix.container}}
-            RUN apt install -y build-essential libpam0g-dev libcurl4-openssl-dev
+            RUN apt update; apt upgrade -y
+            RUN apt-get install -y build-essential libpam0g-dev libcurl4-openssl-dev
             RUN gcc --version
           " > Dockerfile;
           docker build -f Dockerfile -t pwl-${{matrix.name}} .
