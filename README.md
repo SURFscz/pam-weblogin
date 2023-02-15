@@ -79,3 +79,6 @@ verify = /etc/ssl/ca.crt
 
 ## Locking yourself out
 Please make sure to create a way of accessing the machine in case you create a configuration that effectively locks you out of the machine. Practice on a local VM first.
+
+## Standalone server
+Whereas this pam module was developed for use with [SRAM](https://wiki.surfnet.nl/display/SRAM) [SBS](https://github.com/SURFscz/SBS), it is also easlity possible to integrate it in your own infrastructure. To that ebd, we provide a fully fuctional `pam-weblogin` server which can authenticate users by acting as an OIDC RP in an existing infratructure.  See the Readme file in `server/` for more info.
