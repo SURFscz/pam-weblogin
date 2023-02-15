@@ -231,6 +231,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - { name: "debian11",   container: "debian:11"    }
           - { name: "debian10",   container: "debian:10"    }
           - { name: "ubuntu2204", container: "ubuntu:22.04" }
     runs-on: "ubuntu-latest"
