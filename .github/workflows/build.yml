@@ -154,10 +154,6 @@ jobs:
           - { name: "fedora37", container: "fedora:37" }
     runs-on: "ubuntu-latest"
     steps:
-      - name: Docker caching
-        uses: satackey/action-docker-layer-caching@v0.0.11
-        continue-on-error: true
-
       - name: Get tag/branch name
         run: |
           if [ "$GITHUB_REF_TYPE" = 'branch' ]; then
@@ -239,10 +235,6 @@ jobs:
           - { name: "ubuntu2204", container: "ubuntu:22.04" }
     runs-on: "ubuntu-latest"
     steps:
-      - name: Docker caching
-        uses: satackey/action-docker-layer-caching@v0.0.11
-        continue-on-error: true
-
       - name: Get tag/branch name
         run: |
           if [ "$GITHUB_REF_TYPE" = 'branch' ]; then
@@ -299,10 +291,10 @@ jobs:
           cat ${BUILD_DIR}/DEBIAN/control
 
       - name: Build debs in container
-        run: >
-          docker run
-              -v `pwd`:/work/
-                pwl-${{matrix.name}}
+        run: |
+          docker run \
+              -v `pwd`:/work/ \
+                pwl-${{matrix.name}} \
                 /bin/sh -c "
                   cd /work &&
                   dpkg-deb --build --root-owner-group ${BUILD_DIR}
