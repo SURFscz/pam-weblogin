@@ -154,10 +154,6 @@ jobs:
           - { name: "fedora37", container: "fedora:37" }
     runs-on: "ubuntu-latest"
     steps:
-      - name: Docker caching
-        uses: satackey/action-docker-layer-caching@v0.0.11
-        continue-on-error: true
-
       - name: Get tag/branch name
         run: |
           if [ "$GITHUB_REF_TYPE" = 'branch' ]; then
@@ -235,14 +231,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { name: "debian10",  container: "debian:10"  }
+          - { name: "debian11",   container: "debian:11"    }
+          - { name: "debian10",   container: "debian:10"    }
           - { name: "ubuntu2204", container: "ubuntu:22.04" }
     runs-on: "ubuntu-latest"
     steps:
-      - name: Docker caching
-        uses: satackey/action-docker-layer-caching@v0.0.11
-        continue-on-error: true
-
       - name: Get tag/branch name
         run: |
           if [ "$GITHUB_REF_TYPE" = 'branch' ]; then
@@ -254,8 +247,9 @@ jobs:
           fi
           export PWL_VERSION=$(cat /tmp/version | tr -C 'a-zA-Z0-9.+' '-')
           echo PWL_VERSION=${PWL_VERSION} >> $GITHUB_ENV
-          echo BUILD_DIR=pam-weblogin_${PWL_VERSION}-${{matrix.name}}-1_amd64 >> $GITHUB_ENV
+          echo BUILD_DIR=libpam-weblogin_${PWL_VERSION}-${{matrix.name}}-1_amd64 >> $GITHUB_ENV
           echo SRC_FILE=pam-weblogin-${PWL_VERSION}.source.tar.xz  >> $GITHUB_ENV
+          echo BUILD_ARCH=$(dpkg-architecture -q DEB_BUILD_MULTIARCH)  >> $GITHUB_ENV
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -267,39 +261,48 @@ jobs:
           echo "
             FROM ${{matrix.container}}
             RUN apt update; apt upgrade -y
-            RUN apt-get install -y git build-essential libpam0g-dev libcurl4-openssl-dev
+            RUN apt-get install -y build-essential git libpam0g-dev libcurl4-openssl-dev
             RUN gcc --version
           " > Dockerfile;
           docker build -f Dockerfile -t pwl-${{matrix.name}} .
 
-      - name: build DEB package
+      - name: Build binaries
         run: >
           docker run -v `pwd`/pwl-checkout:/root/pam-weblogin \
                         pwl-${{matrix.name}} \
                         /bin/sh -c 'cd /root/pam-weblogin; make'
 
-      - name: debug
+      - name: Debug
         run: ls -laR pwl-checkout/src/*.so
 
       - name: Prepare build dir
         run: |
           mkdir -p ${BUILD_DIR}/DEBIAN
           mkdir -p ${BUILD_DIR}/etc/pam.d
-          mkdir -p ${BUILD_DIR}/usr/local/lib/security
-          cp pwl-checkout/src/pam_weblogin.so ${BUILD_DIR}/usr/local/lib/security/pam_weblogin.so
+          mkdir -p ${BUILD_DIR}/lib/${BUILD_ARCH}/security/
+          cp pwl-checkout/src/pam_weblogin.so ${BUILD_DIR}/lib/${BUILD_ARCH}/security/pam_weblogin.so
           cp pwl-checkout/pam-weblogin.conf.sample ${BUILD_DIR}/etc/pam-weblogin.conf
-          echo "Package: pam-weblogin
+          echo "Package: libpam-weblogin
           Version: ${PWL_VERSION}
           Section: custom
           Priority: optional
           Architecture: amd64
           Depends: libcurl3-gnutls, libpam0g
-          Maintainer: surf.nl
+          Maintainer: SURF <sram-support@surf.nl>
           Description: Pam weblogin module" > ${BUILD_DIR}/DEBIAN/control
           cat ${BUILD_DIR}/DEBIAN/control
-          dpkg-deb --build --root-owner-group ${BUILD_DIR}
 
-      - name: gather generated debs
+      - name: Build debs in container
+        run: |
+          docker run \
+              -v `pwd`:/work/ \
+                pwl-${{matrix.name}} \
+                /bin/sh -c "
+                  cd /work &&
+                  dpkg-deb --build --root-owner-group ${BUILD_DIR}
+                "
+
+      - name: Gather generated debs
         run: |
           mkdir results
           cp *.deb results/
