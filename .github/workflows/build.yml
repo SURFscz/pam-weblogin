@@ -235,7 +235,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { name: "debian10",  container: "debian:10"  }
+          - { name: "debian10",   container: "debian:10"    }
           - { name: "ubuntu2204", container: "ubuntu:22.04" }
     runs-on: "ubuntu-latest"
     steps:
@@ -272,13 +272,13 @@ jobs:
           " > Dockerfile;
           docker build -f Dockerfile -t pwl-${{matrix.name}} .
 
-      - name: build DEB package
+      - name: Build binaries
         run: >
           docker run -v `pwd`/pwl-checkout:/root/pam-weblogin \
                         pwl-${{matrix.name}} \
                         /bin/sh -c 'cd /root/pam-weblogin; make'
 
-      - name: debug
+      - name: Debug
         run: ls -laR pwl-checkout/src/*.so
 
       - name: Prepare build dir
@@ -294,12 +294,21 @@ jobs:
           Priority: optional
           Architecture: amd64
           Depends: libcurl3-gnutls, libpam0g
-          Maintainer: surf.nl
+          Maintainer: SURF <sram-support@surf.nl>
           Description: Pam weblogin module" > ${BUILD_DIR}/DEBIAN/control
           cat ${BUILD_DIR}/DEBIAN/control
-          dpkg-deb --build --root-owner-group ${BUILD_DIR}
 
-      - name: gather generated debs
+      - name: Build debs in container
+        run: |
+          docker run
+              -v `pwd``:/work/ \
+                pwl-${{matrix.name}} \
+                /bin/sh -c '
+                  cd /work &&
+                  dpkg-deb --build --root-owner-group ${BUILD_DIR}
+                '
+
+      - name: Gather generated debs
         run: |
           mkdir results
           cp *.deb results/
