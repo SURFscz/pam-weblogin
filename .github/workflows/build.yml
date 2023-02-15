@@ -281,7 +281,7 @@ jobs:
           mkdir -p ${BUILD_DIR}/lib/${BUILD_ARCH}/security/
           cp pwl-checkout/src/pam_weblogin.so ${BUILD_DIR}/lib/${BUILD_ARCH}/security/pam_weblogin.so
           cp pwl-checkout/pam-weblogin.conf.sample ${BUILD_DIR}/etc/pam-weblogin.conf
-          echo "Package: pam-weblogin
+          echo "Package: libpam-weblogin
           Version: ${PWL_VERSION}
           Section: custom
           Priority: optional
