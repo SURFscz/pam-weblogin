@@ -301,7 +301,7 @@ jobs:
       - name: Build debs in container
         run: |
           docker run \
-              -v `pwd``:/work/ \
+              -v `pwd`:/work/ \
                 pwl-${{matrix.name}} \
                 /bin/sh -c '
                   cd /work &&
