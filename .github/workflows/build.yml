@@ -299,14 +299,14 @@ jobs:
           cat ${BUILD_DIR}/DEBIAN/control
 
       - name: Build debs in container
-        run: |
-          docker run \
-              -v `pwd`:/work/ \
-                pwl-${{matrix.name}} \
-                /bin/sh -c '
+        run: >
+          docker run
+              -v `pwd`:/work/
+                pwl-${{matrix.name}}
+                /bin/sh -c "
                   cd /work &&
                   dpkg-deb --build --root-owner-group ${BUILD_DIR}
-                '
+                "
 
       - name: Gather generated debs
         run: |
