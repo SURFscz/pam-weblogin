@@ -70,7 +70,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt-get install --yes pandoc
+          sudo apt-get install --yes libpam0g-dev libcurl4-openssl-dev
         if: runner.os == 'Linux'
 
       - name: Checkout
@@ -236,6 +236,10 @@ jobs:
           - { name: "ubuntu2204", container: "ubuntu:22.04" }
     runs-on: "ubuntu-latest"
     steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get install --yes pandoc
+
       - name: Get tag/branch name
         run: |
           if [ "$GITHUB_REF_TYPE" = 'branch' ]; then
