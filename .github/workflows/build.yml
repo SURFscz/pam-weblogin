@@ -191,7 +191,7 @@ jobs:
         run: >
           echo "
             FROM ${{matrix.container}}
-            RUN yum install -y rpm-build
+            RUN yum install -y rpm-build pandoc
             COPY pam-weblogin.spec /tmp/pwl.spec
             RUN command -v dnf && dnf install -y 'dnf-command(builddep)' || true
             RUN command -v dnf && dnf builddep -y /tmp/pwl.spec || yum-builddep -y /tmp/pwl.spec

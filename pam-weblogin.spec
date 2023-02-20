@@ -19,11 +19,14 @@ Allows a user to login via ssh to a server by logging in on a web page instead o
 
 %build
 make
+pandoc README.md -t plain > README
 
 %install
 rm -rf %{buildroot}
 mkdir -p %{buildroot}/etc/pam.d/
+mkdir -p %{buildroot}/usr/share/doc/pam-weblogin/
 make install DESTDIR=%{buildroot}
+cp README %{buildroot}/usr/share/doc/pam-weblogin/
 
 %clean
 rm -rf %{buildroot}
@@ -31,6 +34,7 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root,0750)
 /usr/local/lib/security/*.so
+/usr/share/doc/pam-weblogin/*
 /etc/pam.d/weblogin
 /etc/pam-weblogin.conf
 
