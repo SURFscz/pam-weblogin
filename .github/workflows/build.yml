@@ -191,6 +191,7 @@ jobs:
         run: >
           echo "
             FROM ${{matrix.container}}
+            RUN yum install -y epel-release
             RUN yum install -y epel-release rpm-build pandoc
             COPY pam-weblogin.spec /tmp/pwl.spec
             RUN command -v dnf && dnf install -y 'dnf-command(builddep)' || true
