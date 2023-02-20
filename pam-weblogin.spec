@@ -26,7 +26,6 @@ rm -rf %{buildroot}
 mkdir -p %{buildroot}/etc/pam.d/
 mkdir -p %{buildroot}/usr/share/doc/pam-weblogin/
 make install DESTDIR=%{buildroot}
-cp README %{buildroot}/usr/share/doc/pam-weblogin/
 
 %clean
 rm -rf %{buildroot}
@@ -34,11 +33,10 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root,0750)
 /usr/local/lib/security/*.so
-/usr/share/doc/pam-weblogin/README
 /etc/pam.d/weblogin
 /etc/pam-weblogin.conf
 
-%doc README.md
+%doc README
 
 %license LICENSE
 
