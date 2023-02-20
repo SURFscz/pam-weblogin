@@ -70,7 +70,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt-get install --yes libpam0g-dev libcurl4-openssl-dev
+          sudo apt-get install --yes pandoc
         if: runner.os == 'Linux'
 
       - name: Checkout
@@ -280,8 +280,10 @@ jobs:
           mkdir -p ${BUILD_DIR}/DEBIAN
           mkdir -p ${BUILD_DIR}/etc/pam.d
           mkdir -p ${BUILD_DIR}/lib/${BUILD_ARCH}/security/
+          mkdir -p ${BUILD_DIR}/usr/share/doc/pam-weblogin/
           cp pwl-checkout/src/pam_weblogin.so ${BUILD_DIR}/lib/${BUILD_ARCH}/security/pam_weblogin.so
           cp pwl-checkout/pam-weblogin.conf.sample ${BUILD_DIR}/etc/pam-weblogin.conf
+          pandoc pwl-checkout/README.md -t plain > ${BUILD_DIR}/usr/share/doc/pam-weblogin/README
           echo "Package: libpam-weblogin
           Version: ${PWL_VERSION}
           Section: custom
