@@ -191,7 +191,8 @@ jobs:
         run: >
           echo "
             FROM ${{matrix.container}}
-            RUN yum install -y rpm-build
+            RUN yum install -y epel-release || true
+            RUN yum install -y rpm-build pandoc
             COPY pam-weblogin.spec /tmp/pwl.spec
             RUN command -v dnf && dnf install -y 'dnf-command(builddep)' || true
             RUN command -v dnf && dnf builddep -y /tmp/pwl.spec || yum-builddep -y /tmp/pwl.spec
@@ -236,6 +237,10 @@ jobs:
           - { name: "ubuntu2204", container: "ubuntu:22.04" }
     runs-on: "ubuntu-latest"
     steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get install --yes pandoc
+
       - name: Get tag/branch name
         run: |
           if [ "$GITHUB_REF_TYPE" = 'branch' ]; then
@@ -280,8 +285,10 @@ jobs:
           mkdir -p ${BUILD_DIR}/DEBIAN
           mkdir -p ${BUILD_DIR}/etc/pam.d
           mkdir -p ${BUILD_DIR}/lib/${BUILD_ARCH}/security/
+          mkdir -p ${BUILD_DIR}/usr/share/doc/pam-weblogin/
           cp pwl-checkout/src/pam_weblogin.so ${BUILD_DIR}/lib/${BUILD_ARCH}/security/pam_weblogin.so
           cp pwl-checkout/pam-weblogin.conf.sample ${BUILD_DIR}/etc/pam-weblogin.conf
+          pandoc pwl-checkout/README.md -t plain > ${BUILD_DIR}/usr/share/doc/pam-weblogin/README
           echo "Package: libpam-weblogin
           Version: ${PWL_VERSION}
           Section: custom
