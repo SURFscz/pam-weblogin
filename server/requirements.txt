@@ -1,3 +1,4 @@
+qrcode
 pyyaml
 Flask
 Flask-pyoidc

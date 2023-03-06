@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 import sys
 import os
+import io
 import json
 import random
 import logging
 import yaml
+import qrcode
+
 from threading import Timer
 from datetime import timedelta
 
@@ -87,6 +90,17 @@ def authorized(headers):
         return False
 
 
+def create_qr(url):
+    qr = qrcode.QRCode()
+    qr.add_data(url)
+
+    f = io.StringIO()
+    qr.print_ascii(out=f, invert=True)
+    f.seek(0)
+
+    return f.read()
+
+
 @app.route('/pam-weblogin/start', methods=['POST'])
 def req():
     data = json.loads(request.data)
@@ -103,11 +117,13 @@ def req():
     cache_duration = data.get('cache_duration', 0)
     new_session_id = session_id()
     url = os.environ.get("URL", config['url']).rstrip('/')
+    qr_code = create_qr(url)
     cache = cached.get(user_id, False)
     auths[new_session_id] = {
         'session_id': new_session_id,
         'challenge': f'Hello {user_id}. To continue, '
-                     f'visit {url}/pam-weblogin/login/{new_session_id} and enter verification code',
+                     f'visit {url}/pam-weblogin/login/{new_session_id} and enter verification code\n\n'
+                     f'{qr_code}',
         'cached': cache,
         'info': 'Login was cached' if cache else 'Sign in'
     }
