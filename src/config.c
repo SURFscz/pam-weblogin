@@ -11,6 +11,7 @@
 #include <stdbool.h>
 
 #include "tty.h"
+#include "utils.h"
 
 #include "config.h"
 
@@ -167,7 +168,16 @@ Config *getConfig(const char *filename)
 			/* Check for token config */
 			else if (!strcmp(key, "token"))
 			{
-				cfg->token = strdup(val);
+				char *multi = strchr(val, ' ');
+				if (multi == NULL)
+				/* token is single valued, add Bearer */
+				{
+					cfg->token = str_printf("Bearer %s", val);
+				} else
+				/* token is multi valued, use as-is */
+				{
+					cfg->token = strdup(val);
+				}
 				log_message(LOG_DEBUG, "token: %s", cfg->token);
 			}
 
