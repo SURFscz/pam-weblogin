@@ -307,6 +307,7 @@ jobs:
                 /bin/sh -c "
                   cd /work &&
                   dpkg-deb --build --root-owner-group ${BUILD_DIR}
+                  dpkg -c *.deb
                 "
 
       - name: Gather generated debs
