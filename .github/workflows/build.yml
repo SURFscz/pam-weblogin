@@ -77,9 +77,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-18.04,  compiler: gcc,   version: 4.8 }
-          - { os: ubuntu-18.04,  compiler: gcc,   version:   5 }
-          - { os: ubuntu-18.04,  compiler: gcc,   version:   6 }
+          - { os: ubuntu-20.04,  compiler: gcc,   version: 4.8 }
+          - { os: ubuntu-20.04,  compiler: gcc,   version:   5 }
+          - { os: ubuntu-20.04,  compiler: gcc,   version:   6 }
           - { os: ubuntu-20.04,  compiler: gcc,   version:   7 }
           - { os: ubuntu-20.04,  compiler: gcc,   version:   8 }
           - { os: ubuntu-22.04,  compiler: gcc,   version:   9 }
@@ -106,6 +106,17 @@ jobs:
         run: |
           sudo apt-get purge man-db
         if: runner.os == 'Linux'
+
+      - name: Add source for old gcc packages (ubuntu 18.04)
+        run: |
+          sudo tee "/etc/apt/sources.list.d/bionic.list" << EOF
+          deb http://azure.archive.ubuntu.com/ubuntu bionic main universe
+          deb http://azure.archive.ubuntu.com/ubuntu bionic-security main universe
+          EOF
+          cat /etc/apt/sources.list
+          ls -la /etc/apt/sources.list.d
+          sudo apt update
+        if: runner.os == 'Linux' && matrix.compiler == 'gcc' && matrix.version < 7
 
       - name: Install gcc
         run: |
