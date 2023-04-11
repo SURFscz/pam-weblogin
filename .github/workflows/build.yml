@@ -109,7 +109,7 @@ jobs:
 
       - name: Install old gcc
         run: |
-          sudo cat > "/etc/apt/sources.list.d/bionic.list"<<EOF
+          sudo tee "/etc/apt/sources.list.d/bionic.list" << EOF
           deb http://archive.ubuntu.com/ubuntu bionic universe
           deb http://security.ubuntu.com/ubuntu bionic-security main
           EOF
