@@ -107,15 +107,16 @@ jobs:
           sudo apt-get purge man-db
         if: runner.os == 'Linux'
 
-      - name: Install old gcc
+      - name: Add source for old gcc packages (ubuntu 18.04)
         run: |
           sudo tee "/etc/apt/sources.list.d/bionic.list" << EOF
-          deb http://archive.ubuntu.com/ubuntu bionic universe
-          deb http://security.ubuntu.com/ubuntu bionic-security main
+          deb http://azure.archive.ubuntu.com/ubuntu bionic universe
+          deb http://azure.archive.ubuntu.com/ubuntu bionic-security main
           EOF
           cat /etc/apt/sources.list
           ls -la /etc/apt/sources.list.d
           sudo apt update
+          sudo apt install -y libisl19
         if: runner.os == 'Linux' && matrix.compiler == 'gcc' && matrix.version < 7
 
       - name: Install gcc
