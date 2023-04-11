@@ -81,21 +81,21 @@ jobs:
           - { os: ubuntu-20.04,  compiler: gcc,   version:   5 }
           - { os: ubuntu-20.04,  compiler: gcc,   version:   6 }
           - { os: ubuntu-20.04,  compiler: gcc,   version:   7 }
-#          - { os: ubuntu-20.04,  compiler: gcc,   version:   8 }
-#          - { os: ubuntu-22.04,  compiler: gcc,   version:   9 }
-#          - { os: ubuntu-22.04,  compiler: gcc,   version:  10 }
-#          - { os: ubuntu-22.04,  compiler: gcc,   version:  11 }
-#          - { os: ubuntu-22.04,  compiler: gcc,   version:  12 }
-#          - { os: ubuntu-20.04,  compiler: clang, version:   9 }
-#          - { os: ubuntu-20.04,  compiler: clang, version:  10 }
-#          - { os: ubuntu-20.04,  compiler: clang, version:  11 }
-#          - { os: ubuntu-20.04,  compiler: clang, version:  12 }
-#          - { os: ubuntu-22.04,  compiler: clang, version:  13 }
-#          - { os: ubuntu-22.04,  compiler: clang, version:  14 }
-#          - { os: ubuntu-22.04,  compiler: clang, version:  15 }
-#          - { os: macos-10.15,   compiler: native              }
-#          - { os: macos-11,      compiler: native              }
-#          - { os: macos-12,      compiler: native              }
+          - { os: ubuntu-20.04,  compiler: gcc,   version:   8 }
+          - { os: ubuntu-22.04,  compiler: gcc,   version:   9 }
+          - { os: ubuntu-22.04,  compiler: gcc,   version:  10 }
+          - { os: ubuntu-22.04,  compiler: gcc,   version:  11 }
+          - { os: ubuntu-22.04,  compiler: gcc,   version:  12 }
+          - { os: ubuntu-20.04,  compiler: clang, version:   9 }
+          - { os: ubuntu-20.04,  compiler: clang, version:  10 }
+          - { os: ubuntu-20.04,  compiler: clang, version:  11 }
+          - { os: ubuntu-20.04,  compiler: clang, version:  12 }
+          - { os: ubuntu-22.04,  compiler: clang, version:  13 }
+          - { os: ubuntu-22.04,  compiler: clang, version:  14 }
+          - { os: ubuntu-22.04,  compiler: clang, version:  15 }
+          - { os: macos-10.15,   compiler: native              }
+          - { os: macos-11,      compiler: native              }
+          - { os: macos-12,      compiler: native              }
 
     # set CC to 'cc' for MacOS and the (e.g.) clang-12 for Linux
     env:
