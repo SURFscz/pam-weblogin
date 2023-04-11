@@ -113,7 +113,8 @@ jobs:
           deb http://archive.ubuntu.com/ubuntu bionic universe
           deb http://security.ubuntu.com/ubuntu bionic-security main
           EOF
-          cat /etc/sources.list
+          cat /etc/apt/sources.list
+          ls -la /etc/apt/sources.list.d
           sudo apt update
         if: runner.os == 'Linux' && matrix.compiler == 'gcc' && matrix.version < 7
 
