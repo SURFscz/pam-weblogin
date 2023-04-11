@@ -45,6 +45,9 @@ ifneq "$(shell $(CC) --version | grep clang)" ""
   ifeq "$(shell expr '$(CC_MAJOR)' '<' '14')" "1"
     CFLAGS += -Wno-unknown-warning-option
   endif
+  ifeq "$(shell expr '$(CC_MAJOR)' '>=' '16')" "1"
+    CFLAGS += -Wno-unsafe-buffer-usage
+  endif
 endif
 
 SOURCES := config.c http.c utils.c tty.c pam_weblogin.c
