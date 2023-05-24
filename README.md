@@ -4,6 +4,9 @@
 # pam-weblogin
 PAM WebLogin module in C
 
+## Wiki
+Accompanying wiki for this project https://wiki.surfnet.nl/display/SRAM/PAM+weblogin
+
 ## Installation
 Dependancies: libpam and libcurl. Install the dev packages for these libraries, then
 
