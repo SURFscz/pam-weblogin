@@ -4,6 +4,9 @@
 # pam-weblogin
 PAM WebLogin module in C
 
+## Wiki
+Accompanying wiki page for this project https://edu.nl/hjhqc
+
 ## Installation
 Dependancies: libpam and libcurl. Install the dev packages for these libraries, then
 

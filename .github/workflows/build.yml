@@ -13,78 +13,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  build_tests:
-    name: Build tests
-    if: always()
-
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - { os: ubuntu-20.04,  compiler: gcc,   version:   7 }
-          - { os: ubuntu-20.04,  compiler: gcc,   version:   8 }
-          - { os: ubuntu-22.04,  compiler: gcc,   version:   9 }
-          - { os: ubuntu-22.04,  compiler: gcc,   version:  10 }
-          - { os: ubuntu-22.04,  compiler: gcc,   version:  11 }
-          - { os: ubuntu-22.04,  compiler: gcc,   version:  12 }
-          - { os: ubuntu-20.04,  compiler: clang, version:   9 }
-          - { os: ubuntu-20.04,  compiler: clang, version:  10 }
-          - { os: ubuntu-20.04,  compiler: clang, version:  11 }
-          - { os: ubuntu-20.04,  compiler: clang, version:  12 }
-          - { os: ubuntu-22.04,  compiler: clang, version:  13 }
-          - { os: ubuntu-22.04,  compiler: clang, version:  14 }
-          - { os: ubuntu-22.04,  compiler: clang, version:  15 }
-          - { os: macos-10.15,   compiler: native              }
-          - { os: macos-11,      compiler: native              }
-          - { os: macos-12,      compiler: native              }
-
-    # set CC to 'cc' for MacOS and the (e.g.) clang-12 for Linux
-    env:
-      CC: ${{ matrix.compiler == 'native' && 'cc' || format('{0}-{1}',matrix.compiler,matrix.version) }}
-
-    steps:
-      - name: Housekeeping
-        run: |
-          sudo apt-get purge man-db
-        if: runner.os == 'Linux'
-
-      - name: Install gcc
-        run: |
-          sudo add-apt-repository --yes --update ppa:ubuntu-toolchain-r/test
-          sudo apt-get install --yes gcc-${{matrix.version}}
-        if: runner.os == 'Linux' && matrix.compiler == 'gcc'
-
-      - name: Install clang
-        run: |
-          wget https://apt.llvm.org/llvm.sh
-          sudo bash ./llvm.sh ${{ matrix.version }}
-        if: runner.os == 'Linux' &&  matrix.compiler == 'clang'
-
-      - name: Show compiler version
-        run: $CC --version
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get install --yes libpam0g-dev libcurl4-openssl-dev
-        if: runner.os == 'Linux'
-
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Test compilation
-        run: |
-          make all
-
-      - name: Test make clean
-        run: |
-          make clean
-          make clean
-          rm -rf json-parser/
-          make clean
-
-
   source_dist:
     name: "Source dist"
     if: >
@@ -137,6 +65,93 @@ jobs:
         with:
           name: "dist-source"
           path: "/tmp/${{env.SRC_FILE}}"
+
+
+  build_tests:
+    name: Build tests
+    if: always()
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-20.04,  compiler: gcc,   version: 4.8 }
+          - { os: ubuntu-20.04,  compiler: gcc,   version:   5 }
+          - { os: ubuntu-20.04,  compiler: gcc,   version:   6 }
+          - { os: ubuntu-20.04,  compiler: gcc,   version:   7 }
+          - { os: ubuntu-20.04,  compiler: gcc,   version:   8 }
+          - { os: ubuntu-22.04,  compiler: gcc,   version:   9 }
+          - { os: ubuntu-22.04,  compiler: gcc,   version:  10 }
+          - { os: ubuntu-22.04,  compiler: gcc,   version:  11 }
+          - { os: ubuntu-22.04,  compiler: gcc,   version:  12 }
+          - { os: ubuntu-20.04,  compiler: clang, version:   9 }
+          - { os: ubuntu-20.04,  compiler: clang, version:  10 }
+          - { os: ubuntu-20.04,  compiler: clang, version:  11 }
+          - { os: ubuntu-20.04,  compiler: clang, version:  12 }
+          - { os: ubuntu-22.04,  compiler: clang, version:  13 }
+          - { os: ubuntu-22.04,  compiler: clang, version:  14 }
+          - { os: ubuntu-22.04,  compiler: clang, version:  15 }
+          - { os: ubuntu-22.04,  compiler: clang, version:  16 }
+          - { os: macos-10.15,   compiler: native              }
+          - { os: macos-11,      compiler: native              }
+          - { os: macos-12,      compiler: native              }
+
+    # set CC to 'cc' for MacOS and the (e.g.) clang-12 for Linux
+    env:
+      CC: ${{ matrix.compiler == 'native' && 'cc' || format('{0}-{1}',matrix.compiler,matrix.version) }}
+
+    steps:
+#      - name: Housekeeping
+#        run: |
+#          sudo apt-get purge man-db
+#        if: runner.os == 'Linux'
+
+      - name: Add source for old gcc packages (ubuntu 18.04)
+        run: |
+          sudo tee "/etc/apt/sources.list.d/bionic.list" << EOF
+          deb http://azure.archive.ubuntu.com/ubuntu bionic main universe
+          deb http://azure.archive.ubuntu.com/ubuntu bionic-security main universe
+          EOF
+          cat /etc/apt/sources.list
+          ls -la /etc/apt/sources.list.d
+          sudo apt update
+        if: runner.os == 'Linux' && matrix.compiler == 'gcc' && matrix.version < 7
+
+      - name: Install gcc
+        run: |
+          sudo add-apt-repository --yes --update ppa:ubuntu-toolchain-r/test
+          sudo apt-get install --yes gcc-${{matrix.version}}
+        if: runner.os == 'Linux' && matrix.compiler == 'gcc'
+
+      - name: Install clang
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          sudo bash ./llvm.sh ${{ matrix.version }}
+        if: runner.os == 'Linux' &&  matrix.compiler == 'clang'
+
+      - name: Show compiler version
+        run: $CC --version
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get install --yes libpam0g-dev libcurl4-openssl-dev
+        if: runner.os == 'Linux'
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Test compilation
+        run: |
+          make all
+
+      - name: Test make clean
+        run: |
+          make clean
+          make clean
+          rm -rf json-parser/
+          make clean
 
 
   build_rpm:
@@ -204,7 +219,8 @@ jobs:
                      -v $(pwd)/pam-weblogin.spec:/pam-weblogin.spec \
                         pwl-${{matrix.name}} \
                         /bin/sh -c '
-                          rpmbuild -ba --define "pwl_version ${{env.PWL_VERSION}}" --define "pwl_distro ${{matrix.name}}" pam-weblogin.spec
+                          rpmbuild -ba --define "pwl_version ${{env.PWL_VERSION}}" --define "pwl_distro ${{matrix.name}}" pam-weblogin.spec;
+                          rpm -qlp rpmbuild/RPMS/x86_64/*.rpm
                         '
 
       - name: debug
@@ -304,6 +320,7 @@ jobs:
                 /bin/sh -c "
                   cd /work &&
                   dpkg-deb --build --root-owner-group ${BUILD_DIR}
+                  dpkg -c *.deb
                 "
 
       - name: Gather generated debs

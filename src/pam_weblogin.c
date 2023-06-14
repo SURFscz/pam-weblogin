@@ -51,8 +51,11 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	Config *cfg = NULL;
 	if (!(cfg = getConfig((argc > 0) ? argv[0] : DEFAULT_CONF_FILE)))
 	{
-		tty_output(pamh, "Error reading conf");
-		return PAM_SYSTEM_ERR;
+		if (!(cfg = getConfig(ALTERNATE_CONF_FILE)))
+		{
+			tty_output(pamh, "Error reading conf");
+			return PAM_SYSTEM_ERR;
+		}
 	}
 /*
 	log_message(LOG_INFO, "cfg->url: '%s'\n", cfg->url);
