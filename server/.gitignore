@@ -2,3 +2,4 @@
 *.yml
 flask_session/
 weblogin_daemon.yml
+share/
