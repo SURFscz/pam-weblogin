@@ -6,7 +6,8 @@
 #define API_START_PATH "start"
 #define API_CHECK_CODE_PATH "check-pin"
 
-#define DEFAULT_CONF_FILE "/etc/pam-weblogin.conf"
+#define DEFAULT_CONF_FILE "/etc/security/pam-weblogin.conf"
+#define ALTERNATE_CONF_FILE "/etc/pam-weblogin.conf"
 
 #define PROMPT_USERNAME "Username: "
 #define PROMPT_CODE "Verification code: "
