@@ -79,9 +79,16 @@ pam_weblogin.so: $(OBJS) ../json-parser-build/libjsonparser.a
 install: pam_weblogin.so
 	install -d $(DESTDIR)$(prefix)/lib/security/
 	install pam_weblogin.so $(DESTDIR)$(prefix)/lib/security/
-	if [ ! -d $(DESTDIR)/etc/security ]; then mkdir -p $(DESTDIR)/etc/security; fi
-	if [ ! -f $(DESTDIR)/etc/security/pam-weblogin.conf ]; then printf "url=${URL}\ntoken = Bearer ${TOKEN}\nretries = ${RETRIES}\nattribute=${ATTRIBUTE}\ncache_duration=${CACHE_DURATION}\n" | tee "$(DESTDIR)/etc/security/pam-weblogin.conf"; fi
-	if [ ! -f $(DESTDIR)/etc/pam.d/weblogin ]; then echo "auth required $(prefix)/lib/security/pam_weblogin.so /etc/security/pam-weblogin.conf" | tee "$(DESTDIR)/etc/pam.d/weblogin"; fi
+	@if [ ! -d $(DESTDIR)/etc/security ]; then\
+		mkdir -p $(DESTDIR)/etc/security;\
+	fi
+	@if [ ! -f $(DESTDIR)/etc/security/pam-weblogin.conf ]; then\
+		printf "url=${URL}\ntoken = Bearer ${TOKEN}\nretries = ${RETRIES}\nattribute=${ATTRIBUTE}\ncache_duration=${CACHE_DURATION}\n" | tee "$(DESTDIR)/etc/security/pam-weblogin.conf";\
+		chmod 600 $(DESTDIR)/etc/security/pam-weblogin.conf;\
+	fi
+	@if [ ! -f $(DESTDIR)/etc/pam.d/weblogin ]; then\
+		echo "auth required $(prefix)/lib/security/pam_weblogin.so /etc/security/pam-weblogin.conf" | tee "$(DESTDIR)/etc/pam.d/weblogin";\
+	fi
 
 .PHONY: clean
 clean:
