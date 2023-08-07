@@ -34,7 +34,7 @@ rm -rf %{buildroot}
 %defattr(-,root,root,0750)
 /usr/local/lib/security/*.so
 /etc/pam.d/weblogin
-/etc/pam-weblogin.conf
+/etc/security/pam-weblogin.conf
 
 %doc README
 
