@@ -209,7 +209,7 @@ jobs:
             RUN yum install -y epel-release || true
             RUN yum install -y rpm-build
             RUN dnf config-manager --set-enabled powertools || true
-            RUN dfn install -y pandoc || rpm install -y pandoc
+            RUN dnf install -y pandoc || yum install -y pandoc
             COPY pam-weblogin.spec /tmp/pwl.spec
             RUN command -v dnf && dnf install -y 'dnf-command(builddep)' || true
             RUN command -v dnf && dnf builddep -y /tmp/pwl.spec || yum-builddep -y /tmp/pwl.spec
