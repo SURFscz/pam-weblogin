@@ -269,7 +269,7 @@ jobs:
           else
             exit 1
           fi
-          export PWL_VERSION=$(cat /tmp/version | tr -C 'a-zA-Z0-9.+' '-')
+          export PWL_VERSION=$(cat /tmp/version | tr -C 'a-zA-Z0-9.+' '-' | sed 's/^v//')
           echo PWL_VERSION=${PWL_VERSION} >> $GITHUB_ENV
           echo BUILD_DIR=libpam-weblogin_${PWL_VERSION}-${{matrix.name}}-1_amd64 >> $GITHUB_ENV
           echo SRC_FILE=pam-weblogin-${PWL_VERSION}.source.tar.xz  >> $GITHUB_ENV
