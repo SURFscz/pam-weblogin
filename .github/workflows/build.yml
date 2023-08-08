@@ -162,8 +162,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { name: "centos7",  container: "centos:7"  }
-          - { name: "fedora37", container: "fedora:37" }
+          - { name: "centos7",     container: "centos:7"     }
+          - { name: "fedora37",    container: "fedora:37"    }
+          - { name: "fedora38",    container: "fedora:38"    }
+          - { name: "rockylinux8", container: "rockylinux:8" }
+          - { name: "rockylinux9", container: "rockylinux:9" }
     runs-on: "ubuntu-latest"
     steps:
       - name: Get tag/branch name
