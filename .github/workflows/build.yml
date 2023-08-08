@@ -86,6 +86,7 @@ jobs:
           - { os: ubuntu-22.04,  compiler: gcc,   version:  10 }
           - { os: ubuntu-22.04,  compiler: gcc,   version:  11 }
           - { os: ubuntu-22.04,  compiler: gcc,   version:  12 }
+          - { os: ubuntu-22.04,  compiler: gcc,   version:  13 }
           - { os: ubuntu-20.04,  compiler: clang, version:   9 }
           - { os: ubuntu-20.04,  compiler: clang, version:  10 }
           - { os: ubuntu-20.04,  compiler: clang, version:  11 }
@@ -94,7 +95,6 @@ jobs:
           - { os: ubuntu-22.04,  compiler: clang, version:  14 }
           - { os: ubuntu-22.04,  compiler: clang, version:  15 }
           - { os: ubuntu-22.04,  compiler: clang, version:  16 }
-          - { os: macos-10.15,   compiler: native              }
           - { os: macos-11,      compiler: native              }
           - { os: macos-12,      compiler: native              }
 
