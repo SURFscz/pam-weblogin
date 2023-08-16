@@ -20,4 +20,5 @@ jobs:
     with:
       event: ${{ github.event_name }}
       action: ${{ github.event.action }}
+      state_reason: ${{ github.event.issue.state_reason }}
     secrets: inherit
