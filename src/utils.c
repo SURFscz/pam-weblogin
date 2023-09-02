@@ -1,6 +1,7 @@
 #include "defs.h"
 
 #include <stdarg.h>
+#include <ctype.h>
 
 #include "tty.h"
 #include "utils.h"
@@ -62,4 +63,21 @@ char *str_printf(const char * fmt, ...) {
 		return NULL;
 	}
 	return buffer;
+}
+
+char *trim(char *s)
+{
+	if (s == NULL)
+		return NULL;
+
+	if (s[0]=='\0')
+		return s;
+
+	for (char *t = s + strlen(s) - 1; isspace(*t) && t>s ; t--)
+		*t = '\0';
+
+	while (isspace(*s))
+		s++;
+
+	return s;
 }
