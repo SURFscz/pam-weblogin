@@ -16,6 +16,12 @@ $ make install
 ```
 This copies the pam module to /usr/local/lib/security, creates an example configuration file in /etc/pam-weblogin.conf and a pam example configuration in ```/etc/pam.d/weblogin```:
 
+## Unit tests
+To run unit tests, install [check](https://libcheck.github.io/check/) and run
+```
+make unittest
+```
+
 ## Testing
 Change into the server directory.
 
