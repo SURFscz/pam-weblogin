@@ -50,11 +50,14 @@ char *str_printf(const char * fmt, ...) {
 	char *buffer = NULL;
 	va_list args;
 
+	if (fmt==NULL)
+		return NULL;
+
 	va_start(args, fmt);
 	int rc = vasprintf(&buffer, fmt, args);
 	va_end(args);
 
-	if (rc == -1) {
+	if (rc < -1) {
 		log_message(LOG_ERR, "Error create string with fmt: %s", fmt);
 		return NULL;
 	}

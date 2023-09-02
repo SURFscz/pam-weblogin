@@ -4,8 +4,10 @@ pyvenv.cfg
 .vscode/
 json-parser/
 json-parser-build/
+tests/run_unittests
 *.o
 *.so
+*.a
 .project
 .env
 docker-sandbox/.env

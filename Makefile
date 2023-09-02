@@ -34,3 +34,7 @@ install: module
 .PHONY: test
 test: module
 	$(MAKE) -C src test
+
+.PHONY: unittest
+unittest: module
+	$(MAKE) -C tests unittest

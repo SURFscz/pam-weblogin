@@ -62,7 +62,7 @@ CFLAGS += -DJSONPARSER_GIT_COMMIT=$(JSONPARSER_GIT_COMMIT)
 
 # default target
 .PHONY: all
-all: pam_weblogin.so
+all: pam_weblogin.so pam_weblogin.a
 
 # dependencies
 config.o: config.c config.h tty.h defs.h
@@ -74,6 +74,9 @@ pam_weblogin.o: pam_weblogin.c config.h http.h utils.h tty.h defs.h
 pam_weblogin.so: $(OBJS) ../json-parser-build/libjsonparser.a
 	$(CC) $(LDFLAGS) -shared -o $@ $^ -lcurl -lpam -lm
 	chmod 644 $@
+
+pam_weblogin.a: $(OBJS)
+	ar rcs $@ $^
 
 .PHONY: install
 install: pam_weblogin.so
@@ -92,7 +95,7 @@ install: pam_weblogin.so
 
 .PHONY: clean
 clean:
-	-rm -f $(OBJS) pam_weblogin.so
+	-rm -f $(OBJS) pam_weblogin.so pam_weblogin.a core
 
 .PHONY: test
 test:
