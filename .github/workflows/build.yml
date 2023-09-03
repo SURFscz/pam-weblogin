@@ -141,7 +141,7 @@ jobs:
 
       - name: Install dependencies (macOS)
         run: |
-          sudo brew install check
+          brew install check
         if: runner.os == 'macOS'
 
       - name: Checkout
