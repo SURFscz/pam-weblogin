@@ -142,7 +142,7 @@ jobs:
       - name: Install dependencies (macOS)
         run: |
           sudo brew install check
-        if: runner.os == 'Darwin'
+        if: runner.os == 'macOS'
 
       - name: Checkout
         uses: actions/checkout@v3
