@@ -134,10 +134,15 @@ jobs:
       - name: Show compiler version
         run: $CC --version
 
-      - name: Install dependencies
+      - name: Install dependencies (linux)
         run: |
           sudo apt-get install --yes libpam0g-dev libcurl4-openssl-dev check
         if: runner.os == 'Linux'
+
+      - name: Install dependencies (macOS)
+        run: |
+          sudo brew install check
+        if: runner.os == 'Darwin'
 
       - name: Checkout
         uses: actions/checkout@v3
