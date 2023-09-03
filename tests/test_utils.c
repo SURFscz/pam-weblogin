@@ -25,6 +25,7 @@ START_TEST (test_trim_ok)
 	char s4[8] = "foo";
 	ck_assert_str_eq(trim(s4), "foo");
 }
+END_TEST
 
 START_TEST (test_trim_fail)
 {
@@ -33,6 +34,7 @@ START_TEST (test_trim_fail)
 
 	ck_assert( trim(NULL)==NULL );
 }
+END_TEST
 
 START_TEST (test_str_printf)
 {
@@ -43,7 +45,7 @@ START_TEST (test_str_printf)
 	char *s2 = str_printf((char*) NULL);
 	ck_assert(s2 == NULL);
 }
-
+END_TEST
 
 TCase * test_config(void)
 {
