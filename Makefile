@@ -42,7 +42,8 @@ unittest: module
 
 .PHONY: coverage
 coverage: coverage-src coverage-tests
-	lcov --capture --directory . --output-file lcov.info
+	-lcov --capture --directory . --output-file lcov.info
+	-gcovr .
 coverage-%:
 	$(MAKE) -C $* coverage
 
