@@ -50,7 +50,7 @@ START_TEST (test_str_printf)
 }
 END_TEST
 
-TCase * test_config(void)
+TCase * test_utils(void)
 {
     TCase *tc =tcase_create("config");
 

@@ -8,7 +8,7 @@
 Suite * test_suite(void)
 {
     Suite *s = suite_create("pam_weblogin");
-    suite_add_tcase(s, test_config());
+    suite_add_tcase(s, test_utils());
     return s;
 }
 
