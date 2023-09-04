@@ -22,6 +22,7 @@ json-parser/configure:
 
 .PHONY: clean
 clean: clean-src clean-tests rm-json-parser
+	rm -f lcov.info
 clean-%:
 	$(MAKE) -C $* clean
 rm-json-parser:
@@ -41,6 +42,7 @@ unittest: module
 
 .PHONY: coverage
 coverage: coverage-src coverage-tests
+	lcov --capture --directory . --output-file lcov.info
 coverage-%:
 	$(MAKE) -C $* coverage
 
