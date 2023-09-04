@@ -8,6 +8,9 @@ tests/run_unittests
 *.o
 *.so
 *.a
+*.gcda
+*.gcno
+*.c.gcov
 .project
 .env
 docker-sandbox/.env

@@ -22,18 +22,23 @@ CFLAGS += -Wall -Wextra -Wshadow -Wpedantic -Wuninitialized -Wformat=2
 CFLAGS += -Werror
 
 ifdef NOVERIFY
-CFLAGS += -DNOVERIFY
+	CFLAGS += -DNOVERIFY
+endif
+
+ifdef COVERAGE
+	CFLAGS += -fprofile-arcs -ftest-coverage
+	LDFLAGS += -fprofile-arcs -ftest-coverage
 endif
 
 # gcc only
 ifneq "$(shell $(CC) --version | grep gcc)" ""
-  ifeq "$(shell expr '$(CC_MAJOR)' '>=' '5')" "1"
-    CFLAGS += -fstack-protector-strong
-  endif
-  ifeq "$(shell expr '$(CC_MAJOR)' '>=' '10')" "1"
-    CFLAGS += -Wformat-overflow=2 -Wformat-truncation=2
-    CFLAGS += -ftree-vrp -fanalyzer
-  endif
+	ifeq "$(shell expr '$(CC_MAJOR)' '>=' '5')" "1"
+    	CFLAGS += -fstack-protector-strong
+	endif
+	ifeq "$(shell expr '$(CC_MAJOR)' '>=' '10')" "1"
+    	CFLAGS += -Wformat-overflow=2 -Wformat-truncation=2
+    	CFLAGS += -ftree-vrp -fanalyzer
+	endif
 endif
 
 # clang only
@@ -52,6 +57,7 @@ endif
 
 SOURCES := config.c http.c utils.c tty.c pam_weblogin.c
 OBJS := $(SOURCES:%.c=%.o)
+GCOVS := $(SOURCES:%.c=%.gcov) $(SOURCES:%.c=%.gcno) $(SOURCES:%.c=%.gcda) $(SOURCES:%.c=%.c.gcov)
 
 CFLAGS += -I..
 
@@ -93,9 +99,13 @@ install: pam_weblogin.so
 		echo "auth required $(prefix)/lib/security/pam_weblogin.so /etc/security/pam-weblogin.conf" | tee "$(DESTDIR)/etc/pam.d/weblogin";\
 	fi
 
+.PHONY: coverage
+coverage:
+	gcov -pb *.c
+
 .PHONY: clean
 clean:
-	-rm -f $(OBJS) pam_weblogin.so pam_weblogin.a core
+	-rm -f $(OBJS) $(GCOVS) pam_weblogin.so pam_weblogin.a core
 
 .PHONY: test
 test:

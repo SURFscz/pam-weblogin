@@ -103,11 +103,6 @@ jobs:
       CC: ${{ matrix.compiler == 'native' && 'cc' || format('{0}-{1}',matrix.compiler,matrix.version) }}
 
     steps:
-#      - name: Housekeeping
-#        run: |
-#          sudo apt-get purge man-db
-#        if: runner.os == 'Linux'
-
       - name: Add source for old gcc packages (ubuntu 18.04)
         run: |
           sudo tee "/etc/apt/sources.list.d/bionic.list" << EOF
@@ -151,10 +146,6 @@ jobs:
         run: |
           make all
 
-      - name: debug
-        run: |
-          cd tests && cc $(pkg-config --cflags check) -I../ -c -E test_utils.c
-
       - name: Run unittests
         run: |
           make unittest
@@ -165,6 +156,51 @@ jobs:
           make clean
           rm -rf json-parser/
           make clean
+
+  coverage:
+    name: Coverage
+    needs:
+      - build_tests
+
+    runs-on: ubuntu-22.04
+    # set CC to 'cc' for MacOS and the (e.g.) clang-12 for Linux
+    env:
+      CC: clang
+      COVERAGE: 1
+
+    steps:
+      - name: Install clang
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          sudo bash ./llvm.sh 16
+
+      - name: Show compiler version
+        run: $CC --version
+
+      - name: Install dependencies (linux)
+        run: |
+          sudo apt-get install --yes libpam0g-dev libcurl4-openssl-dev check
+        if: runner.os == 'Linux'
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Compile
+        run: |
+          make all COVERAGE=1
+
+      - name: Run unittests
+        run: |
+          make unittest
+
+      - name: Run coverage
+        run: |
+          make coverage
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          gcov: true
 
 
   build_rpm:

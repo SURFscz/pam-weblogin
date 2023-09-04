@@ -10,8 +10,14 @@ CHECK_LDFLAGS := $(shell pkg-config --libs check)
 CPPFLAGS += -I../ $(CHECK_CFLAGS)
 LDFLAGS += $(CHECK_LDFLAGS) -lpam
 
+ifdef COVERAGE
+	CFLAGS += -fprofile-arcs -ftest-coverage
+	LDFLAGS += -fprofile-arcs -ftest-coverage
+endif
+
 SOURCES := $(wildcard *.c)
 OBJS := $(SOURCES:%.c=%.o)
+GCOVS := $(SOURCES:%.c=%.gcov) $(SOURCES:%.c=%.gcno) $(SOURCES:%.c=%.gcda) $(SOURCES:%.c=%.c.gcov)
 
 .PHONY: all
 all: run_unittests
@@ -22,7 +28,11 @@ run_unittests: $(OBJS) ../src/pam_weblogin.a
 unittest: run_unittests
 	./run_unittests
 
+.PHONY: coverage
+coverage:
+	gcov -pb *.c
+
 .PHONY: clean
 clean:
-	-rm -f $(OBJS) run_unittests core
+	-rm -f $(OBJS) $(GCOVS) run_unittests core
 
