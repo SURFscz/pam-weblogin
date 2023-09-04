@@ -1,3 +1,11 @@
+# override default variable, bt leave it alone if set in environment
+ifeq ($(origin CC),default)
+CC = gcc
+endif
+CC_MAJOR:=$(shell $(CC) -dumpversion | cut -f1 -d.)
+
+GCOV ?= gcov
+
 CFLAGS ?= -O0 -ggdb3
 CFLAGS += -std=c11
 CFLAGS += -fPIC
@@ -30,9 +38,9 @@ unittest: run_unittests
 
 .PHONY: coverage
 coverage:
-	gcov -pb *.c
+	$(GCOV) -pb *.c
 
 .PHONY: clean
 clean:
-	-rm -f $(OBJS) $(GCOVS) run_unittests core
+	-rm -f $(OBJS) $(GCOVS) run_unittests core \#*.gcov
 

@@ -159,13 +159,14 @@ jobs:
 
   coverage:
     name: Coverage
-    needs:
-      - build_tests
+    # needs:
+    #   - build_tests
 
     runs-on: ubuntu-22.04
     # set CC to 'cc' for MacOS and the (e.g.) clang-12 for Linux
     env:
       CC: gcc-12
+      GCOV: gcov-12
       COVERAGE: 1
 
     steps:

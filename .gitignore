@@ -11,6 +11,7 @@ tests/run_unittests
 *.gcda
 *.gcno
 *.c.gcov
+\#*.gcov
 .project
 .env
 docker-sandbox/.env

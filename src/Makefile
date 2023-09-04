@@ -15,6 +15,8 @@ CC = gcc
 endif
 CC_MAJOR:=$(shell $(CC) -dumpversion | cut -f1 -d.)
 
+GCOV ?= gcov
+
 CFLAGS ?= -O0 -ggdb3
 CFLAGS += -std=c11
 CFLAGS += -fPIC
@@ -66,6 +68,7 @@ JSONPARSER_GIT_COMMIT = "$(shell git -C json-parser describe --abbrev=6 --always
 CFLAGS += -DGIT_COMMIT=$(GIT_COMMIT)
 CFLAGS += -DJSONPARSER_GIT_COMMIT=$(JSONPARSER_GIT_COMMIT)
 
+
 # default target
 .PHONY: all
 all: pam_weblogin.so pam_weblogin.a
@@ -101,7 +104,7 @@ install: pam_weblogin.so
 
 .PHONY: coverage
 coverage:
-	gcov -pb *.c
+	$(GCOV) -pb *.c
 
 .PHONY: clean
 clean:
