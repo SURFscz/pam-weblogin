@@ -109,6 +109,46 @@ START_TEST (test_str_printf_oom)
 }
 END_TEST
 
+START_TEST(test_json_utils)
+{
+	char json_txt[] = "{                            " \
+		"\"key_bool\": false,                       " \
+		"\"key_int\": 1,                            " \
+		"\"key_str\": \"test\",                     " \
+		"\"key_str_empty\": \"\",                   " \
+		"\"key_obj\": { \"key_sub\": \"val_sub\" }  " \
+	"}";
+
+	json_value *json = json_parse(json_txt, strlen(json_txt));
+	ck_assert_ptr_ne(json, NULL);
+
+	/* matching nothing */
+	ck_assert_ptr_eq(NULL, findKey(NULL, "key_str"));
+	ck_assert_ptr_eq(NULL, findKey(json, NULL));
+	ck_assert_ptr_eq(NULL, findKey(json, ""));
+
+	/* nonexisting key */
+	ck_assert_ptr_eq(NULL, findKey(json, "bestaat_niet"));
+
+	/* lookup a key */
+	json_value *result = findKey(json, "key_str");
+	ck_assert_ptr_ne(result, NULL);
+	ck_assert_str_eq(result->u.string.ptr, "test");
+
+	/* lookup a nested key */
+	json_value *result2 = findKey(json, "key_obj.key_sub");
+	ck_assert_ptr_ne(result2, NULL);
+	ck_assert_str_eq(result2->u.string.ptr, "val_sub");
+
+	/* convenience function to get string or bool */
+	ck_assert_int_eq(getBool(json, "key_bool"), false);
+	ck_assert_str_eq(getString(json, "key_str"), "test");
+	ck_assert_str_eq(getString(json, "key_str_empty"), "");
+
+	/* cleanup */
+	json_value_free(json);
+}
+
 TCase * test_utils(void)
 {
     TCase *tc =tcase_create("config");
@@ -120,6 +160,9 @@ TCase * test_utils(void)
 	/* str_printf() */
     tcase_add_test(tc, test_str_printf);
     tcase_add_test(tc, test_str_printf_oom);
+
+	/* json utils */
+    tcase_add_test(tc, test_json_utils);
 
     return tc;
 }

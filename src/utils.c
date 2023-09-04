@@ -9,7 +9,7 @@
 json_value *findKey(json_value* value, const char* name) {
 	json_value * result = NULL;
 
-	if (value == NULL) {
+	if (value == NULL || name == NULL || name[0]=='\0' ) {
 		return NULL;
 	}
 
@@ -58,7 +58,7 @@ char *str_printf(const char * fmt, ...) {
 	int rc = vasprintf(&buffer, fmt, args);
 	va_end(args);
 
-	if (rc < -1) {
+	if (rc < 0) {
 		log_message(LOG_ERR, "Error create string with fmt: %s", fmt);
 		return NULL;
 	}
