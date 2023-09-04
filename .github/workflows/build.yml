@@ -165,14 +165,14 @@ jobs:
     runs-on: ubuntu-22.04
     # set CC to 'cc' for MacOS and the (e.g.) clang-12 for Linux
     env:
-      CC: clang
+      CC: gcc-12
       COVERAGE: 1
 
     steps:
-      - name: Install clang
+      - name: Install gcc
         run: |
-          wget https://apt.llvm.org/llvm.sh
-          sudo bash ./llvm.sh 16
+          sudo add-apt-repository --yes --update ppa:ubuntu-toolchain-r/test
+          sudo apt-get install --yes gcc-12
 
       - name: Show compiler version
         run: $CC --version
@@ -201,6 +201,7 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           gcov: true
+          gcov_executable: "gcov-12"
 
 
   build_rpm:
