@@ -4,8 +4,6 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
 #include <limits.h>
 #include <errno.h>
 #include <stdbool.h>
@@ -16,17 +14,6 @@
 #include "config.h"
 
 #define MAXLINE 1024
-
-static char *trim(char *s)
-{
-	while (isspace(*(s + strlen(s) - 1)))
-		*(s + strlen(s) - 1) = '\0';
-
-	while (isspace(*s))
-		s++;
-
-	return s;
-}
 
 /*
  * freeConfig frees dynamic allocated memory

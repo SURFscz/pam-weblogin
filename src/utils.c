@@ -1,6 +1,7 @@
 #include "defs.h"
 
 #include <stdarg.h>
+#include <ctype.h>
 
 #include "tty.h"
 #include "utils.h"
@@ -50,13 +51,33 @@ char *str_printf(const char * fmt, ...) {
 	char *buffer = NULL;
 	va_list args;
 
+	if (fmt==NULL)
+		return NULL;
+
 	va_start(args, fmt);
 	int rc = vasprintf(&buffer, fmt, args);
 	va_end(args);
 
-	if (rc == -1) {
+	if (rc < -1) {
 		log_message(LOG_ERR, "Error create string with fmt: %s", fmt);
 		return NULL;
 	}
 	return buffer;
+}
+
+char *trim(char *s)
+{
+	if (s == NULL)
+		return NULL;
+
+	if (s[0]=='\0')
+		return s;
+
+	for (char *t = s + strlen(s) - 1; isspace(*t) && t>s ; t--)
+		*t = '\0';
+
+	while (isspace(*s))
+		s++;
+
+	return s;
 }

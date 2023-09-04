@@ -15,6 +15,8 @@ CC = gcc
 endif
 CC_MAJOR:=$(shell $(CC) -dumpversion | cut -f1 -d.)
 
+GCOV ?= gcov
+
 CFLAGS ?= -O0 -ggdb3
 CFLAGS += -std=c11
 CFLAGS += -fPIC
@@ -22,36 +24,42 @@ CFLAGS += -Wall -Wextra -Wshadow -Wpedantic -Wuninitialized -Wformat=2
 CFLAGS += -Werror
 
 ifdef NOVERIFY
-CFLAGS += -DNOVERIFY
+	CFLAGS += -DNOVERIFY
+endif
+
+ifdef COVERAGE
+	CFLAGS += -fprofile-arcs -ftest-coverage
+	LDFLAGS += -fprofile-arcs -ftest-coverage
 endif
 
 # gcc only
 ifneq "$(shell $(CC) --version | grep gcc)" ""
-  ifeq "$(shell expr '$(CC_MAJOR)' '>=' '5')" "1"
-    CFLAGS += -fstack-protector-strong
-  endif
-  ifeq "$(shell expr '$(CC_MAJOR)' '>=' '10')" "1"
-    CFLAGS += -Wformat-overflow=2 -Wformat-truncation=2
-    CFLAGS += -ftree-vrp -fanalyzer
-  endif
+	ifeq "$(shell expr '$(CC_MAJOR)' '>=' '5')" "1"
+    	CFLAGS += -fstack-protector-strong
+	endif
+	ifeq "$(shell expr '$(CC_MAJOR)' '>=' '10')" "1"
+    	CFLAGS += -Wformat-overflow=2 -Wformat-truncation=2
+    	CFLAGS += -ftree-vrp -fanalyzer
+	endif
 endif
 
 # clang only
 ifneq "$(shell $(CC) --version | grep clang)" ""
-  CFLAGS += -Weverything
-  CFLAGS += -Wno-declaration-after-statement -Wno-disabled-macro-expansion
-  CFLAGS += -Wno-reserved-id-macro -Wno-reserved-identifier
-  CFLAGS += -Wno-padded -Wno-poison-system-directories
-  ifeq "$(shell expr '$(CC_MAJOR)' '<' '14')" "1"
-    CFLAGS += -Wno-unknown-warning-option
-  endif
-  ifeq "$(shell expr '$(CC_MAJOR)' '>=' '16')" "1"
+	CFLAGS += -Weverything
+	CFLAGS += -Wno-declaration-after-statement -Wno-disabled-macro-expansion
+	CFLAGS += -Wno-reserved-id-macro -Wno-reserved-identifier
+	CFLAGS += -Wno-padded -Wno-poison-system-directories
+	ifeq "$(shell expr '$(CC_MAJOR)' '<' '14')" "1"
+		CFLAGS += -Wno-unknown-warning-option
+	endif
+	ifeq "$(shell expr '$(CC_MAJOR)' '>=' '16')" "1"
     CFLAGS += -Wno-unsafe-buffer-usage
-  endif
+	endif
 endif
 
 SOURCES := config.c http.c utils.c tty.c pam_weblogin.c
 OBJS := $(SOURCES:%.c=%.o)
+GCOVS := $(SOURCES:%.c=%.gcov) $(SOURCES:%.c=%.gcno) $(SOURCES:%.c=%.gcda) $(SOURCES:%.c=%.c.gcov)
 
 CFLAGS += -I..
 
@@ -60,9 +68,10 @@ JSONPARSER_GIT_COMMIT = "$(shell git -C json-parser describe --abbrev=6 --always
 CFLAGS += -DGIT_COMMIT=$(GIT_COMMIT)
 CFLAGS += -DJSONPARSER_GIT_COMMIT=$(JSONPARSER_GIT_COMMIT)
 
+
 # default target
 .PHONY: all
-all: pam_weblogin.so
+all: pam_weblogin.so pam_weblogin.a
 
 # dependencies
 config.o: config.c config.h tty.h defs.h
@@ -74,6 +83,9 @@ pam_weblogin.o: pam_weblogin.c config.h http.h utils.h tty.h defs.h
 pam_weblogin.so: $(OBJS) ../json-parser-build/libjsonparser.a
 	$(CC) $(LDFLAGS) -shared -o $@ $^ -lcurl -lpam -lm
 	chmod 644 $@
+
+pam_weblogin.a: $(OBJS)
+	ar rcs $@ $^
 
 .PHONY: install
 install: pam_weblogin.so
@@ -90,9 +102,13 @@ install: pam_weblogin.so
 		echo "auth required $(prefix)/lib/security/pam_weblogin.so /etc/security/pam-weblogin.conf" | tee "$(DESTDIR)/etc/pam.d/weblogin";\
 	fi
 
+.PHONY: coverage
+coverage:
+	$(GCOV) -pb *.c
+
 .PHONY: clean
 clean:
-	-rm -f $(OBJS) pam_weblogin.so
+	-rm -f $(OBJS) $(GCOVS) pam_weblogin.so pam_weblogin.a core
 
 .PHONY: test
 test:

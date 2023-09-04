@@ -103,11 +103,6 @@ jobs:
       CC: ${{ matrix.compiler == 'native' && 'cc' || format('{0}-{1}',matrix.compiler,matrix.version) }}
 
     steps:
-#      - name: Housekeeping
-#        run: |
-#          sudo apt-get purge man-db
-#        if: runner.os == 'Linux'
-
       - name: Add source for old gcc packages (ubuntu 18.04)
         run: |
           sudo tee "/etc/apt/sources.list.d/bionic.list" << EOF
@@ -134,10 +129,15 @@ jobs:
       - name: Show compiler version
         run: $CC --version
 
-      - name: Install dependencies
+      - name: Install dependencies (linux)
         run: |
-          sudo apt-get install --yes libpam0g-dev libcurl4-openssl-dev
+          sudo apt-get install --yes libpam0g-dev libcurl4-openssl-dev check
         if: runner.os == 'Linux'
+
+      - name: Install dependencies (macOS)
+        run: |
+          brew install check
+        if: runner.os == 'macOS'
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -146,12 +146,63 @@ jobs:
         run: |
           make all
 
+      - name: Run unittests
+        run: |
+          make unittest
+
       - name: Test make clean
         run: |
           make clean
           make clean
           rm -rf json-parser/
           make clean
+
+  coverage:
+    name: Coverage
+    # needs:
+    #   - build_tests
+
+    runs-on: ubuntu-22.04
+    # set CC to 'cc' for MacOS and the (e.g.) clang-12 for Linux
+    env:
+      CC: gcc-12
+      GCOV: gcov-12
+      COVERAGE: 1
+
+    steps:
+      - name: Install gcc
+        run: |
+          sudo add-apt-repository --yes --update ppa:ubuntu-toolchain-r/test
+          sudo apt-get install --yes gcc-12
+
+      - name: Show compiler version
+        run: $CC --version
+
+      - name: Install dependencies (linux)
+        run: |
+          sudo apt-get install --yes libpam0g-dev libcurl4-openssl-dev check
+        if: runner.os == 'Linux'
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Compile
+        run: |
+          make all COVERAGE=1
+
+      - name: Run unittests
+        run: |
+          make unittest
+
+      - name: Run coverage
+        run: |
+          make coverage
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          gcov: true
+          gcov_executable: "gcov-12"
 
 
   build_rpm:
