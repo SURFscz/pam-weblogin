@@ -24,6 +24,9 @@ START_TEST (test_trim_ok)
 
 	char s4[8] = "foo";
 	ck_assert_str_eq(trim(s4), "foo");
+
+	char s5[8] = "      ";
+	ck_assert_str_eq(trim(s5), "");
 }
 END_TEST
 
