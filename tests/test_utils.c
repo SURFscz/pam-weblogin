@@ -148,6 +148,7 @@ START_TEST(test_json_utils)
 	/* cleanup */
 	json_value_free(json);
 }
+END_TEST
 
 TCase * test_utils(void)
 {
