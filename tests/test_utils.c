@@ -36,6 +36,46 @@ rlim_t set_mem_limit(rlim_t limit)
 
 	return old_rlim.rlim_cur;
 }
+
+
+void fill_memory(bool fill)
+{
+	static rlim_t old_rlim = -1;
+	static void *buf = NULL;
+
+	if (fill)
+	{
+		/* limit memory we can allocate*/
+		old_rlim = set_mem_limit(1024*1024);
+
+		/* exhaust memory */
+		size_t len = 960*1024;
+		while ((buf = malloc(len))!=NULL) {
+			free(buf);
+			len += 4096;
+		}
+		fprintf(stderr, "len is %zu\n", len);
+	}
+	else
+	{
+		/* reset rlimit */
+		if (old_rlim>0)
+			set_mem_limit(old_rlim);
+
+		/* cleanup */
+		if (buf)
+		{
+			free(buf);
+			buf = NULL;
+		}
+	}
+}
+
+void unfill_memory(void)
+{
+	fill_memory(false);
+}
+
 #endif
 
 const char json_txt[] = "{                      " \
@@ -98,25 +138,13 @@ START_TEST (test_str_printf_oom)
 	memset(str, 'x', 1024*1024);
 	str[1024*1024-1]='\0';
 
-	/* limit memory we can allocate*/
-	rlim_t old_rlim = set_mem_limit(1024*1024);
-
-	/* exhaust memory */
-	size_t len = 4096;
-	char *buf = malloc(len);
-	while ((buf = realloc(buf, len))!=NULL) {
-		len += 4096*8;
-	}
-
 	/* check failure mode str too large */
+	fill_memory(true);
 	ck_assert_ptr_eq(str_printf("foo: %s", str), NULL);
-
-	/* reset rlimit */
-	set_mem_limit(old_rlim);
+	unfill_memory();
 
 	/* cleanup */
 	free(str);
-	free(buf);
 #endif
 }
 END_TEST
@@ -171,24 +199,13 @@ START_TEST (test_json_utils_oom)
 	memset(key, 'x', 1024*1024);
 	key[1024*1024-1]='\0';
 
-	/* limit memory we can allocate */
-	rlim_t old_rlim = set_mem_limit(1024*1024);
-
-	/* exhaust memory */
-	size_t len = 4096;
-	char *buf = malloc(len);
-	while ((buf = realloc(buf, len))!=NULL) {
-		len += 4096*8;
-	}
 
 	/* check failure mode (key too large) */
+	fill_memory(true);
 	ck_assert_ptr_eq(NULL, findKey(json, key));
-
-	/* reset rlimit */
-	set_mem_limit(old_rlim);
+	unfill_memory();
 
 	/* cleanup */
-	free(buf);
 	free(key);
 	json_value_free(json);
 
