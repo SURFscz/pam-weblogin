@@ -108,7 +108,7 @@ coverage:
 
 .PHONY: clean
 clean:
-	-rm -f $(OBJS) $(GCOVS) pam_weblogin.so pam_weblogin.a core
+	-rm -f $(OBJS) $(GCOVS) pam_weblogin.so pam_weblogin.a core \#*.gcov
 
 .PHONY: test
 test:

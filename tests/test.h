@@ -2,4 +2,4 @@
 
 #include <check.h>
 
-TCase * test_config(void);
+TCase * test_utils(void);

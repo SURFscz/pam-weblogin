@@ -12,6 +12,7 @@ tests/run_unittests
 *.gcno
 *.c.gcov
 \#*.gcov
+lcov.info
 .project
 .env
 docker-sandbox/.env

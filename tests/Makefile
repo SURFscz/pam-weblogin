@@ -30,7 +30,7 @@ GCOVS := $(SOURCES:%.c=%.gcov) $(SOURCES:%.c=%.gcno) $(SOURCES:%.c=%.gcda) $(SOU
 .PHONY: all
 all: run_unittests
 
-run_unittests: $(OBJS) ../src/pam_weblogin.a
+run_unittests: $(OBJS) ../src/pam_weblogin.a ../json-parser-build/libjsonparser.a
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 unittest: run_unittests
