@@ -395,6 +395,7 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     needs:
+      - coverage
       - build_tests
       - source_dist
       - build_rpm
