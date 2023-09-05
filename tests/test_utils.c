@@ -46,10 +46,10 @@ void fill_memory(bool fill)
 	if (fill)
 	{
 		/* limit memory we can allocate*/
-		old_rlim = set_mem_limit(1024*1024);
+		old_rlim = set_mem_limit(2048*1024);
 
 		/* exhaust memory */
-		size_t len = 960*1024;
+		size_t len = 512*1024;
 		while ((buf = malloc(len))!=NULL) {
 			free(buf);
 			len += 4096;
