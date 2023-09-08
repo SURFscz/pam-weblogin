@@ -101,8 +101,19 @@ def create_qr(url):
     return f.read()
 
 
+@app.route('/pam-weblogin/ssh_keys', methods=['GET'])
+def ssh():
+    logging.debug('/pam-weblogin/ssh_keys <-')
+    response = Response(status=200)
+    keys = [
+        'ssh-rsa AAAA... example@server',
+    ]
+    response.data = json.dumps(keys)
+    return response
+
+
 @app.route('/pam-weblogin/start', methods=['POST'])
-def req():
+def start():
     data = json.loads(request.data)
     logging.debug(f"/pam-weblogin/start\n <- {data}")
     if not authorized(request.headers):
@@ -172,6 +183,10 @@ def check_pin():
             reply = {
                 'result': 'SUCCESS',
                 'username': user_id,
+                'colist': {
+                    'coaaa': 'A CO with the beautiful name AAA',
+                    'cobbb': 'A CO named BBB',
+                },
                 'info': f'Authenticated on attribute {attribute}'
             }
             cached[user_id] = True

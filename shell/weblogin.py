@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 import os
-import sys
 import subprocess
 import requests
 import json
 import getpass
+
 
 def read_conf(f):
     c = {}
@@ -67,13 +67,37 @@ def main():
                                  verify=verify)
         #print(response.text)
         answer = response.json()
+        colist = answer.get('colist', None)
         result = answer.get('result')
         username = answer.get('username')
         if result == 'SUCCESS' and username:
-            subprocess.call(['sudo', '-iu', username])
+            selected_co = 0
+            selected = False
+            print()
+            if len(colist) > 1:
+                while not selected:
+                    i = 0
+                    print('What CO are you operating for?')
+                    for co, co_name in colist.items():
+                        i += 1
+                        print(f"  [{i}] {co_name}")
+                    try:
+                        selected_co = int(input("\nSelect CO: "))
+                    except Exception:
+                        print("\nPlease use a number to select the CO")
+                        continue
+                    if selected_co > 0 and selected_co <= len(colist):
+                        selected = True
+                    else:
+                        print(f"\nNumber not in valid range (1 - {len(colist)})")
+            else:
+                selected_co = 1
+
+            print("\nYou chose wisely...")
+            my_co = list(colist.keys())[selected_co - 1]
+            subprocess.call(['sudo', '-iu', username + "_" + my_co])
             break
 
 
 if __name__ == "__main__":
     main()
-
