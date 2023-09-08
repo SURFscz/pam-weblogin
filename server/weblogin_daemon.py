@@ -130,9 +130,10 @@ def start():
     url = os.environ.get("URL", config['url']).rstrip('/')
     qr_code = create_qr(url)
     cache = cached.get(user_id, False)
+    displayname = user_id or 'weblogin'
     auths[new_session_id] = {
         'session_id': new_session_id,
-        'challenge': f'Hello {user_id}. To continue, '
+        'challenge': f'Hello {displayname}. To continue, '
                      f'visit {url}/pam-weblogin/login/{new_session_id} and enter verification code\n\n'
                      f'{qr_code}',
         'cached': cache,
@@ -186,6 +187,7 @@ def check_pin():
                 'colist': {
                     'coaaa': 'A CO with the beautiful name AAA',
                     'cobbb': 'A CO named BBB',
+                    'coccc': 'A CO named CCC!',
                 },
                 'info': f'Authenticated on attribute {attribute}'
             }

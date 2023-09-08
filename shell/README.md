@@ -9,15 +9,27 @@ Given you have checked out pam-weblogin in /opt/pam-weblogin
 
 - Allow weblogin to sudo (/usr/bin/bash) without password:
 
-```weblogin ALL=(ALL:ALL) NOPASSWD:/usr/bin/bash```
+```weblogin ALL=(ALL:ALL) NOPASSWD:/usr/bin/bash,/usr/sbin/adduser```
 
+Possibly
 - Add sshd AuthorizedKeysCommand config
 
 ```
 AuthorizedKeysCommand /opt/pam-weblogin/shell/authorized_keys.py
 AuthorizedKeysCommandUser root
 ```
+Or, allow weblogin user to pass sshd in PAM:
+```
+auth sufficient pam_succeed_if.so quiet uid eq 1003
+```
+- Change sshd authentication to:
+```
+AuthenticationMethods keyboard-interactive:pam
+PasswordAuthentication no
+UsePAM yes
+```
 
+If you don't use the JIT adduser command
 - Add target account myshell (shell /usr/bin/bash)
 
 ```

@@ -74,7 +74,7 @@ def main():
             selected_co = 0
             selected = False
             print()
-            if len(colist) > 1:
+            if len(colist.keys()) > 1:
                 while not selected:
                     i = 0
                     print('What CO are you operating for?')
@@ -95,7 +95,11 @@ def main():
 
             print("\nYou chose wisely...")
             my_co = list(colist.keys())[selected_co - 1]
-            subprocess.call(['sudo', '-iu', username + "_" + my_co])
+            # You need the following sudoers line to make this work:
+            # weblogin ALL=(ALL:ALL) NOPASSWD:/usr/bin/bash,/usr/sbin/adduser
+            subprocess.call(['/usr/bin/sudo', '/usr/sbin/adduser', '--disabled-password', '--gecos', '""',
+                             username + "_" + my_co], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.call(['/usr/bin/sudo', '-iu', username + "_" + my_co])
             break
 
 
