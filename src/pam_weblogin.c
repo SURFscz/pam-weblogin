@@ -224,7 +224,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 							tty_output(pamh, "\nWrong number.");
 						} else
 						{
-							pam_group = getKey(pam_groups, group - 1);
+							pam_group = getKey(pam_groups, (uint)(group - 1));
 							break;
 						}
 					}
