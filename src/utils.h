@@ -13,6 +13,8 @@
 
 json_value *findKey(json_value *value, const char *name);
 char *getString(json_value *, const char *name);
+char *getKey(json_value *value, const uint index);
+char *getValue(json_value *value, const uint index);
 bool getBool(json_value *value, const char *name);
 char *str_printf(const char *fmt, ...)
      __attribute__ ((format (printf, 1, 2)));

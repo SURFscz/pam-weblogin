@@ -1,5 +1,6 @@
 #include "defs.h"
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,6 +37,8 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	char *authorization = NULL;
 	bool cached = false;
 	int pam_result = PAM_AUTH_ERR;
+	char *pam_user = NULL;
+	char *pam_group = NULL;
 
 	log_message(LOG_INFO, "Start of pam_weblogin");
 
@@ -166,7 +169,6 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 
 		char *result = getString(verify_json, "result");
 		info = getString(verify_json, "info");
-		json_value_free(verify_json);
 
 		if (info)
 		{
@@ -182,9 +184,85 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 			free(result);
 		}
 
+		// In case of success, try to find username and group (CO)
+		if (pam_result == PAM_SUCCESS) {
+			pam_user = getString(verify_json, "username");
+			if (pam_user)
+			{
+				log_message(LOG_INFO, "PAM User: %s", pam_user);
+			} else {
+				log_message(LOG_INFO, "No user received");
+			}
+			json_value *pam_groups = findKey(verify_json, "groups");
+			if (pam_groups) // We received groups
+			{
+				uint max_groups = pam_groups->u.object.length;
+				if (max_groups > 1) // There's more than one co in the list
+				{
+					char *end;
+					long group = 0;
+					bool range_error;
+					while (true) { // Keep asking until valid input received
+						errno = 0;
+						tty_output(pamh, MSG_GROUPS);
+						for (uint i=0; i < max_groups; i++) {
+							char *value = getValue(pam_groups, i);
+							tty_output(pamh, str_printf("  [%d] %s", i+1, value));
+						}
+						char *group_input = tty_input(pamh, PROMPT_GROUP, PAM_PROMPT_ECHO_ON);
+						group = strtol(group_input, &end, 10);
+						range_error = errno == ERANGE;
+						if (group < 1 || group > max_groups || range_error)
+						{
+							tty_output(pamh, "\nWrong number.");
+						} else
+						{
+							pam_group = getKey(pam_groups, group - 1);
+							break;
+						}
+					}
+				} else // max_groups <= 1;
+				{
+					pam_group = getKey(pam_groups, 0);
+				}
+				log_message(LOG_INFO, "PAM Group: %s", pam_group);
+			} else // no pam_groups
+			{
+				log_message(LOG_INFO, "No groups received");
+			}
+		}
+
+		json_value_free(verify_json);
 	}
 
 finalize:
+	// Set env vars
+	if (pam_result == PAM_SUCCESS)
+	{
+		char *env = NULL;
+		if (pam_user != NULL)
+		{
+			env = str_printf("PAM_USER=%s", pam_user);
+			if (pam_putenv(pamh, env) != PAM_SUCCESS)
+			{
+				log_message(LOG_ERR, "Failed to set %s\n", env);
+			}
+		}
+		if (pam_group != NULL)
+		{
+			env = str_printf("PAM_GROUP=%s", pam_group);
+			if (pam_putenv(pamh, env) != PAM_SUCCESS)
+			{
+				log_message(LOG_ERR, "Failed to set %s\n", env);
+			}
+		}
+		if (env != NULL)
+			free(env);
+	}
+	if (pam_user != NULL)
+		free(pam_user);
+	if (pam_group != NULL)
+		free(pam_group);
 	if (info!=NULL)
 		free(info);
 	if (authorization!=NULL)

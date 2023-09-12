@@ -9,8 +9,11 @@
 #define DEFAULT_CONF_FILE "/etc/security/pam-weblogin.conf"
 #define ALTERNATE_CONF_FILE "/etc/pam-weblogin.conf"
 
+#define MSG_GROUPS "What group are you operating for?"
+
 #define PROMPT_USERNAME "Username: "
 #define PROMPT_CODE "Verification code: "
+#define PROMPT_GROUP "Select group: "
 
 #ifndef GIT_COMMIT
 #DEFINE GIT_COMMIT 0000
