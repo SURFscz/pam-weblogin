@@ -76,7 +76,10 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 
 	/* Prepare start input data... */
 	char *data = NULL;
-	data = str_printf("{\"user_id\":\"%s\",\"attribute\":\"%s\",\"cache_duration\":\"%d\",\"GIT_COMMIT\":\"%s\",\"JSONPARSER_GIT_COMMIT\":\"%s\"}",
+	// data = str_printf("{\"user_id\":\"%s\",\"attribute\":\"%s\",\"cache_duration\":\"%d\",\"GIT_COMMIT\":\"%s\",\"JSONPARSER_GIT_COMMIT\":\"%s\"}",
+	// 		 username, cfg->attribute, cfg->cache_duration, TOSTR(GIT_COMMIT), TOSTR(JSONPARSER_GIT_COMMIT));
+	// TODO No user_id triggers login username to be filled with claim "attribute"
+	data = str_printf("{\"attribute\":\"%s\",\"cache_duration\":\"%d\",\"GIT_COMMIT\":\"%s\",\"JSONPARSER_GIT_COMMIT\":\"%s\"}",
 			 username, cfg->attribute, cfg->cache_duration, TOSTR(GIT_COMMIT), TOSTR(JSONPARSER_GIT_COMMIT));
 
 	/* Request auth session_id/challenge */
