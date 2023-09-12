@@ -102,6 +102,7 @@ Config *getConfig(const char *filename)
 	cfg->attribute = NULL;
 	cfg->cache_duration = DEFAULT_CACHE_DURATION;
 	cfg->retries = DEFAULT_RETRIES;
+	cfg->pam_user = NULL;
 
 	if (!check_file(filename))
 	{
@@ -169,7 +170,7 @@ Config *getConfig(const char *filename)
 				log_message(LOG_DEBUG, "token: %s", cfg->token);
 			}
 
-			/* Check for token config */
+			/* Check for attribute config */
 			else if (!strcmp(key, "attribute"))
 			{
 				cfg->attribute = strdup(val);
@@ -197,6 +198,14 @@ Config *getConfig(const char *filename)
 				cfg->retries = (unsigned int)labs(strtol(val, NULL, 10));
 				log_message(LOG_DEBUG, "retries: %d", cfg->retries);
 			}
+
+			/* Check for pam_user config */
+			else if (!strcmp(key, "pam_user"))
+			{
+				cfg->pam_user = strdup(val);
+				log_message(LOG_DEBUG, "pam_user: %s", cfg->attribute);
+			}
+
 		}
 		fclose(fp);
 	}
