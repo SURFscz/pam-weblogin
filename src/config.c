@@ -29,6 +29,8 @@ void freeConfig(Config *cfg)
 			free(cfg->token);
 		if (cfg->attribute)
 			free(cfg->attribute);
+		if (cfg->pam_user)
+			free(cfg->pam_user);
 
 		free(cfg);
 	}
