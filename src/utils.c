@@ -41,12 +41,12 @@ char *getString(json_value *value, const char *name)
 	return key ? strdup(key->u.string.ptr) : NULL;
 }
 
-char *getKey(json_value *value, const uint index)
+char *getKey(json_value *value, const unsigned int index)
 {
 	return (index < value->u.object.length) ? strdup(value->u.object.values[index].name) : NULL;
 }
 
-char *getValue(json_value *value, const uint index)
+char *getValue(json_value *value, const unsigned int index)
 {
 	return (index < value->u.object.length) ? strdup(value->u.object.values[index].value->u.string.ptr) : NULL;
 }
