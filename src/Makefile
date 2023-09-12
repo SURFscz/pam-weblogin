@@ -104,7 +104,7 @@ install: pam_weblogin.so
 
 .PHONY: coverage
 coverage:
-	$(GCOV) -pb *.c
+	$(GCOV) -pb $(wildcard *.gcda)
 
 .PHONY: clean
 clean:
