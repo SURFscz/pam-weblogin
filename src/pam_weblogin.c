@@ -203,7 +203,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 			json_value *pam_groups = findKey(verify_json, "groups");
 			if (pam_groups) // We received groups
 			{
-				uint max_groups = pam_groups->u.object.length;
+				unsigned int max_groups = pam_groups->u.object.length;
 				if (max_groups > 1) // There's more than one co in the list
 				{
 					char *end;
@@ -212,7 +212,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 					while (true) { // Keep asking until valid input received
 						errno = 0;
 						tty_output(pamh, MSG_GROUPS);
-						for (uint i=0; i < max_groups; i++) {
+						for (unsigned int i=0; i < max_groups; i++) {
 							char *value = getValue(pam_groups, i);
 							tty_output(pamh, str_printf("  [%d] %s", i+1, value));
 						}
