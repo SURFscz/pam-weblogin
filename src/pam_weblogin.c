@@ -221,7 +221,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 						range_error = errno == ERANGE;
 						if (group < 1 || group > max_groups || range_error)
 						{
-							tty_output(pamh, "\nWrong number.");
+							tty_output(pamh, PROMPT_WRONG_NUMBER);
 						} else
 						{
 							pam_group = getKey(pam_groups, (unsigned int)(group - 1));
