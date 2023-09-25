@@ -99,7 +99,7 @@ install: pam_weblogin.so
 		chmod 600 $(DESTDIR)/etc/security/pam-weblogin.conf;\
 	fi
 	@if [ ! -f $(DESTDIR)/etc/pam.d/weblogin ]; then\
-		echo "auth required $(prefix)/lib/security/pam_weblogin.so /etc/security/pam-weblogin.conf" | tee "$(DESTDIR)/etc/pam.d/weblogin";\
+		echo "auth [success=done ignore=ignore default=die] $(prefix)/lib/security/pam_weblogin.so /etc/security/pam-weblogin.conf" | tee "$(DESTDIR)/etc/pam.d/weblogin";\
 	fi
 
 .PHONY: coverage
