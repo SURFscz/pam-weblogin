@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Save version info
         run: |
@@ -140,7 +140,7 @@ jobs:
         if: runner.os == 'macOS'
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Test compilation
         run: |
@@ -184,7 +184,7 @@ jobs:
         if: runner.os == 'Linux'
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Compile
         run: |
@@ -327,7 +327,7 @@ jobs:
           echo BUILD_ARCH=$(dpkg-architecture -q DEB_BUILD_MULTIARCH)  >> $GITHUB_ENV
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: pwl-checkout
 
@@ -402,7 +402,7 @@ jobs:
       - build_deb
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Fetch artifacts
         id: fetch_artifact
