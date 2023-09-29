@@ -34,6 +34,7 @@ run_unittests: $(OBJS) ../src/pam_weblogin.a ../json-parser-build/libjsonparser.
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 unittest: run_unittests
+	chmod 600 pam-weblogin.conf
 	./run_unittests
 
 .PHONY: coverage
