@@ -10,7 +10,7 @@ CFLAGS ?= -O0 -ggdb3
 CFLAGS += -std=c11
 CFLAGS += -fPIC
 CFLAGS += -Wall -Wextra -Wshadow -Wpedantic -Wuninitialized -Wformat=2
-CFLAGS += -Wno-gnu-zero-variadic-macro-arguments
+CFLAGS += -Werror -Wno-gnu-zero-variadic-macro-arguments
 
 CHECK_CFLAGS := $(shell pkg-config --cflags check)
 CHECK_LDFLAGS := $(shell pkg-config --libs check)
