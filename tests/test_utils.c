@@ -171,14 +171,22 @@ START_TEST(test_json_utils)
 	ck_assert_ptr_eq(NULL, findKey(json, "key_obj."));
 
 	/* lookup a key */
-	json_value *result = findKey(json, "key_str");
-	ck_assert_ptr_ne(result, NULL);
-	ck_assert_str_eq(result->u.string.ptr, "test");
+	json_value *result1 = findKey(json, "key_str");
+	ck_assert_ptr_ne(result1, NULL);
+	ck_assert_str_eq(result1->u.string.ptr, "test");
 
 	/* lookup a nested key */
 	json_value *result2 = findKey(json, "key_obj.key_sub");
 	ck_assert_ptr_ne(result2, NULL);
 	ck_assert_str_eq(result2->u.string.ptr, "val_sub");
+
+	/* get first key */
+	char *result3 = getKey(findKey(json, "key_obj"), 0);
+	ck_assert_str_eq(result3, "key_sub");
+
+	/* get first value */
+	char *result4 = getValue(findKey(json, "key_obj"), 0);
+	ck_assert_str_eq(result4, "val_sub");
 
 	/* convenience function to get string or bool */
 	ck_assert_int_eq(getBool(json, "key_true"), true);
