@@ -16,7 +16,7 @@ CHECK_CFLAGS := $(shell pkg-config --cflags check)
 CHECK_LDFLAGS := $(shell pkg-config --libs check)
 
 CPPFLAGS += -I../ $(CHECK_CFLAGS)
-LDFLAGS += $(CHECK_LDFLAGS) -lpam
+LDFLAGS += $(CHECK_LDFLAGS) -lpam -lcurl
 
 ifdef COVERAGE
 	CFLAGS += -fprofile-arcs -ftest-coverage
