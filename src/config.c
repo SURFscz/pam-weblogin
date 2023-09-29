@@ -117,6 +117,7 @@ Config *getConfig(const char *filename)
 		{
 			memset(buffer, 0, MAXLINE);
 
+			/* after this, buffer is guaranteed to be \0-terminated */
 			if (fgets(buffer, MAXLINE, fp) == NULL) {
 				log_message(LOG_ERR, "No more lines in: %s", filename);
 				break;
@@ -124,7 +125,7 @@ Config *getConfig(const char *filename)
 
 			lineno++;
 
-			char *key = trim(buffer);
+			char *key = trim(buffer, strlen(buffer)); /* strlen() is safe here */
 
 			/* Line starts with a # comment */
 			if (key[0] == '#' || key[0] == '\0')
@@ -142,8 +143,8 @@ Config *getConfig(const char *filename)
 
 			*val++ = '\0';
 
-			val = trim(val);
-			key = trim(key);
+			val = trim(val, strlen(val)); /* strlen() is safe here */
+			key = trim(key, strlen(key)); /* strlen() is safe here */
 
 			/* Check for url config */
 			if (!strcmp(key, "url"))

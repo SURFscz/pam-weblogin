@@ -65,7 +65,7 @@ char *str_printf(const char * fmt, ...) {
 	return buffer;
 }
 
-char *trim(char *s)
+char *trim(char *s, const size_t len)
 {
 	if (s == NULL)
 		return NULL;
@@ -73,7 +73,7 @@ char *trim(char *s)
 	if (s[0]=='\0')
 		return s;
 
-	for (char *t = s + strlen(s) - 1; isspace(*t) && t>s ; t--)
+	for (char *t = s + strnlen(s, len) - 1; isspace(*t) && t>s ; t--)
 		*t = '\0';
 
 	while (isspace(*s))
