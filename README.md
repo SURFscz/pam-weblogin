@@ -25,6 +25,13 @@ To run unit tests, install [check](https://libcheck.github.io/check/) and run
 make unittest
 ```
 
+In addition, to show coverage of the tests, run:
+```
+make clean
+make unittest COVERAGE=1
+make coverage
+```
+
 ## Testing
 
 Change into the server directory.
