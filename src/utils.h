@@ -17,7 +17,7 @@ bool getBool(json_value *value, const char *name);
 char *str_printf(const char *fmt, ...)
      __attribute__ ((format (printf, 1, 2)));
 
-char *trim(char *s);
+char *trim(char *s, const size_t len);
 
 
 #endif

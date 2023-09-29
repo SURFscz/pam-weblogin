@@ -100,28 +100,28 @@ const char json_txt[] = "{                      " \
 START_TEST (test_trim_ok)
 {
 	char s1[8] = "  foo  ";
-	ck_assert_str_eq(trim(s1), "foo");
+	ck_assert_str_eq(trim(s1, 8), "foo");
 
 	char s2[8] = "  foo";
-	ck_assert_str_eq(trim(s2), "foo");
+	ck_assert_str_eq(trim(s2, 8), "foo");
 
 	char s3[8] = "foo  ";
-	ck_assert_str_eq(trim(s3), "foo");
+	ck_assert_str_eq(trim(s3, 8), "foo");
 
 	char s4[8] = "foo";
-	ck_assert_str_eq(trim(s4), "foo");
+	ck_assert_str_eq(trim(s4, 8), "foo");
 
 	char s5[8] = "      ";
-	ck_assert_str_eq(trim(s5), "");
+	ck_assert_str_eq(trim(s5, 8), "");
 }
 END_TEST
 
 START_TEST (test_trim_fail)
 {
 	char s1[8] = "";
-	ck_assert_str_eq(trim(s1), "");
+	ck_assert_str_eq(trim(s1, 8), "");
 
-	ck_assert( trim(NULL)==NULL );
+	ck_assert( trim(NULL, 8)==NULL );
 }
 END_TEST
 
