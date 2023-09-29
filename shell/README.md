@@ -37,9 +37,9 @@ token = <token>
 retries = 3
 attribute=username
 cache_duration = 60
-pam_user=true
+pam_user
 ```
-- pam_user signifies the overruling of the login user with web authenticated user.
+- A bare pam_user line (without '='!) signifies the overruling of the login user with web authenticated user.
 
 ### Login flow:
 ```
@@ -64,5 +64,5 @@ individual files in /usr/share/doc/*/copyright.
 Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
 permitted by applicable law.
 Last login: Wed Sep 20 16:32:54 2023 from 192.168.56.1
-ascz_uu_short@<server>>:~$
+ascz_uu_short@<server>:~$
 ```

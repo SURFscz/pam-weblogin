@@ -1,5 +1,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
+#include <stdbool.h>
 
 #define DEFAULT_CACHE_DURATION 60
 #define DEFAULT_RETRIES 1
@@ -9,7 +10,7 @@ typedef struct
 	char *url;
 	char *token;
 	char *attribute;
-	char *pam_user;
+	bool pam_user;
 	unsigned int cache_duration;
 	unsigned int retries;
 } Config;

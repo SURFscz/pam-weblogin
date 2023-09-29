@@ -76,7 +76,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 
 	/* Prepare start input data... */
 	char *data = NULL;
-	if (cfg->pam_user == NULL) // We check local user against remote user based on attribute
+	if (cfg->pam_user) // We check local user against remote user based on attribute
 	{
 		data = str_printf("{\"user_id\":\"%s\",\"attribute\":\"%s\",\"cache_duration\":\"%d\",\"GIT_COMMIT\":\"%s\",\"JSONPARSER_GIT_COMMIT\":\"%s\"}",
 				username, cfg->attribute, cfg->cache_duration, TOSTR(GIT_COMMIT), TOSTR(JSONPARSER_GIT_COMMIT));

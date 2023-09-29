@@ -222,7 +222,7 @@ END_TEST
 
 TCase * test_utils(void)
 {
-    TCase *tc =tcase_create("config");
+    TCase *tc =tcase_create("utils");
 
 	tcase_set_timeout(tc, 7200);
 

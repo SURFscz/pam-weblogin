@@ -29,8 +29,6 @@ void freeConfig(Config *cfg)
 			free(cfg->token);
 		if (cfg->attribute)
 			free(cfg->attribute);
-		if (cfg->pam_user)
-			free(cfg->pam_user);
 
 		free(cfg);
 	}
@@ -104,7 +102,7 @@ Config *getConfig(const char *filename)
 	cfg->attribute = NULL;
 	cfg->cache_duration = DEFAULT_CACHE_DURATION;
 	cfg->retries = DEFAULT_RETRIES;
-	cfg->pam_user = NULL;
+	cfg->pam_user = false;
 
 	if (!check_file(filename))
 	{
@@ -140,14 +138,23 @@ Config *getConfig(const char *filename)
 			char *val = strchr(key, '=');
 			if (val == NULL)
 			{
-				log_message(LOG_INFO, "Configuration line: %d: missing '=' symbol, skipping line", lineno);
+				/* Check for bare pam_user config */
+				if (!strcmp(key, "pam_user"))
+				{
+					cfg->pam_user = true;
+					log_message(LOG_DEBUG, "pam_user");
+				}
+				else
+				{
+					log_message(LOG_INFO, "Configuration line: %d: missing '=' symbol, skipping line", lineno);
+				}
 				continue;
 			}
 
 			*val++ = '\0';
 
-			val = trim(val, strlen(val)); /* strlen() is safe here */
 			key = trim(key, strlen(key)); /* strlen() is safe here */
+			val = trim(val, strlen(val)); /* strlen() is safe here */
 
 			/* Check for url config */
 			if (!strcmp(key, "url"))
@@ -201,12 +208,6 @@ Config *getConfig(const char *filename)
 				log_message(LOG_DEBUG, "retries: %d", cfg->retries);
 			}
 
-			/* Check for pam_user config */
-			else if (!strcmp(key, "pam_user"))
-			{
-				cfg->pam_user = strdup(val);
-				log_message(LOG_DEBUG, "pam_user: %s", cfg->attribute);
-			}
 
 		}
 		fclose(fp);
