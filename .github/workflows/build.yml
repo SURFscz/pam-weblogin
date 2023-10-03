@@ -69,7 +69,6 @@ jobs:
 
   build_tests:
     name: Build tests
-    if: always()
 
     runs-on: ${{ matrix.os }}
 

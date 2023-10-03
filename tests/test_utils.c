@@ -19,20 +19,17 @@
 rlim_t set_mem_limit(rlim_t limit)
 {
 	struct rlimit old_rlim, new_rlim;
+	int result;
 
 	/* fetch old limit */
-	if (getrlimit(RLIMIT_DATA, &old_rlim) != 0) {
-		fprintf(stderr, "getrlimit: %i, %s\n", errno, strerror(errno));
-		exit(1);
-	}
+	result = getrlimit(RLIMIT_DATA, &old_rlim);
+	ck_assert_int_eq(result, 0);
 
 	/* set new limit */
 	new_rlim.rlim_cur = limit;
 	new_rlim.rlim_max = old_rlim.rlim_max;
-	if (setrlimit(RLIMIT_DATA, &new_rlim) != 0) {
-		fprintf(stderr, "setrlimit: %i, %s\n", errno, strerror(errno));
-		exit(1);
-	}
+	result = setrlimit(RLIMIT_DATA, &new_rlim);
+	ck_assert_int_eq(result, 0);
 
 	return old_rlim.rlim_cur;
 }
@@ -40,41 +37,78 @@ rlim_t set_mem_limit(rlim_t limit)
 
 void fill_memory(bool fill)
 {
+	const size_t mem_max = 2048*1024;
+	const size_t mem_step = 4096-16; /* glibc-specific?, see https://stackoverflow.com/questions/62095835 */
 	static rlim_t old_rlim = -1;
-	static void *buf = NULL;
+	static void** buf = NULL;
 
 	if (fill)
 	{
 		/* limit memory we can allocate*/
-		old_rlim = set_mem_limit(2048*1024);
+		old_rlim = set_mem_limit(mem_max);
+		fprintf(stderr, "setting old rlimit to %zd\n", old_rlim);
 
         /* make sure buf is not allocated */
-		if (buf)
-		{
-			free(buf);
-			buf = NULL;
-		}
+		ck_assert_ptr_null(buf);
 
-		/* exhaust memory */
-		size_t len = 512*1024;
-		while ((buf = malloc(len))!=NULL) {
-			free(buf);
-			len += 4096;
+		/* we are going to allocate a number of buffers to exhaust the memory */
+		/* we keep the address of the previous buffer in the first pointer of the next one */
+		/* allocate first buffer */
+		buf = malloc(mem_step);
+		ck_assert_ptr_nonnull(buf);
+
+		/* there is no previous buffer */
+		*buf = NULL;
+
+		size_t num = 0;
+		while (1)
+		{
+			// fprintf(stderr, "allocate buffer number %zu\n", num);
+
+			/* allocate next buffer */
+			void **next = malloc(mem_step);
+
+			/* is memory exhausted already? */
+			if (next==NULL)
+			{
+				fprintf(stderr, "malloc failed after %zu buffers\n", num);
+				break;
+			}
+
+			/* store the address of the previous buf in the new one */
+			*next = buf;
+			/* and set the buffer itself to the next one */
+			buf = next;
+
+			num++;
+
+			/* check if we are not allocating too much */
+			ck_assert_int_lt(num * mem_step, mem_max*4);
 		}
-		fprintf(stderr, "len is %zu\n", len);
 	}
 	else
 	{
+		fprintf(stderr, "resetting memory limits\n");
+
 		/* reset rlimit */
-		if (old_rlim>0)
-			set_mem_limit(old_rlim);
+		set_mem_limit(old_rlim);
 
 		/* cleanup */
-		if (buf)
+		ck_assert_ptr_ne(buf, NULL);
+
+		/* loop over all previously allocated buffers */
+		while (*buf != NULL)
 		{
+			/* fetch the address of the previous buffer */
+			void **next = *buf;
+			/* free the current buffer */
 			free(buf);
-			buf = NULL;
+			/* move on the the next buffer */
+			buf = next;
 		}
+		/* free the final buffer */
+		free(buf);
+		buf = NULL;
 	}
 }
 
