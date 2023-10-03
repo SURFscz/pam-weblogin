@@ -16,8 +16,7 @@ Dependancies: libpam and libcurl. Install the dev packages for these libraries, 
 $ make
 $ make install
 ```
-
-This copies the pam module to /usr/local/lib/security, creates an example configuration file in /etc/pam-weblogin.conf and a pam example configuration in `/etc/pam.d/weblogin`:
+This copies the pam module to /usr/local/lib/security, creates an example configuration file in /etc/security/pam-weblogin.conf and a pam example configuration in ```/etc/pam.d/weblogin```:
 
 ## Unit tests
 To run unit tests, install [check](https://libcheck.github.io/check/) and run
@@ -36,13 +35,13 @@ make coverage
 
 Change into the server directory.
 
-Create python virtualenv, `pip install -r requirements.txt` and run weblogin_daemon.py as a stub server on localhost:5001
+Create and activate python virtualenv, `pip install -r requirements.txt` copy weblogin_daemon.yml.example to weblogin_daemon.yml and run `weblogin_daemon.py weblogin_daemon.yml` as a stub server on localhost:5001
 
 Install pamtester to test the module (see above under Installation)
 
 ```
 $ pamtester weblogin [username] authenticate
-Hello mrvanes. To continue, visit http://localhost:5001/pam-weblogin/login/yqxvIDZV and enter pin
+Hello [username]. To continue, visit http://localhost:5001/pam-weblogin/login/yqxvIDZV and enter pin
 Pin:
 Authenticated on attribute username
 pamtester: successfully authenticated
@@ -80,22 +79,19 @@ Set the following configurations in `sshd_config` and restart sshd
 ### /etc/ssh/sshd_config
 
 ```
+AuthenticationMethods publickey keyboard-interactive:pam
 PubkeyAuthentication yes
-PasswordAuthentication yes
-AuthenticationMethods publickey,keyboard-interactive password,keyboard-interactive
-ChallengeResponseAuthentication yes
+KbdInteractiveAuthentication yes
 UsePAM yes
 ```
 
-Mind that in this example the line AuthenticationMethods signifies the option of authenticating either via (publickey and keyboard-interactive (pam)) _or_ (password and keyboard-interactive), depending on the success of publickey.
+Mind that in this example the line AuthenticationMethods signifies the option of authenticating either via publickey or keyboard-interactive (pam).
 
-Add the `pam-weblogin.conf` and make it readable only for root (`chmod 600 /etc/pam-weblogin.conf, chown root.root /etc/pam-weblogin.conf`).
-
-### /etc/pam-weblogin.conf
-
+Add the `pam-weblogin.conf` and make it readable only for root (`chmod 600 /etc/seucrity/pam-weblogin.conf, chown root.root /etc/pam-weblogin.conf`).
+### /etc/security/pam-weblogin.conf
 ```
 url = https://sram.surf.nl/pam-weblogin
-token = Bearer <replace with SRAM API TOKEN for your service>
+token = <replace with SRAM API TOKEN for your service>
 retries = 3
 attribute = email
 cache_duration = 30
@@ -113,5 +109,4 @@ verify = /etc/ssl/ca.crt
 Please make sure to create a way of accessing the machine in case you create a configuration that effectively locks you out of the machine. Practice on a local VM first.
 
 ## Standalone server
-
-Whereas this pam module was developed for use with [SRAM](https://wiki.surfnet.nl/display/SRAM) [SBS](https://github.com/SURFscz/SBS), it is also easlity possible to integrate it in your own infrastructure. To that ebd, we provide a fully fuctional `pam-weblogin` server which can authenticate users by acting as an OIDC RP in an existing infratructure. See the Readme file in `server/` for more info.
+Whereas this pam module was developed for use with [SRAM](https://wiki.surfnet.nl/display/SRAM) [SBS](https://github.com/SURFscz/SBS), it is also possible to integrate it in your own infrastructure. To that end, we provide a fully fuctional `pam-weblogin` server which can authenticate users by acting as an OIDC RP in an existing infratructure.  See the Readme file in `server/` for more info.

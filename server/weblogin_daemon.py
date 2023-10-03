@@ -184,10 +184,11 @@ def check_pin():
             reply = {
                 'result': 'SUCCESS',
                 'username': user_id,
-                'colist': {
+                'groups': {
                     'coaaa': 'A CO with the beautiful name AAA',
                     'cobbb': 'A CO named BBB',
                     'coccc': 'A CO named CCC!',
+                    'coddd': 'A CO named DDD?',
                 },
                 'info': f'Authenticated on attribute {attribute}'
             }
