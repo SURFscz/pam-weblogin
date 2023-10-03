@@ -54,16 +54,16 @@ void fill_memory(bool fill)
 		/* we are going to allocate a number of buffers to exhaust the memory */
 		/* we keep the address of the previous buffer in the first pointer of the next one */
 		/* allocate first buffer */
-		buf = malloc(mem_max/4);
+		buf = malloc(mem_max/8);
 		ck_assert_ptr_nonnull(buf);
 
-		/* there is no previosu buffer */
+		/* there is no previous buffer */
 		*buf = NULL;
 
 		size_t num = 0;
 		while (1)
 		{
-			fprintf(stderr, "allocate buffer number %zu\n", num);
+			// fprintf(stderr, "allocate buffer number %zu\n", num);
 
 			/* allocate next buffer */
 			void **next = malloc(mem_step);
