@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Save version info
         run: |
@@ -139,7 +139,7 @@ jobs:
         if: runner.os == 'macOS'
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Test compilation
         run: |
@@ -183,7 +183,7 @@ jobs:
         if: runner.os == 'Linux'
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Compile
         run: |
@@ -326,7 +326,7 @@ jobs:
           echo BUILD_ARCH=$(dpkg-architecture -q DEB_BUILD_MULTIARCH)  >> $GITHUB_ENV
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: pwl-checkout
 
@@ -401,7 +401,7 @@ jobs:
       - build_deb
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Fetch artifacts
         id: fetch_artifact
@@ -429,7 +429,7 @@ jobs:
 
       - name: Remove all previous "latest" releases
         if: "github.ref_type=='branch'"
-        uses: dev-drprasad/delete-older-releases@v0.2.0
+        uses: dev-drprasad/delete-older-releases@v0.3.2
         with:
           keep_latest: 0
           delete_tag_pattern: "branch+${{github.ref_name}}"
