@@ -50,7 +50,7 @@ def main():
         if command is not None:
             f.write(f"Calling {command} for {username}\n")
             f.flush()
-            run(['/usr/bin/sudo', '-Hu', username, command])
+            run(['/usr/bin/sudo', '-Hiu', username, command])
             f.write(f"{command} for {username} ended\n")
         else:
             f.write(f"Dropping into shell for {username}\n")
