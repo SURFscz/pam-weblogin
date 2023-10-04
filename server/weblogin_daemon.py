@@ -131,29 +131,30 @@ def start():
     qr_code = create_qr(url)
     cache = cached.get(user_id, False)
     displayname = user_id or 'weblogin'
-    auths[new_session_id] = {
-        'session_id': new_session_id,
-        'challenge': f'Hello {displayname}. To continue, '
-                     f'visit {url}/pam-weblogin/login/{new_session_id} and enter verification code\n\n'
-                     f'{qr_code}',
-        'cached': cache,
-        'info': 'Login was cached' if cache else 'Sign in'
-    }
-
-    response = Response(status=201)
-    response.headers['Content-Type'] = "application/json"
-    response.data = json.dumps(auths[new_session_id])
 
     # The Smart Shell testcase
     if not user_id:
         user_id = attribute
 
     new_code = code()
+    auths[new_session_id] = {
+        'session_id': new_session_id,
+        'challenge': f'Hello {displayname}. To continue, '
+                     f'visit {url}/pam-weblogin/login/{new_session_id} and enter verification code\n\n'
+                     f'{qr_code}\n'
+                     f'code: {new_code}',
+        'cached': cache,
+        'info': 'Login was cached' if cache else 'Sign in'
+    }
     auths[new_session_id]['user_id'] = user_id
     auths[new_session_id]['attribute'] = attribute
     auths[new_session_id]['code'] = new_code
     auths[new_session_id]['cache_duration'] = cache_duration
     Timer(timeout, pop_auth, [new_session_id]).start()
+
+    response = Response(status=201)
+    response.headers['Content-Type'] = "application/json"
+    response.data = json.dumps(auths[new_session_id])
 
     logging.debug(f' -> {response.data.decode()}\n'
                   f'  code: {new_code}')
