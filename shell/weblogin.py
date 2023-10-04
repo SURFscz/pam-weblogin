@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 import sys
-import subprocess
+from subprocess import run
 
 
 def read_conf(f):
@@ -34,8 +34,8 @@ def main():
 
         # You need the following sudoers line to make this work:
         # weblogin ALL=(ALL:ALL) NOPASSWD:/usr/bin/bash,/usr/sbin/adduser
-        subprocess.call(['/usr/bin/sudo', '/usr/sbin/adduser', '--disabled-password', '--gecos', '""',
-                         username], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        run(['/usr/bin/sudo', '/usr/sbin/adduser', '--disabled-password', '--gecos', '""',
+            username])
 
         command = None
         stop = False
@@ -48,9 +48,15 @@ def main():
 
         f.write(f"command: {command}\n")
         if command is not None:
-            subprocess.call(['/usr/bin/sudo', '-Hu', username, command])
+            f.write(f"Calling {command} for {username}\n")
+            f.flush()
+            run(['/usr/bin/sudo', '-Hu', username, command])
+            f.write(f"{command} for {username} ended\n")
         else:
-            subprocess.call(['/usr/bin/sudo', '-Hiu', username])
+            f.write(f"Dropping into shell for {username}\n")
+            f.flush()
+            run(['/usr/bin/sudo', '-Hiu', username])
+            f.write(f"Closing shell for {username}\n")
 
     f.close()
 
