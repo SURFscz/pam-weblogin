@@ -1,4 +1,8 @@
 # PAM Weblogin via smart shell
+This file describes an optional way to use pam-weblogin to allow users to log in with a generic username, which will then be changed dynamically to the user's real usename on the system.
+
+Note that this is still beta-functionality and has not been thoroughly tested.
+
 ### sshd subprocess shell test
 
 Given you have checked out pam-weblogin in /opt/pam-weblogin
