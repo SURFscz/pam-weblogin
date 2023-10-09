@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 import sys
-from subprocess import run
+from subprocess import run, DEVNULL, STDOUT
 
 
 def read_conf(f):
@@ -35,7 +35,7 @@ def main():
         # You need the following sudoers line to make this work:
         # weblogin ALL=(ALL:ALL) NOPASSWD:/usr/bin/bash,/usr/sbin/adduser
         run(['/usr/bin/sudo', '/usr/sbin/adduser', '--disabled-password', '--gecos', '""',
-            username])
+            username], stdout=DEVNULL, stderr=STDOUT)
 
         command = None
         stop = False
