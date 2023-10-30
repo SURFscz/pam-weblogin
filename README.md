@@ -108,5 +108,21 @@ verify = /etc/ssl/ca.crt
 
 Please make sure to create a way of accessing the machine in case you create a configuration that effectively locks you out of the machine. Practice on a local VM first.
 
+One simple way to do this is to add an extra line to the /etc/pam.d/sshd configuration for your personal uid:
+```
+auth sufficient pam_succeed_if.so uid eq 1000 quiet
+```
+
 ## Standalone server
 Whereas this pam module was developed for use with [SRAM](https://wiki.surfnet.nl/display/SRAM) [SBS](https://github.com/SURFscz/SBS), it is also possible to integrate it in your own infrastructure. To that end, we provide a fully fuctional `pam-weblogin` server which can authenticate users by acting as an OIDC RP in an existing infratructure.  See the Readme file in `server/` for more info.
+
+## SSH Session Multiplexing
+To prevent having to go through the login sequence every time you access a pam-weblogin enabled server, you can use SSH session multiplexing to reuse an existing ssh session.
+
+Add these lines for the host(s) you want to enable session multiplexing for to your local .ssh/config:
+```
+Host ssh-demo.sram.surf.nl
+  ControlPath ~/.ssh/demo-%r@%h:%p
+  ControlMaster auto
+  ControlPersist 10m
+```
