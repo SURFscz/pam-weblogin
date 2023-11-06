@@ -126,3 +126,11 @@ Host ssh-demo.sram.surf.nl
   ControlMaster auto
   ControlPersist 10m
 ```
+## SSHFS
+To prevent having to go through the login sequence every time you access a pam-weblogin enabled server, you can also use SSHFS to create a long standing filesystem mount to the remote server:
+
+```
+$ mkdir my-sshfs
+$ sshfs <user>@<server>: my-sshfs
+$
+```
