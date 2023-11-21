@@ -6,7 +6,8 @@
 #include "tty.h"
 #include "utils.h"
 
-json_value *findKey(json_value* value, const char* name) {
+json_value *findKey(json_value* value, const char* name)
+{
 	json_value * result = NULL;
 
 	if (value == NULL || name == NULL || name[0]=='\0' ) {
@@ -35,6 +36,11 @@ json_value *findKey(json_value* value, const char* name) {
 	return result;
 }
 
+json_value *getIndex(json_value* value, const unsigned int index)
+{
+	return (index < value->u.array.length) ? value->u.array.values[index] : NULL;
+}
+
 char *getString(json_value *value, const char *name)
 {
 	json_value *key = findKey(value, name);
@@ -57,7 +63,8 @@ bool getBool(json_value *value, const char *name)
 	return key ? key->u.boolean : false;
 }
 
-char *str_printf(const char * fmt, ...) {
+char *str_printf(const char * fmt, ...)
+{
 	char *buffer = NULL;
 	va_list args;
 

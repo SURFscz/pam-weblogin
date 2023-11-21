@@ -11,7 +11,8 @@ import qrcode
 from threading import Timer
 from datetime import timedelta
 
-from flask import Flask, Response, request, Markup, session, render_template
+from flask import Flask, Response, request, session, render_template
+from markupsafe import Markup
 from flask_pyoidc import OIDCAuthentication
 from flask_pyoidc.provider_configuration import ProviderConfiguration, ClientMetadata
 from flask_pyoidc.user_session import UserSession
@@ -185,12 +186,12 @@ def check_pin():
             reply = {
                 'result': 'SUCCESS',
                 'username': user_id,
-                'groups': {
-                    'coaaa': 'A CO with the beautiful name AAA',
-                    'cobbb': 'A CO named BBB',
-                    'coccc': 'A CO named CCC!',
-                    'coddd': 'A CO named DDD?',
-                },
+                'groups': [
+                    {'short_name': 'coaaa', 'name': 'A CO with the beautiful name AAA'},
+                    {'short_name': 'cobbb', 'name': 'A CO named BBB'},
+                    {'short_name': 'coccc', 'name': 'A CO named CCC!'},
+                    {'short_name': 'coddd', 'name': 'A CO named DDD?'},
+                ],
                 'info': f'Authenticated on attribute {attribute}'
             }
             cached[user_id] = True
