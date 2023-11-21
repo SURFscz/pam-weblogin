@@ -57,10 +57,6 @@ char *tty_input(pam_handle_t *pamh, const char *text, int echo_code)
 		*resp->resp == '\000')
 	{
 		log_message(LOG_ERR, "Did not receive input from user");
-		if (retval == PAM_SUCCESS && resp && resp->resp)
-		{
-			ret = resp->resp;
-		}
 	}
 	else
 	{
