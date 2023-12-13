@@ -234,7 +234,9 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 					}
 				} else // max_groups <= 1;
 				{
-					pam_group = getKey(pam_groups, 0);
+					pam_group = getString(
+									getIndex(pam_groups, 0)
+									, "short_name");
 				}
 				log_message(LOG_INFO, "PAM Group: %s", pam_group);
 			} else // no pam_groups
