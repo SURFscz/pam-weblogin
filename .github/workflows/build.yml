@@ -198,7 +198,7 @@ jobs:
           make coverage
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           gcov: true
           gcov_executable: "gcov-12"
