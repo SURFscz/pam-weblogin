@@ -12,13 +12,13 @@
 #include <json-parser/json.h>
 
 json_value *findKey(json_value *value, const char *name);
+json_value *getIndex(json_value* value, const unsigned int index);
 char *getString(json_value *, const char *name);
 char *getKey(json_value *value, const unsigned int index);
 char *getValue(json_value *value, const unsigned int index);
 bool getBool(json_value *value, const char *name);
 char *str_printf(const char *fmt, ...)
      __attribute__ ((format (printf, 1, 2)));
-
 char *trim(char *s, const size_t len);
 
 

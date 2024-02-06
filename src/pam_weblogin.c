@@ -213,8 +213,10 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 						errno = 0;
 						tty_output(pamh, MSG_GROUPS);
 						for (unsigned int i=0; i < max_groups; i++) {
-							char *value = getValue(pam_groups, i);
-							tty_output(pamh, str_printf("  [%d] %s", i+1, value));
+							char *name = getString(
+											getIndex(pam_groups, i)
+											, "name");
+							tty_output(pamh, str_printf("  [%d] %s", i+1, name));
 						}
 						char *group_input = tty_input(pamh, PROMPT_GROUP, PAM_PROMPT_ECHO_ON);
 						group = strtol(group_input, &end, 10);
@@ -224,13 +226,17 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 							tty_output(pamh, PROMPT_WRONG_NUMBER);
 						} else
 						{
-							pam_group = getKey(pam_groups, (unsigned int)(group - 1));
+							pam_group = getString(
+											getIndex(pam_groups, (unsigned int)(group - 1))
+											, "short_name");
 							break;
 						}
 					}
 				} else // max_groups <= 1;
 				{
-					pam_group = getKey(pam_groups, 0);
+					pam_group = getString(
+									getIndex(pam_groups, 0)
+									, "short_name");
 				}
 				log_message(LOG_INFO, "PAM Group: %s", pam_group);
 			} else // no pam_groups

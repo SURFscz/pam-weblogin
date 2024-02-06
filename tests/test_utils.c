@@ -125,7 +125,8 @@ const char json_txt[] = "{                      " \
 	"\"key_int\": 1,                            " \
 	"\"key_str\": \"test\",                     " \
 	"\"key_str_empty\": \"\",                   " \
-	"\"key_obj\": { \"key_sub\": \"val_sub\" }  " \
+	"\"key_obj\": { \"key_sub\": \"val_sub\" }, " \
+	"\"key_array\": [ \"one\", \"two\" ]        " \
 "}";
 
 
@@ -221,6 +222,16 @@ START_TEST(test_json_utils)
 	/* get first value */
 	char *result4 = getValue(findKey(json, "key_obj"), 0);
 	ck_assert_str_eq(result4, "val_sub");
+
+	/* get first index */
+	json_value *item1 = getIndex(findKey(json, "key_array"), 0);
+	char *result5 = item1->u.string.ptr;
+	ck_assert_str_eq(result5, "one");
+
+	/* get second index */
+	json_value *item2 = getIndex(findKey(json, "key_array"), 1);
+	char *result6 = item2->u.string.ptr;
+	ck_assert_str_eq(result6, "two");
 
 	/* convenience function to get string or bool */
 	ck_assert_int_eq(getBool(json, "key_true"), true);
