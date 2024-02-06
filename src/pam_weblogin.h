@@ -9,7 +9,7 @@
 #define DEFAULT_CONF_FILE "/etc/security/pam-weblogin.conf"
 #define ALTERNATE_CONF_FILE "/etc/pam-weblogin.conf"
 
-#define MSG_GROUPS "\nWhat group are you operating for?"
+#define MSG_GROUPS "\nWhat group are you logging in for?"
 
 #define PROMPT_USERNAME "Username: "
 #define PROMPT_CODE "Verification code: "
