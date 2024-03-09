@@ -25,6 +25,10 @@ The flow is as follows (more details below):
 1. The pam module initiates a new backend call to the WebLogin server; it send the users `sessions` and their entered `pin`; the WebLogin server verifies the pin and responds with a status code.
 1. Based on the status code, the pam module allows the user to log in, or denies access.
 
+See also the [sequence diagram](pam-weblogin.plantuml)
+
+![sequence diagram](https://www.plantuml.com/plantuml/proxy?src=https://github.com/SURFscz/pam-weblogin/raw/main/doc/pam-weblogin.plantuml)
+
 ## API description
 The WebLogin server needs to implement two API endpoints and a user interface: the request endpoint, the authentication endpoint and the authentication UI.
 
