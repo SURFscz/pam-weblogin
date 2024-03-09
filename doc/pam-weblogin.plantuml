@@ -1,0 +1,39 @@
+@startuml
+skinparam ParticipantPadding 1
+skinparam SequenceMessagePadding 2
+
+participant "IdP"  as idp
+participant "User" as user
+participant "SRAM" as sram
+participant "Linux host" as linux
+
+user  ->  linux : start ssh connection
+linux --> sram  : start pam-weblogin
+activate linux
+sram  --> linux : return url
+linux ->  user  : show url to user
+user  ->  sram  : open url in browser
+deactivate linux
+
+|||
+group SAML login 
+  sram ->  user  : authN Request
+  user ->  idp : authenticate
+  idp  ->  user : ok
+  user ->  sram : authN Response
+  |||
+end
+|||
+
+sram  ->  user  : show code
+user  ->  linux : enter code
+
+linux --> sram : verify code
+sram  --> linux : send code, userinfo
+
+linux ->  linux : login as correct user
+activate linux #Chartreuse
+linux ->  user  : shell access
+|||
+
+@enduml
