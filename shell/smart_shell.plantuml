@@ -1,0 +1,15 @@
+@startuml
+user -> SSH: sram@server
+SSH -> PAM: sram@
+PAM -> user: challenge url
+user -> SRAM: login
+PAM -> SRAM: verify
+SRAM -> PAM: user\ngroups
+PAM -> user: group?
+user -> PAM: group_id
+PAM -> SSH: env(PAM_USER\nPAM_GROUP)\nPAM_SUCCESS
+SSH -> sram@shell: env(PAM_USER\nPAM_GROUP)
+sram@shell -> adduser: user_group
+sram@shell -> sudo: user_group
+sudo -> user: user_group:$ |
+@enduml

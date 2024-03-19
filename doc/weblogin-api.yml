@@ -15,17 +15,78 @@ info:
     The Pam-WebLogin system is meant for the case in which a server admins want to allow users to log in to their server based on authentication in a web browser.  This can be used in place of or in addition to regular means of terminal-based authentication, such as ssh public keys or username/password.  It can also be used to enable use of advanced multi-factor authentication methods which would otherwise be unavailable or hard to use on terminal-based systems.
 
     Functionally, the user connects to the system in the regular fashion.  The system than shows a url the the users needs to visit in their web browser; this web site can implement any form of authentication desired.  Once the user is authenticated, their can continue logging in the the terminal by entering the pin code presented by the web site.
+tags:
+  - name: pam-weblogin
 servers:
-  - url: 'http://localhost:3000/pam-websso'
+  - url: 'https://sram.surf.nl/pam-weblogin'
     description: weblogin
+components:
+  schemas: {}
+  securitySchemes:
+    bearer_token:
+      type: http
+      scheme: bearer
+      description: Service API key
 paths:
-  /start:
-    parameters: []
+  /pam-weblogin/start:
+    parameters:
+    - name: Authorization
+      in: header
+      description: PAM Weblogin token
+      required: true
+      example: Bearer Am4Hp7GBO2lMseskWHRmEtE3DWD
+      schema:
+        type: string
+        description: Service API key
     post:
+      description: Initiate a new WebLogin request
+      tags:
+        - pam-weblogin
       summary: Start new WebLogin request
-      operationId: post-req
+      operationId: post-start
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                  examples:
+                    - jan.klaassen@uni-harderwijk.nl
+                  description: Identifier of user initiating the authentication process
+                attribute:
+                  type: string
+                  examples:
+                    - email
+                  description: |-
+                    Identifier of an authentication attribute or claim from the WebLogin login
+                    When the use logs in to the web interface, this is the name of the attribute or claim that should match the `user_id` that the user uses to login to the pam module (e.g., the ssh username or UNIX login name)
+                cache_duration:
+                  type: number
+                  description: |-
+                    Number of seconds to allow previous logins without new authentication.
+                    If the user has successfully authenticated within the specified time frame, the response will have `cached` set to `true`.
+                  default: 60
+                  examples:
+                    - 300
+                  minimum: 0
+                GIT_COMMIT:
+                  type: string
+                  description: |-
+                    PAM Weblogin module GIT commit string, generated as `git describe --abbrev=6 --always`
+                  examples:
+                    - branch+new-checkpin-api-17-g9b4920
+                JSONPARSER_GIT_COMMIT:
+                  type: string
+                  description: |-
+                    PAM Weblogin json-parser module GIT commit string, generated as `git -c json-parser describe --abbrev=6 --always`
+                  examples:
+                    - 531a49
+              required:
+                - user_id
       responses:
-        '200':
+        '201':
           description: Successful call
           content:
             application/json:
@@ -40,11 +101,13 @@ paths:
                   session_id:
                     type: string
                     description: id to refer to this authentication session
-                    example: 39277014-1824-4F7A-93EE-8E2FBAA1E816
+                    examples:
+                      - ab4f88d1-d795-4dcd-ae9b-ecdd6b15d32a
                   challenge:
                     type: string
-                    description: challenge to show to the user in the terminal
-                    example: 'To continue, please visit https://localhost:3000/pam-websso/login/39277014-1824-4F7A-93EE-8E2FBAA1E816 and enter pin below'
+                    description: Challenge to show to the user in the terminal
+                    examples:
+                      - 'Please sign in to: https://sram.surf.nl/weblogin/sshlogin/ab4f88d1-d795-4dcd-ae9b-ecdd6b15d32a [QR Code]'
                   cached:
                     type: boolean
                     description: whether or not the user has already authenticated recently
@@ -54,11 +117,11 @@ paths:
                   - challenge
                   - cached
               examples:
-                example:
+                Success:
                   value:
                     result: OK
-                    session_id: 39277014-1824-4F7A-93EE-8E2FBAA1E816
-                    challenge: 'To continue, please visit https://localhost:3000/pam-websso/login/39277014-1824-4F7A-93EE-8E2FBAA1E816 and enter pin below'
+                    session_id: ab4f88d1-d795-4dcd-ae9b-ecdd6b15d32a
+                    challenge: 'Please sign in to: https://sram.surf.nl/weblogin/sshlogin/ab4f88d1-d795-4dcd-ae9b-ecdd6b15d32a [QRcode]'
                     cached: false
         '401':
           description: Unauthorized
@@ -67,103 +130,38 @@ paths:
               schema:
                 type: object
                 properties:
-                  result:
+                  error:
                     type: string
                     enum:
-                      - Permission denied
+                      - true
+                    desription: Error status
+                  message:
+                    type: string
                 required:
-                  - result
+                  - error
+                  - message
               examples:
-                example:
+                Fail:
                   value:
-                    result: Permission denied
-      description: Initiate a new WebLogin request
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                user_id:
-                  type: string
-                  example: jan.klaassen@uni-harderwijk.nl
-                  description: Identifier of user initiating the authentication process
-                attribute:
-                  type: string
-                  example: email
-                  description: |-
-                    Identifier of an authentication attribute or claim from the WebLogin login
-                    When the use logs in to the web interface, this is the name of the attribute or claim that should match the `user_id` that the user uses to login to the pam module (e.g., the ssh username or UNIX login name)
-                cache_duration:
-                  type: number
-                  description: |-
-                    Number of seconds to allow previous logins without new authentication.
-                    If the user has successfully authenticated within the specified time frame, the response will have `cached` set to `true`.
-                  default: 60
-                  example: 300
-                  minimum: 0
-              required:
-                - user_id
-                - attribute
-          application/xml:
-            schema:
-              type: object
-              properties:
-                user:
-                  type: string
-                attribute:
-                  type: string
-      parameters: []
-      tags:
-        - weblogin
-  /check-pin:
-    parameters: []
+                    error: true
+                    message: |-
+                      Unauthorized 401: https://sram.surf.nl/pam-weblogin/start. IP: 192.168.1.1, 10.0.0.0. Invalid username or password
+  /pam-weblogin/check-pin:
+    parameters:
+    - name: Authorization
+      in: header
+      description: PAM Weblogin token
+      required: true
+      example: Bearer Am4Hp7GBO2lMseskWHRmEtE3DWD
+      schema:
+        type: string
+        description: Service API key
     post:
-      summary: Verify an entered pin
-      operationId: post-auth
-      responses:
-        '200':
-          description: Successful call
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  result:
-                    type: string
-                    description: status of the request; should be "SUCCES" when the user has succesfully authenticated
-                    enum:
-                      - SUCCESS
-                      - FAIL
-                      - TIMEOUT
-                  debug_msg:
-                    type: string
-                    description: Debug message to explain what happened.  Not meant to be shown to the end user.
-                    example: Authenticated on attribute 'email'
-                required:
-                  - result
-                  - debug_msg
-              examples:
-                example-1:
-                  value:
-                    result: SUCCESS
-                    debug_msg: Authenticated on attribute 'email'
-        '401':
-          description: Client is unauthorized
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  result:
-                    type: string
-                    enum:
-                      - FAIL
-                      - TIMEOUT
-                      - SUCCESS
-                required:
-                  - result
       description: Verify an entered pin
+      tags:
+        - pam-weblogin
+      summary: Verify an entered pin
+      operationId: post-check-pin
       requestBody:
         content:
           application/json:
@@ -172,32 +170,204 @@ paths:
               properties:
                 session_id:
                   type: string
-                  example: 39277014-1824-4F7A-93EE-8E2FBAA1E816
+                  examples:
+                    - ab4f88d1-d795-4dcd-ae9b-ecdd6b15d32a
                   description: 'Session identifier, as returned by the call to `/start`'
                 pin:
                   type: string
-                  example: '1234'
-                  description: Pin as entered on the termina by the user
+                  examples:
+                    - '1234'
+                  description: Pin as entered on the terminal by the user
               required:
                 - session_id
                 - pin
-          application/xml:
-            schema:
-              type: object
-              properties:
-                user:
-                  type: string
-                attribute:
-                  type: string
-      parameters: []
+      responses:
+        '201':
+          description: Successful call
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    description: status of the request; should be "SUCCESS" when the user has succesfully authenticated
+                    enum:
+                      - SUCCESS
+                      - FAIL
+                      - TIMEOUT
+                  info:
+                    type: string
+                    description: Debug message to explain what happened.  Not meant to be shown to the end user.
+                    examples:
+                      - Authenticated on attribute 'email'
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        short_name:
+                          type: string
+                required:
+                  - result
+                  - info
+                  - groups
+              examples:
+                Success:
+                  value:
+                    result: SUCCESS
+                    info: User c7c7f2c1ee3a469558cd64942b86fbc4273abfa2@sram.surf.nl has authenticated successfully
+                    groups:
+                      - name: Example collaboration
+                        short_name: example_co
+                      - name: HPC CLI demo
+                        short_name: hpc_cli_demo
+        '202':
+          description: Client is unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    description: status of the request; should be "SUCCESS" when the user has succesfully authenticated
+                    enum:
+                      - FAIL
+                      - TIMEOUT
+                      - SUCCESS
+                  info:
+                    type: string
+                    description: Debug message to explain what happened.  Not meant to be shown to the end user.
+                required:
+                  - result
+                  - info
+              examples:
+                Incorrect pin:
+                  value:
+                    result: FAIL
+                    info: Incorrect pin
+  /pam-weblogin/ssh_keys:
+    parameters:
+    - name: Authorization
+      in: header
+      description: PAM Weblogin token
+      required: true
+      example: Bearer Am4Hp7GBO2lMseskWHRmEtE3DWD
+      schema:
+        type: string
+        description: Service API key
+    get:
+      description: Get all SSH keys for all User who can connect to the PAM Service
       tags:
-        - weblogin
-components:
-  schemas: {}
-  securitySchemes:
-    bearer_token:
-      type: http
-      scheme: bearer
-      description: Service API key
-tags:
-  - name: weblogin
+        - pam-weblogin
+      summary: Returns all SSH keys
+      operationId: get-ssh_keys
+      responses:
+        '200':
+          description: Successful call
+          content:
+            application/json:
+              schema:
+                type: array
+                description: List of SSH keys
+                items:
+                  type: string
+                  description: SSH key
+              examples:
+                Success:
+                  value:
+                    - ssh-rsa AAAAB3NzaC1yc2EAAA...
+                    - ssh-rsa AAAAB3NzaEAAAC1yc2...
+        '401':
+          description: Client is unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error state
+                    enum:
+                      - true
+                  message:
+                    type: string
+                    description: Debug message to explain what happened.  Not meant to be shown to the end user.
+                required:
+                  - error
+                  - message
+              examples:
+                Fail:
+                  value:
+                    error: true
+                    message: |-
+                      Unauthorized 401: https://sram.surf.nl/pam-weblogin/ssh_keys. IP: 192.168.1.1, 10.0.0.0
+  /pam-weblogin/{service_shortname}/{session_id}:
+    parameters:
+    - name: Authorization
+      in: header
+      description: PAM Weblogin token
+      required: true
+      example: Bearer Am4Hp7GBO2lMseskWHRmEtE3DWD
+      schema:
+        type: string
+        description: Token
+    - name: service_shortname
+      in: path
+      description: Service shortname
+      required: true
+      schema:
+        type: string
+    - name: session_id
+      in: path
+      description: Session ID
+      required: true
+      schema:
+        type: string
+    get:
+      description: Returns the PAM WebSSO session
+      tags:
+        - pam-weblogin
+      summary: Returns the PAM WebSSO session
+      operationId: get-session
+      responses:
+        '200':
+          description: Successful call
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Object containing service key
+                properties:
+                  service:
+                    type: object
+                    description: Service object
+              examples:
+                Success:
+                  value:
+                    service:
+                      ...: ...
+        '404':
+          description: Session id not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    enum:
+                      - true
+                    description: Error state
+                  message:
+                    type: string
+                    description: Debug message to explain what happened.  Not meant to be shown to the end user.
+              examples:
+                Fail:
+                  value:
+                    error: true
+                    message: |-
+                      NotFound: https://sram.surf.nl/pam-weblogin/cloud/1. IP: 192.168.1.1, 10.0.0.0. No PamSSOSession with session_id 1 found
