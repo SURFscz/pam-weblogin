@@ -21,7 +21,10 @@ user -> SRAM: Login
 user <- SRAM: Show pin
 end
 
+!pragma teoz true
 user -> SSH: Enter pin
+& SSH --> PAM:
+
 PAM -> SRAM: Verify pin
 PAM <- SRAM: user_id\ngroups[]
 PAM -> user: Ask group?

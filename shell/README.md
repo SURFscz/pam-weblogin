@@ -48,7 +48,7 @@ pam_user
 ### Login flow:
 See also the [sequence diagram](smart_shell.plantuml)
 
-![sequence diagram](https://www.plantuml.com/plantuml/proxy?src=https://github.com/SURFscz/pam-weblogin/raw/main/shell/smart_shell.plantuml?v=1)
+![sequence diagram](https://www.plantuml.com/plantuml/proxy?src=https://github.com/SURFscz/pam-weblogin/raw/main/shell/smart_shell.plantuml?v=2)
 
 
 ```
