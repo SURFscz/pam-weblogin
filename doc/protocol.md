@@ -29,7 +29,7 @@ The flow is as follows (more details below):
 
 See also the [sequence diagram](pam-weblogin.plantuml)
 
-![sequence diagram](https://www.plantuml.com/plantuml/proxy?src=https://github.com/SURFscz/pam-weblogin/raw/main/doc/pam-weblogin.plantuml)
+![sequence diagram](https://www.plantuml.com/plantuml/proxy?src=https://github.com/SURFscz/pam-weblogin/raw/main/doc/pam-weblogin.plantuml?v=1)
 
 ## API description
 The WebLogin server needs to implement two API endpoints and a user interface: the start endpoint, the check-pin endpoint and the authentication UI.
