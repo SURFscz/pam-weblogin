@@ -36,7 +36,7 @@ The WebLogin server needs to implement two API endpoints and a user interface: t
 
 Authentication to the API is managed via a Bearer token.
 
-The full API specification is available as an [OpenAPI file](weblogin-api.yml).
+The full API specification is available as an [OpenAPI file](weblogin-api.yml) which can be viewed using Swagger's [Online editor](https://editor-next.swagger.io/)
 
 ### Request start endpoint
 To initiate a request, send a request to the `/start` endpoint with a json body.  The json object should have three members:
