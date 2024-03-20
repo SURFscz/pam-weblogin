@@ -1,15 +1,40 @@
 @startuml
-user -> SSH: sram@server
-SSH -> PAM: sram@
-PAM -> user: challenge url
-user -> SRAM: login
-PAM -> SRAM: verify
-SRAM -> PAM: user\ngroups
-PAM -> user: group?
-user -> PAM: group_id
-PAM -> SSH: env(PAM_USER\nPAM_GROUP)\nPAM_SUCCESS
-SSH -> sram@shell: env(PAM_USER\nPAM_GROUP)
-sram@shell -> adduser: user_group
-sram@shell -> sudo: user_group
-sudo -> user: user_group:$ |
+skinparam ParticipantPadding 5
+skinparam SequenceMessagePadding 2
+skinparam responseMessageBelowArrow true
+hide footbox
+
+participant "SRAM" as SRAM #c0c0f0
+actor "User"  as user
+participant "SSHd" as SSH #c0f0c0
+participant "PAM" as PAM #f0c0c0
+participant "shell(sram)" as sram@shell
+
+user -> SSH: **sram**@server
+note left: User starts session\nas **sram** user
+
+SSH -> PAM: **sram**@
+user <- PAM: Challenge url
+
+group SRAM login
+user -> SRAM: Login
+user <- SRAM: Show pin
+end
+
+user -> SSH: Enter pin
+PAM -> SRAM: Verify pin
+PAM <- SRAM: user_id\ngroups[]
+PAM -> user: Ask group?
+PAM <- user: group_id
+
+SSH <- PAM: env(PAM_USER, PAM_GROUP)\n+PAM_SUCCESS
+SSH -> sram@shell: env(PAM_USER, PAM_GROUP)
+
+sram@shell ->]: adduser
+note left: Optional
+
+sram@shell -> sram@shell: sudo
+
+user o<- sram@shell: user_group:$ |
+note left: User ends up with session\nas **user_group**
 @enduml

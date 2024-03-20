@@ -1,40 +1,30 @@
 @startuml
 skinparam ParticipantPadding 1
 skinparam SequenceMessagePadding 2
+skinparam responseMessageBelowArrow true
+hide footbox
 
-participant "IdP"  as idp
-participant "User" as user
-participant "SRAM" as sram
-participant "Linux host" as linux
+participant "SRAM" as sram #c0c0f0
+actor "User" as user
+participant "Linux host" as linux #c0f0c0
 
-user  ->  linux : start ssh connection
-linux --> sram  : start pam-weblogin
-activate linux
-sram  --> linux : challenge
-linux ->  user  : show challenge to user
-user  ->  sram  : open challenge in browser
-deactivate linux
+user  ->  linux: start ssh connection
+linux --> sram: start pam-weblogin
+linux <-- sram: challenge
+user <-- linux: show challenge to user
+user  ->  sram: open challenge in browser
 
-|||
-group SAML login
-  sram ->  user  : authN Request
-  user ->  idp : authenticate
-  idp  ->  user : ok
-  user ->  sram : authN Response
-  |||
+group SRAM login
+  user -> sram: Login
+  user <- sram: show code
 end
-|||
 
-sram  ->  user  : show code
-user  ->  linux : enter code
+user  ->  linux: enter code
 
-linux --> sram : verify code
-sram  --> linux : send result, userinfo
+linux --> sram: verify code
+linux <- sram: send result, userinfo
 
-linux ->  linux : login as correct user
-activate linux #Chartreuse
-linux ->  user  : shell access
-deactivate linux
-|||
+linux ->  linux: login as correct user
+user o<- linux: shell access
 
 @enduml

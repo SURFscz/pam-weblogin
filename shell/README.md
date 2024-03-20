@@ -46,6 +46,11 @@ pam_user
 - A bare pam_user line (without '='!) signifies the overruling of the login user with web authenticated user.
 
 ### Login flow:
+See also the [sequence diagram](smart_shell.plantuml)
+
+![sequence diagram](https://www.plantuml.com/plantuml/proxy?src=https://github.com/SURFscz/pam-weblogin/raw/main/shell/smart_shell.plantuml)
+
+
 ```
 $ ssh weblogin@<server>
 (weblogin@<server>) Please log in at: https://sbs.scz-vm.net/weblogin/pamweblogin/....
