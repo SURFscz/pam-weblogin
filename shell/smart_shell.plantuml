@@ -3,12 +3,13 @@ skinparam ParticipantPadding 5
 skinparam SequenceMessagePadding 2
 skinparam responseMessageBelowArrow true
 hide footbox
+!pragma teoz true
 
 participant "SRAM" as SRAM #c0c0f0
 actor "User"  as user
 participant "SSHd" as SSH #c0f0c0
 participant "PAM" as PAM #f0c0c0
-participant "shell(sram)" as sram@shell
+participant "Smartshell" as sram@shell
 
 user -> SSH: **sram**@server
 note left: User starts session\nas **sram** user
@@ -21,7 +22,6 @@ user -> SRAM: Login
 user <- SRAM: Show pin
 end
 
-!pragma teoz true
 user -> SSH: Enter pin
 & SSH --> PAM:
 
