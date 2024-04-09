@@ -44,7 +44,7 @@ To initiate a request, send a request to the `/start` endpoint with a json body.
   - `attribute`: the attribute or claim from the web authentication process to which the `user_id` should be matched (e.g., `email`, `sub` (for OpenID Connect) or `urn:oasis:names:tc:SAML:attribute:subject-id` for SAML2)
   - `cache_duration`: the duration (in seconds) during which a previous login of the same user should be considered valid, and during which the user does not need to authenticate in the web browser again.
 
-The response can be 401 with a body explaining what went wrond or be a 200 and consist of a json object with the following members:
+The response can be 401 with a body explaining what went wrong or be a 200 and consist of a json object with the following members:
   - `result`: should always be "OK"
   - `session_id`: identifier to refer to this login sessions later on (specifically, when querying the `/check-pin` API)
   - `challenge`: challenge to show to the user; this includes a URL which the user should visit to authenticate
@@ -70,9 +70,9 @@ Reponse:
 
 ### Authentication UI
 The authentication UI corresponds to the challenge url in the response above.
-It should allow the user to log in, on successful authentication, show a PIN number that the user needs to enter in their terminal.
+It should allow the user to log in and on successful authentication, show a PIN number that the user needs to enter in their terminal.
 
-How authentication is managed, is implementation dependent. The server could simply have a local database, could implement social logins (Google, Apple) or use external authentication from an identity federation based on OpenID Connect or SAML2.
+How authentication is managed is implementation dependent. The server could simply have a local database, could implement social logins (Google, Apple) or use external authentication from an identity federation based on OpenID Connect or SAML2.
 
 ### Check pin endpoint
 To check an entered pin, send a request to the `/check-pin` endpoint with the following members:
@@ -81,7 +81,7 @@ To check an entered pin, send a request to the `/check-pin` endpoint with the fo
 
 The response is a json with the following members:
   - `result`: either `SUCCESS` if the pin was correct and the user has authenticated successfully, `TIMEOUT` if the user failed to authenticate in a reasonable time frame, or `FAIL` if the pin is incorrect or the authenticated user didn't match the pam user.
-  - `info`: message explaining what has happened.  Not meant to show to the end user.
+  - `info`: message explaining what has happened.  Not meant to show to the end user; the pam module will log this to the system log.
   - `group`: list containing group objects, consisting of a name and short_name
 
 Example:
@@ -110,8 +110,9 @@ Response:
 ```
 
 ### SSH keys endpoint
-A service can get list of valid SSH keys of members for this service using the `/ssh_keys` endpoint. No parameters are required, so this is a GET request.
-Returned is a list of all valid SSH keys, that can be used to create an `authorized_keys` file e.g.
+A service can get list of valid SSH keys of members for this service using the `/ssh_keys` GET endpoint. No parameters are required.
+Returned is a list of all valid SSH keys, that can for example be used to create an `authorized_keys` file or that can be queried by an `AuthorizedKeysCommand`.
+
 A 401 is returned with an error message if anything went wrong.
 
 Example:
@@ -123,7 +124,7 @@ Example:
 ```
 
 ### Service session endpoint
-A Service can request the status of the session using the `/{service_shortname}/{session_id}` endpoint. No parameters are required, so this is a GET request.
+A Service can request the status of the session using the `/{service_shortname}/{session_id}` GET endpoint. No parameters are required.
 Returned is an object containing a `service` key, that contains the service object of this session.
 A 401 is returned with an error message if anything went wrong.
 
