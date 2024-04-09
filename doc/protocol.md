@@ -14,7 +14,7 @@ The picture below gives a schematic overview of the PAM-WebLogin protocol:
 The flow is as follows (more details below):
 1. User logs in to a terminal application (e.g. using ssh)
 1. SSH starts PAM-WebLogin module
-1. Pam-WebLogin initiates a backend call to the WebLogin-server (e.g., `https://weblogin.server/pam-weblogin/start` endpoint).  It sends the incoming `user_id` and receives a `session_id`, a `challenge` and a `cached` indication.
+1. Pam-WebLogin initiates a backend call to the WebLogin-server (e.g., `https://weblogin.server/pam-weblogin/start` endpoint).  It sends the incoming `user_id`, the desired attribute/claim to use for user matching, and the desired cached duration. The start endpoint responds with a `session_id`, a `challenge` and a `cached` indication.
 1. If the login was cached, the module immediately returns success.
 1. The pam module presents the `challenge` to the user and prompts for a pin
 1. The user copies the `challenge_url` (e.g. `https://weblogin.server/weblogin/cloud/57d6ca67-02a1-4235-a5a3-d0cb9df1789a`) to their browser or clicks the link the terminal (it depends on the terminal how links can be activated)
