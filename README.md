@@ -1,4 +1,5 @@
 [![Build status](https://github.com/SURFscz/pam-weblogin/actions/workflows/build.yml/badge.svg)](https://github.com/SURFscz/pam-weblogin/actions)
+[![codecov](https://codecov.io/gh/SURFscz/pam-weblogin/graph/badge.svg?token=Z32L1KZFEB)](https://codecov.io/gh/SURFscz/pam-weblogin)
 
 # pam-weblogin
 
