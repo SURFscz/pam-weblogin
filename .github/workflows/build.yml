@@ -217,6 +217,8 @@ jobs:
           - { name: "fedora38",    container: "fedora:38"    }
           - { name: "rockylinux8", container: "rockylinux:8" }
           - { name: "rockylinux9", container: "rockylinux:9" }
+          - { name: "redhat8",     container: "redhat/ubi8"  }
+          - { name: "redhat9",     container: "redhat/ubi9"  }
     runs-on: "ubuntu-latest"
     steps:
       - name: Get tag/branch name
