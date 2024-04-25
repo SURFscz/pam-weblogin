@@ -59,7 +59,7 @@ Edit `sshd` as follows (add the line above @include common-auth)
 ```
 # PAM configuration for the Secure Shell service
 
-auth [success=done ignore=ignore default=die] /usr/local/lib/security/pam_weblogin.so /etc/pam-weblogin.conf
+auth [success=done ignore=ignore default=die] /usr/local/lib/security/pam_weblogin.so /etc/security/pam-weblogin.conf
 # Standard Un*x authentication.
 @include common-auth
 ```
@@ -88,7 +88,7 @@ UsePAM yes
 
 Mind that in this example the line AuthenticationMethods signifies the option of authenticating either via publickey or keyboard-interactive (pam).
 
-Add the `pam-weblogin.conf` and make it readable only for root (`chmod 600 /etc/seucrity/pam-weblogin.conf, chown root.root /etc/pam-weblogin.conf`).
+Add the `pam-weblogin.conf` and make it readable only for root (`chmod 600 /etc/seucrity/pam-weblogin.conf, chown root.root /etc/security/pam-weblogin.conf`).
 ### /etc/security/pam-weblogin.conf
 ```
 url = https://sram.surf.nl/pam-weblogin
