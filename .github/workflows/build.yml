@@ -213,8 +213,9 @@ jobs:
       matrix:
         include:
           - { name: "centos7",     container: "centos:7"     }
-          - { name: "fedora37",    container: "fedora:37"    }
           - { name: "fedora38",    container: "fedora:38"    }
+          - { name: "fedora39",    container: "fedora:39"    }
+          - { name: "fedora40",    container: "fedora:40"    }
           - { name: "rockylinux8", container: "rockylinux:8" }
           - { name: "rockylinux9", container: "rockylinux:9" }
     runs-on: "ubuntu-latest"
