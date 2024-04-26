@@ -293,6 +293,16 @@ jobs:
           name: rpm_${{matrix.name}}
           path: "results/*"
 
+      # Setup tmate session
+      - name: Setup tmate session
+        env:
+          ACTIONS_STEP_DEBUG: ${{ secrets.ACTIONS_STEP_DEBUG}}
+        if: ${{ failure() && env.ACTIONS_STEP_DEBUG == 'true' }}
+        uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true
+        timeout-minutes: 60
+
   build_deb:
     name: Build DEBs
     needs:
@@ -390,6 +400,16 @@ jobs:
         with:
           name: deb_${{matrix.name}}
           path: "results/*"
+
+      # Setup tmate session
+      - name: Setup tmate session
+        env:
+          ACTIONS_STEP_DEBUG: ${{ secrets.ACTIONS_STEP_DEBUG}}
+        if: ${{ failure() && env.ACTIONS_STEP_DEBUG == 'true' }}
+        uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true
+        timeout-minutes: 60
 
   release:
     name: Release
