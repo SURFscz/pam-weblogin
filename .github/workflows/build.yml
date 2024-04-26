@@ -276,7 +276,7 @@ jobs:
                         pwl-${{matrix.name}} \
                         /bin/sh -c '
                           rpmbuild -ba --define "pwl_version ${{env.PWL_VERSION}}" --define "pwl_distro ${{matrix.name}}" pam-weblogin.spec;
-                          rpm -qlp rpmbuild/RPMS/x86_64/*.rpm
+                          rpm -qlp /root/rpmbuild/RPMS/x86_64/*.rpm
                         '
 
       - name: debug
