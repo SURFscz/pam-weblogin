@@ -9,3 +9,4 @@ oidc:
   client_id: '<client>'
   client_secret: '<secret>'
   redirect_uri: 'https://<server>>/redirect_uri
+  min_auth_level: 0
