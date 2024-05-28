@@ -12,7 +12,7 @@
 #define MSG_GROUPS "\nWhat group are you logging in for?"
 
 #define PROMPT_USERNAME "Username: "
-#define PROMPT_CODE "Verification code: "
+#define PROMPT_CODE "Enter verification code: "
 #define PROMPT_GROUP "\nSelect group: "
 #define PROMPT_WRONG_NUMBER "Wrong number"
 
