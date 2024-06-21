@@ -41,6 +41,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	char *pam_group = NULL;
 
 	log_message(LOG_INFO, "Start of pam_weblogin");
+	log_message(LOG_INFO, "BUFSIZE: %d bytes", BUFSIZE);
 
 	/* Read username */
 	const char *username;
@@ -105,7 +106,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	}
 
 	/* Parse response */
-	json_value *challenge_json = json_parse(challenge_response, strnlen(challenge_response, BUFSIZ));
+	json_value *challenge_json = json_parse(challenge_response, strnlen(challenge_response, BUFSIZE));
 	free(challenge_response);
 
 	cached = getBool(challenge_json, "cached");
@@ -171,7 +172,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		}
 
 		/* Parse auth result */
-		json_value *verify_json = json_parse(verify_response, strnlen(verify_response, BUFSIZ));
+		json_value *verify_json = json_parse(verify_response, strnlen(verify_response, BUFSIZE));
 		free(verify_response);
 
 		char *result = getString(verify_json, "result");
