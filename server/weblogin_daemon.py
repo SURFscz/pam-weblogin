@@ -280,7 +280,7 @@ def __login(session_id):
             message += f"{attribute_id} successfully authenticated<br>\n"
             message += f"Verification code: {code}<br><br>\n"
             message += "<i>This window may be closed</i>\n"
-            if min_auth_level != 0:
+            if min_auth_level != 0 and oidc_enabled:
                 # Get access_token to introspect on for auth_level validation
                 access_token = authzn.valid_access_token()
                 introspection = authzn.clients['pam-weblogin']._token_introspection_request(access_token)
