@@ -84,6 +84,7 @@ char *API(const char* url, const char *method, char *headers[], const char* data
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, data ? strnlen(data, 1024) : 0);
 #ifdef NOVERIFY
 		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
 #endif
 		/* Perform the request */
 		if (curl_easy_perform(curl) != CURLE_OK)
