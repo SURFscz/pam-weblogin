@@ -201,7 +201,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 			} else {
 				log_message(LOG_INFO, "No user received");
 			}
-			json_value *pam_groups = findKey(verify_json, "groups");
+			json_value *pam_groups = findKey(verify_json, "collaborations");
 			if (pam_groups) // We received groups
 			{
 				unsigned int max_groups = pam_groups->u.object.length;
