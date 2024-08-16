@@ -187,13 +187,27 @@ def check_pin():
             reply = {
                 'result': 'SUCCESS',
                 'username': user_id,
-                'groups': [
-                    {'short_name': 'coaaa', 'name': 'A CO with the beautiful name AAA'},
-                    {'short_name': 'cobbb', 'name': 'A CO named BBB'},
-                    {'short_name': 'coccc', 'name': 'A CO named CCC!'},
-                    {'short_name': 'coddd', 'name': 'A CO named DDD?'},
+                'collaborations': [
+                    {
+                        'id': 'a71a2b01-4642-4e1a-b3ac-0a06b2bf66f2',
+                        'name': 'AI computing',
+                        'short_name': 'ai_computing',
+                        'urn': 'uniharderwijk:ai_computing'
+                    },
+                    {
+                        'id': '4c270cff-de30-49e8-a3bc-df032536b37c',
+                        'name': 'AI developers',
+                        'short_name': 'ai_dev',
+                        'urn': 'uuc:ai_computing:ai_dev'
+                    },
+                    {
+                        'id': '9734e4c4-d23e-4228-b0e0-8e6a5b85e72e',
+                        'name': 'AI researchers',
+                        'short_name': 'ai_res',
+                        'urn': 'uuc:ai_computing:ai_res'
+                    },
                 ],
-                'info': f'Authenticated on attribute {attribute}'
+                'info': f'User {user_id} has authenticated successfully ({attribute})'
             }
             cached[user_id] = True
             pop_auth(session_id)

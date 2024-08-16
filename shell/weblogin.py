@@ -30,6 +30,8 @@ def main():
     if pam_user is not None:
         username = pam_user
         if pam_group is not None:
+            # Make username unique with group postfix
+            # This is just an example of possible username logic
             username += "_" + pam_group
 
         # You need the following sudoers line to make this work:
@@ -37,6 +39,7 @@ def main():
         run(['/usr/bin/sudo', '/usr/sbin/adduser', '--disabled-password', '--gecos', '""',
             username], stdout=DEVNULL, stderr=STDOUT)
 
+        # Check for sftp/sshfs/rsync like commands
         command = None
         stop = False
         for arg in sys.argv:
@@ -45,8 +48,8 @@ def main():
                 break
             if arg == '-c':
                 stop = True
-
         f.write(f"command: {command}\n")
+
         if command is not None:
             f.write(f"Calling {command} for {username}\n")
             f.flush()
