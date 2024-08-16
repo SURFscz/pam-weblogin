@@ -201,6 +201,8 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 			} else {
 				log_message(LOG_INFO, "No user received");
 			}
+
+			// We map API collaboration to posix group
 			json_value *pam_groups = findKey(verify_json, "collaborations");
 			if (pam_groups) // We received groups
 			{
