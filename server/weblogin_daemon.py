@@ -192,8 +192,16 @@ def check_pin():
                         'id': 'a71a2b01-4642-4e1a-b3ac-0a06b2bf66f2',
                         'name': 'AI computing',
                         'short_name': 'ai_computing',
-                        'urn': 'uniharderwijk:ai_computing'
+                        'urn': 'uniharderwijk:ai_computing',
                     },
+                    {
+                        'id': 'da706611-0afb-4a7a-819b-b0a9c63e9b67',
+                        'name': 'Research',
+                        'short_name': 'research',
+                        'urn': 'ufra:research'
+                    },
+                ],
+                'groups': [
                     {
                         'id': '4c270cff-de30-49e8-a3bc-df032536b37c',
                         'name': 'AI developers',
@@ -206,6 +214,18 @@ def check_pin():
                         'short_name': 'ai_res',
                         'urn': 'uuc:ai_computing:ai_res'
                     },
+                    {
+                        'id': 'e46e388c-9362-4aaa-b23f-a855bf559598',
+                        'name': 'Science',
+                        'short_name': 'science',
+                        'urn': 'ufra:research:science'
+                    },
+                    {
+                        'id': '9946ca40-2a53-40a8-bc63-fb0758e716e3',
+                        'name': 'service_group_mail_name',
+                        'short_name': 'mail-mail',
+                        'urn': 'uuc:ai_computing:mail-mail'
+                    }
                 ],
                 'info': f'User {user_id} has authenticated successfully ({attribute})'
             }
