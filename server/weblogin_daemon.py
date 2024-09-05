@@ -130,7 +130,8 @@ def start():
     cache_duration = data.get('cache_duration', 0)
     new_session_id = session_id()
     url = os.environ.get("URL", config['url']).rstrip('/')
-    qr_code = create_qr(url)
+    session_url = url + "/pam-weblogin/login/" + new_session_id
+    qr_code = create_qr(session_url)
     cache = cached.get(user_id, False)
     displayname = user_id or 'weblogin'
 
@@ -142,7 +143,7 @@ def start():
     auths[new_session_id] = {
         'session_id': new_session_id,
         'challenge': f'Hello {displayname}. To continue, '
-                     f'visit {url}/pam-weblogin/login/{new_session_id} and enter verification code\n\n'
+                     f'visit {session_url} and enter verification code\n\n'
                      f'{qr_code}\n'
                      f'code: {new_code}',
         'cached': cache,
