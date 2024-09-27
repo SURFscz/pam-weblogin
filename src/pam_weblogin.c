@@ -126,7 +126,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	if (!cached)
 	{
 		session_id = getString(challenge_json, "session_id");
-		challenge = getString(challenge_json, "challenge");
+		challenge = str_printf("\n\r%s", getString(challenge_json, "challenge"));
 	}
 	json_value_free(challenge_json);
 
