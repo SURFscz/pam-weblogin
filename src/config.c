@@ -120,7 +120,7 @@ Config *getConfig(const char *filename)
 
 			/* after this, buffer is guaranteed to be \0-terminated */
 			if (fgets(buffer, MAXLINE, fp) == NULL) {
-				log_message(LOG_ERR, "No more lines in: %s", filename);
+				log_message(LOG_DEBUG, "No more lines in: %s", filename);
 				break;
 			}
 
