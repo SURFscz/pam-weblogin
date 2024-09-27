@@ -41,7 +41,6 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	char *pam_group = NULL;
 
 	log_message(LOG_INFO, "Start of pam_weblogin");
-	log_message(LOG_DEBUG, "BUFSIZE: %d bytes", BUFSIZE);
 
 	/* Read username */
 	const char *username;
@@ -60,6 +59,8 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	{
 		setlogmask(LOG_UPTO(LOG_INFO));
 	}
+
+	log_message(LOG_DEBUG, "BUFSIZE: %d bytes", BUFSIZE);
 
 	/* Read configuration file */
 	Config *cfg = NULL;
