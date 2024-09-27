@@ -51,6 +51,16 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		return PAM_SYSTEM_ERR;
 	}
 
+        /* Check if debug argument was given */
+	if (argc == 2 && strcmp(argv[1], "debug") == 0)
+	{
+		setlogmask(LOG_UPTO(LOG_DEBUG));
+	}
+        else
+	{
+		setlogmask(LOG_UPTO(LOG_INFO));
+	}
+
 	/* Read configuration file */
 	Config *cfg = NULL;
 	if (!(cfg = getConfig((argc > 0) ? argv[0] : DEFAULT_CONF_FILE)))
