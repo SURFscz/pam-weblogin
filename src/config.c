@@ -120,7 +120,7 @@ Config *getConfig(const char *filename)
 
 			/* after this, buffer is guaranteed to be \0-terminated */
 			if (fgets(buffer, MAXLINE, fp) == NULL) {
-				log_message(LOG_ERR, "No more lines in: %s", filename);
+				log_message(LOG_DEBUG, "No more lines in: %s", filename);
 				break;
 			}
 
@@ -146,7 +146,7 @@ Config *getConfig(const char *filename)
 				}
 				else
 				{
-					log_message(LOG_INFO, "Configuration line: %d: missing '=' symbol, skipping line", lineno);
+					log_message(LOG_ERR, "Configuration line: %d: missing '=' symbol, skipping line", lineno);
 				}
 				continue;
 			}
@@ -194,7 +194,7 @@ Config *getConfig(const char *filename)
 				    || ( cache_duration == LONG_MAX && errno == ERANGE )
 					||   cache_duration < 0 )
 				{
-					log_message(LOG_INFO, "Configuration file line %d: parse error (%s)", lineno, strerror(errno));
+					log_message(LOG_ERR, "Configuration file line %d: parse error (%s)", lineno, strerror(errno));
 					continue;
 				}
 				cfg->cache_duration = (unsigned int)labs(strtol(val, NULL, 10));

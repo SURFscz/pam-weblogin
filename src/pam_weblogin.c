@@ -41,7 +41,6 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	char *pam_group = NULL;
 
 	log_message(LOG_INFO, "Start of pam_weblogin");
-	log_message(LOG_INFO, "BUFSIZE: %d bytes", BUFSIZE);
 
 	/* Read username */
 	const char *username;
@@ -50,6 +49,18 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		log_message(LOG_ERR, "Error getting user");
 		return PAM_SYSTEM_ERR;
 	}
+
+        /* Check if debug argument was given */
+	if (argc == 2 && strcmp(argv[1], "debug") == 0)
+	{
+		setlogmask(LOG_UPTO(LOG_DEBUG));
+	}
+        else
+	{
+		setlogmask(LOG_UPTO(LOG_INFO));
+	}
+
+	log_message(LOG_DEBUG, "BUFSIZE: %d bytes", BUFSIZE);
 
 	/* Read configuration file */
 	Config *cfg = NULL;

@@ -101,7 +101,7 @@ char *API(const char* url, const char *method, char *headers[], const char* data
 
 		/* always cleanup */
 		curl_easy_cleanup(curl);
-		log_message(LOG_INFO, "Request to %s, %ld, %s", url, response_code, fetcher.payload);
+		log_message(LOG_DEBUG, "Request to %s, %ld, %s", url, response_code, fetcher.payload);
 
 		if (response_code < 300)
 		{
