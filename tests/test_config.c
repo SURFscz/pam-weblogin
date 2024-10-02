@@ -20,6 +20,7 @@ START_TEST (test_getConfig_1)
 	ck_assert_int_eq(cfg->retries, 3);
 	ck_assert_str_eq(cfg->attribute, "uid");
 	ck_assert_int_eq(cfg->cache_duration, 60);
+	ck_assert(!cfg->cache_per_rhost);
 	ck_assert(cfg->pam_user);
 }
 END_TEST
@@ -35,6 +36,7 @@ START_TEST (test_getConfig_2)
 	ck_assert_int_eq(cfg->retries, 3);
 	ck_assert_str_eq(cfg->attribute, "uid");
 	ck_assert_int_eq(cfg->cache_duration, 0);
+	ck_assert(cfg->cache_per_rhost);
 	ck_assert(cfg->pam_user);
 }
 END_TEST

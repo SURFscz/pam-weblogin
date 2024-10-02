@@ -71,9 +71,9 @@ def pop_auth(session_id):
     auths.pop(session_id, None)
 
 
-def pop_cached(user_id):
-    logging.debug(f"pop cached {user_id}")
-    cached.pop(user_id, None)
+def pop_cached(cache_id):
+    logging.debug(f"pop cached {cache_id}")
+    cached.pop(cache_id, None)
 
 
 def session_id(length=8):
@@ -126,13 +126,16 @@ def start():
         return response
 
     user_id = data.get('user_id')
+    rhost = data.get('rhost')
+    cache_per_rhost = data.get('cache_per_rhost')
+    cache_id = user_id + ',' + rhost if cache_per_rhost else user_id
     attribute = data.get('attribute')
     cache_duration = data.get('cache_duration', 0)
     new_session_id = session_id()
     url = os.environ.get("URL", config['url']).rstrip('/')
     session_url = url + "/pam-weblogin/login/" + new_session_id
     qr_code = create_qr(session_url)
-    cache = cached.get(user_id, False)
+    cache = cached.get(cache_id, False)
     displayname = user_id or 'weblogin'
 
     # The Smart Shell testcase
@@ -151,6 +154,7 @@ def start():
     }
     auths[new_session_id]['user_id'] = user_id
     auths[new_session_id]['attribute'] = attribute
+    auths[new_session_id]['cache_id'] = cache_id
     auths[new_session_id]['code'] = new_code
     auths[new_session_id]['cache_duration'] = cache_duration
     Timer(timeout, pop_auth, [new_session_id]).start()
@@ -184,6 +188,7 @@ def check_pin():
         attribute = this_auth.get('attribute')
         code = this_auth.get('code')
         cache_duration = this_auth.get('cache_duration')
+        cache_id = this_auth.get('cache_id')
         if rcode == code:
             reply = {
                 'result': 'SUCCESS',
@@ -230,9 +235,9 @@ def check_pin():
                 ],
                 'info': f'User {user_id} has authenticated successfully ({attribute})'
             }
-            cached[user_id] = True
+            cached[cache_id] = True
             pop_auth(session_id)
-            Timer(int(cache_duration), pop_cached, [user_id]).start()
+            Timer(int(cache_duration), pop_cached, [cache_id]).start()
         else:
             reply = {
                 'result': 'FAIL',

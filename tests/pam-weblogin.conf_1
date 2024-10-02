@@ -8,6 +8,7 @@ retries = 3
 attribute = uid
  # cache_duration=60
 cache_duration=60
+#cache_per_rhost
 #pam_user
 pam_user
 nonsense

@@ -12,6 +12,7 @@ typedef struct
 	char *attribute;
 	bool pam_user;
 	unsigned int cache_duration;
+	bool cache_per_rhost;
 	unsigned int retries;
 } Config;
 

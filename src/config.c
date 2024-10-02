@@ -101,6 +101,7 @@ Config *getConfig(const char *filename)
 	cfg->token = NULL;
 	cfg->attribute = NULL;
 	cfg->cache_duration = DEFAULT_CACHE_DURATION;
+	cfg->cache_per_rhost = false;
 	cfg->retries = DEFAULT_RETRIES;
 	cfg->pam_user = false;
 
@@ -138,11 +139,16 @@ Config *getConfig(const char *filename)
 			char *val = strchr(key, '=');
 			if (val == NULL)
 			{
-				/* Check for bare pam_user config */
+				/* Check for bare boolean flags in config */
 				if (!strcmp(key, "pam_user"))
 				{
 					cfg->pam_user = true;
 					log_message(LOG_DEBUG, "pam_user");
+				}
+				else if (!strcmp(key, "cache_per_rhost"))
+				{
+					cfg->cache_per_rhost = true;
+					log_message(LOG_DEBUG, "cache_per_rhost");
 				}
 				else
 				{
