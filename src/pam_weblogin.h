@@ -16,6 +16,8 @@
 #define PROMPT_GROUP "\nSelect group: "
 #define PROMPT_WRONG_NUMBER "Wrong number"
 
+#define MAX_INPUT_LENGTH 256
+
 #ifndef GIT_COMMIT
 #define GIT_COMMIT 0000
 #endif

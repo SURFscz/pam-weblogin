@@ -77,6 +77,24 @@ char *tty_input(pam_handle_t *pamh, const char *text, int echo_code)
 	return ret;
 }
 
+int input_is_safe(const char *input, size_t max_length)
+{
+    for (size_t i = 0; input[i]; i++)
+    {
+        if (i > max_length
+                /* Don't use isalnum() here because it is locale-dependent,
+                 * and don't use isalnum_l() because it is not portable.
+                 * Instead, hardcode a check for ASCII a-z A-Z 0-9. */
+                || !(  (input[i] >= 'a' && input[i] <= 'z')
+                    || (input[i] >= 'A' && input[i] <= 'Z')
+                    || (input[i] >= '0' && input[i] <= '9')))
+        {
+            return 0;
+        }
+    }
+    return 1;
+}
+
 void tty_output(pam_handle_t *pamh, const char *text)
 {
 	/* note: on MacOS, pam_message.msg is a non-const char*, so we need to copy it */
