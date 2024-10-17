@@ -116,14 +116,21 @@ def ssh():
 
 @app.route('/pam-weblogin/start', methods=['POST'])
 def start():
-    data = json.loads(request.data)
-    logging.debug(f"/pam-weblogin/start\n <- {data}")
     if not authorized(request.headers):
         response = Response(status=404)
         msg = {'error': True, 'message': 'Unauthorized'}
         response.data = json.dumps(msg)
         logging.debug(f" -> {msg}")
         return response
+    try:
+        data = json.loads(request.data)
+    except ValueError as e:
+        response = Response(status=400)
+        msg = {'error': True, 'message': 'Bad request'}
+        response.data = json.dumps(msg)
+        logging.debug(f" -> {msg}")
+        return response
+    logging.debug(f"/pam-weblogin/start\n <- {data}")
 
     user_id = data.get('user_id')
     attribute = data.get('attribute')
@@ -174,7 +181,14 @@ def check_pin():
         logging.debug(f" -> {msg}")
         return response
 
-    data = json.loads(request.data)
+    try:
+        data = json.loads(request.data)
+    except ValueError as e:
+        response = Response(status=400)
+        msg = {'error': True, 'message': 'Bad request'}
+        response.data = json.dumps(msg)
+        logging.debug(f" -> {msg}")
+        return response
     session_id = data.get('session_id')
     rcode = data.get('pin')
 
