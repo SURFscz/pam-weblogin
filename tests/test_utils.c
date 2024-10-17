@@ -8,6 +8,7 @@
 #include <errno.h>
 
 #include "../src/utils.h"
+#include "../src/tty.h"
 
 
 /* helper function to lower RLIMIT_DATA to test out of memory conditions
@@ -270,6 +271,20 @@ START_TEST (test_json_utils_oom)
 	json_value_free(json);
 
 #endif
+}
+END_TEST
+
+START_TEST (test_input_is_safe)
+{
+	ck_assert_int_eq(input_is_safe("", 0), 1);
+	ck_assert_int_eq(input_is_safe("A", 0), 0);
+	ck_assert_int_eq(input_is_safe("ABC", 8), 1);
+	ck_assert_int_eq(input_is_safe("123456789", 8), 0);
+	ck_assert_int_eq(input_is_safe("AB.C", 8), 0);
+        ck_assert_int_eq(input_is_safe("\"ABC\"", 8), 0);
+        ck_assert_int_eq(input_is_safe("A\"}BBB", 8), 0);
+        ck_assert_int_eq(input_is_safe("1234", 3), 0);
+        ck_assert_int_eq(input_is_safe("1234", 4), 1);
 }
 END_TEST
 
