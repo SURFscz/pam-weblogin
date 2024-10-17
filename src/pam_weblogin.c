@@ -86,6 +86,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	log_message(LOG_INFO, "cfg->cache_duration: '%d'\n", cfg->cache_duration);
 	log_message(LOG_INFO, "cfg->retries: '%d'\n", cfg->retries);
 */
+	log_message(LOG_INFO, "Starting for user %s from %s", username, rhost);
 
 	authorization = str_printf("Authorization: %s", cfg->token);
 
