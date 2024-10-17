@@ -306,5 +306,8 @@ TCase * test_utils(void)
     tcase_add_test(tc, test_json_utils);
 	tcase_add_test(tc, test_json_utils_oom);
 
+	/* input_is_safes */
+    tcase_add_test(tc, test_input_is_safe);
+
     return tc;
 }
