@@ -234,6 +234,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 						}
 						char *group_input = tty_input(pamh, PROMPT_GROUP, PAM_PROMPT_ECHO_ON);
 						group = strtol(group_input, &end, 10);
+						free(group_input);
 						range_error = errno == ERANGE;
 						if (group < 1 || group > max_groups || range_error)
 						{
