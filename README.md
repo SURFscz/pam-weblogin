@@ -96,6 +96,7 @@ token = <replace with SRAM API TOKEN for your service>
 retries = 3
 attribute = email
 cache_duration = 30
+#cache_per_rhost
 verify = /etc/ssl/ca.crt
 ```
 
@@ -103,6 +104,7 @@ verify = /etc/ssl/ca.crt
 -   `token` is the complete HTTP `Authorization` header, including `Bearer`
 -   `retries` is the number of verification code retries allowed
 -   `cache_duration` is the time the server should respond with a cached answer instead of reauthenticating the user, in seconds
+-   `cache_per_rhost`, if activated, signals that caching should take place per remote host, so that connecting from a different IP address requires reauthentication
 -   `verify` alternative SSL CA, for debug purposes
 
 ## Locking yourself out
