@@ -157,7 +157,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		 ++retry)
 	{
 		char *code = tty_input(pamh, PROMPT_CODE, PAM_PROMPT_ECHO_OFF);
-		if (!input_is_safe(code, MAX_INPUT_LENGTH))
+		if (!code || !input_is_safe(code, MAX_INPUT_LENGTH))
 		{
 			tty_output(pamh, "invalid code");
 			log_message(LOG_ERR, "invalid code");
