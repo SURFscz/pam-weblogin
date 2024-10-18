@@ -88,7 +88,8 @@ int input_is_safe(const char *input, size_t max_length)
 	 * Valid characters are a-z A-Z 0-9 '.' '_' '-' ; the first character must not be '-'.
 	 * See POSIX spec:
 	 * https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap03.html#tag_03_437
-	 * https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap03.html#tag_03_282 */
+	 * https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap03.html#tag_03_282
+         * Additionally allow ':' so that IPv6 addresses are also considered safe. */
 	for (size_t i = 0; i < length; i++)
 	{
 		/* Don't use isalnum() here because it is locale-dependent,
@@ -96,7 +97,7 @@ int input_is_safe(const char *input, size_t max_length)
 		if (!(     (input[i] >= 'a' && input[i] <= 'z')
 			|| (input[i] >= 'A' && input[i] <= 'Z')
 			|| (input[i] >= '0' && input[i] <= '9')
-			|| (input[i] == '.' || input[i] == '_')
+			|| (input[i] == '.' || input[i] == '_' || input[i] == ':')
 			|| (i > 0 && input[i] == '-')))
 		{
 			return 0;

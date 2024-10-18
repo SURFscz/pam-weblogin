@@ -54,11 +54,16 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		log_message(LOG_ERR, "Invalid user");
 		return PAM_SYSTEM_ERR;
 	}
-	/* Get RHOST. This should always be valid since this PAM module is used with SSH. */
+	/* Get RHOST. We should always get a valid one in the sshd service context, but maybe not in other contexts. */
 	const char *rhost;
 	if (pam_get_item(pamh, PAM_RHOST, (const void **)(&rhost)) != PAM_SUCCESS || !rhost)
 	{
-		log_message(LOG_ERR, "Error getting rhost");
+		/* Fall back to an empty string. Does not happen in the sshd service context. */
+		rhost = "";
+	}
+	if (!input_is_safe(rhost, MAX_INPUT_LENGTH))
+	{
+		log_message(LOG_ERR, "Invalid rhost");
 		return PAM_SYSTEM_ERR;
 	}
 
