@@ -128,7 +128,7 @@ def start():
     user_id = data.get('user_id')
     rhost = data.get('rhost')
     cache_per_rhost = data.get('cache_per_rhost')
-    cache_id = user_id + ',' + rhost if cache_per_rhost else user_id
+    cache_id = (user_id, rhost) if cache_per_rhost else (user_id, None)
     attribute = data.get('attribute')
     cache_duration = data.get('cache_duration', 0)
     new_session_id = session_id()
