@@ -49,6 +49,11 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		log_message(LOG_ERR, "Error getting user");
 		return PAM_SYSTEM_ERR;
 	}
+	if (!username || !input_is_safe(username, MAX_INPUT_LENGTH))
+	{
+		log_message(LOG_ERR, "Invalid user");
+		return PAM_SYSTEM_ERR;
+	}
 
         /* Check if debug argument was given */
 	if (argc == 2 && strcmp(argv[1], "debug") == 0)
