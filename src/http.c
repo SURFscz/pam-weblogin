@@ -55,6 +55,7 @@ char *API(const char* url, const char *method, char *headers[], const char* data
 {
 	CURL* curl;
 	CURL_FETCH fetcher;
+	char curl_errorbuffer[CURL_ERROR_SIZE];
 
 	/* Prepare Headers... */
 	struct curl_slist* request_headers = NULL;
@@ -75,6 +76,7 @@ char *API(const char* url, const char *method, char *headers[], const char* data
 		long response_code = 999;
 
 		curl_easy_setopt(curl, CURLOPT_URL, url);
+		curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curl_errorbuffer);
 		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method);
 		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, request_headers);
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_callback);
@@ -89,7 +91,7 @@ char *API(const char* url, const char *method, char *headers[], const char* data
 		/* Perform the request */
 		if (curl_easy_perform(curl) != CURLE_OK)
 		{
-			log_message(LOG_ERR, SERVER_UNREACHABLE);
+			log_message(LOG_ERR, "Cannot contact server: %s", curl_errorbuffer);
 			tty_output(pamh, SERVER_UNREACHABLE);
 		}
 		/* Check response */
