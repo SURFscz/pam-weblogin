@@ -54,6 +54,13 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		log_message(LOG_ERR, "Invalid user");
 		return PAM_SYSTEM_ERR;
 	}
+	/* Get RHOST. This should always be valid since this PAM module is used with SSH. */
+	const char *rhost;
+	if (pam_get_item(pamh, PAM_RHOST, (const void **)(&rhost)) != PAM_SUCCESS || !rhost)
+	{
+		log_message(LOG_ERR, "Error getting rhost");
+		return PAM_SYSTEM_ERR;
+	}
 
         /* Check if debug argument was given */
 	if (argc == 2 && strcmp(argv[1], "debug") == 0)
@@ -84,6 +91,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	log_message(LOG_INFO, "cfg->cache_duration: '%d'\n", cfg->cache_duration);
 	log_message(LOG_INFO, "cfg->retries: '%d'\n", cfg->retries);
 */
+	log_message(LOG_INFO, "Starting for user %s from %s", username, rhost);
 
 	authorization = str_printf("Authorization: %s", cfg->token);
 
@@ -95,12 +103,12 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	char *data = NULL;
 	if (!cfg->pam_user) // We check local user against remote user based on attribute
 	{
-		data = str_printf("{\"user_id\":\"%s\",\"attribute\":\"%s\",\"cache_duration\":\"%d\",\"GIT_COMMIT\":\"%s\",\"JSONPARSER_GIT_COMMIT\":\"%s\"}",
-				username, cfg->attribute, cfg->cache_duration, TOSTR(GIT_COMMIT), TOSTR(JSONPARSER_GIT_COMMIT));
+		data = str_printf("{\"user_id\":\"%s\",\"attribute\":\"%s\",\"rhost\":\"%s\",\"cache_duration\":\"%d\",\"cache_per_rhost\":\"%s\",\"GIT_COMMIT\":\"%s\",\"JSONPARSER_GIT_COMMIT\":\"%s\"}",
+				username, cfg->attribute, rhost, cfg->cache_duration, cfg->cache_per_rhost ? "true" : "false", TOSTR(GIT_COMMIT), TOSTR(JSONPARSER_GIT_COMMIT));
 	} else // We get local user from remote user based on attribute
 	{
-		data = str_printf("{\"attribute\":\"%s\",\"cache_duration\":\"%d\",\"GIT_COMMIT\":\"%s\",\"JSONPARSER_GIT_COMMIT\":\"%s\"}",
-				cfg->attribute, cfg->cache_duration, TOSTR(GIT_COMMIT), TOSTR(JSONPARSER_GIT_COMMIT));
+		data = str_printf("{\"attribute\":\"%s\",\"rhost\":\"%s\",\"cache_duration\":\"%d\",\"cache_per_rhost\":\"%s\",\"GIT_COMMIT\":\"%s\",\"JSONPARSER_GIT_COMMIT\":\"%s\"}",
+				cfg->attribute, rhost, cfg->cache_duration, cfg->cache_per_rhost ? "true" : "false", TOSTR(GIT_COMMIT), TOSTR(JSONPARSER_GIT_COMMIT));
 	}
 
 	/* Request auth session_id/challenge */
@@ -245,7 +253,14 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 							tty_output(pamh, str_printf("  [%d] %s", i+1, name));
 						}
 						char *group_input = tty_input(pamh, PROMPT_GROUP, PAM_PROMPT_ECHO_ON);
-						group = strtol(group_input, &end, 10);
+						if (!group_input)
+						{
+							errno = ERANGE; /* treat no input as invalid input */
+						} else
+						{
+							group = strtol(group_input, &end, 10);
+						}
+						free(group_input);
 						range_error = errno == ERANGE;
 						if (group < 1 || group > max_groups || range_error)
 						{
