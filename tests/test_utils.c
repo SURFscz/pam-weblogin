@@ -280,11 +280,15 @@ START_TEST (test_input_is_safe)
 	ck_assert_int_eq(input_is_safe("A", 0), 0);
 	ck_assert_int_eq(input_is_safe("ABC", 8), 1);
 	ck_assert_int_eq(input_is_safe("123456789", 8), 0);
-	ck_assert_int_eq(input_is_safe("AB.C", 8), 0);
-        ck_assert_int_eq(input_is_safe("\"ABC\"", 8), 0);
-        ck_assert_int_eq(input_is_safe("A\"}BBB", 8), 0);
-        ck_assert_int_eq(input_is_safe("1234", 3), 0);
-        ck_assert_int_eq(input_is_safe("1234", 4), 1);
+	ck_assert_int_eq(input_is_safe("AB.C", 8), 1);
+	ck_assert_int_eq(input_is_safe("\"ABC\"", 8), 0);
+	ck_assert_int_eq(input_is_safe("A\"}BBB", 8), 0);
+	ck_assert_int_eq(input_is_safe("1234", 3), 0);
+	ck_assert_int_eq(input_is_safe("1234", 4), 1);
+	ck_assert_int_eq(input_is_safe("user-name", 16), 1);
+	ck_assert_int_eq(input_is_safe("user_name", 16), 1);
+	ck_assert_int_eq(input_is_safe("-user-name", 16), 0);
+	ck_assert_int_eq(input_is_safe("_user_name", 16), 1);
 }
 END_TEST
 
