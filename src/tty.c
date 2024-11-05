@@ -77,12 +77,12 @@ char *tty_input(pam_handle_t *pamh, const char *text, int echo_code)
 	return ret;
 }
 
-int input_is_safe(const char *input, size_t max_length)
+bool input_is_safe(const char *input, size_t max_length)
 {
 	size_t length = strnlen(input, max_length);
 	if (input[length] != '\0')
 	{
-		return 0;
+		return false;
 	}
 	/* Allow strings that are valid usernames according to POSIX.
 	 * Valid characters are a-z A-Z 0-9 '.' '_' '-' ; the first character must not be '-'.
@@ -100,10 +100,10 @@ int input_is_safe(const char *input, size_t max_length)
 			|| (input[i] == '.' || input[i] == '_' || input[i] == ':')
 			|| (i > 0 && input[i] == '-')))
 		{
-			return 0;
+			return false;
 		}
 	}
-	return 1;
+	return true;
 }
 
 void tty_output(pam_handle_t *pamh, const char *text)

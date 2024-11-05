@@ -276,23 +276,23 @@ END_TEST
 
 START_TEST (test_input_is_safe)
 {
-	ck_assert_int_eq(input_is_safe("", 0), 1);
-	ck_assert_int_eq(input_is_safe("A", 0), 0);
-	ck_assert_int_eq(input_is_safe("ABC", 8), 1);
-	ck_assert_int_eq(input_is_safe("123456789", 8), 0);
-	ck_assert_int_eq(input_is_safe("AB.C", 8), 1);
-	ck_assert_int_eq(input_is_safe("\"ABC\"", 8), 0);
-	ck_assert_int_eq(input_is_safe("A\"}BBB", 8), 0);
-	ck_assert_int_eq(input_is_safe("1234", 3), 0);
-	ck_assert_int_eq(input_is_safe("1234", 4), 1);
-	ck_assert_int_eq(input_is_safe("user-name", 16), 1);
-	ck_assert_int_eq(input_is_safe("user_name", 16), 1);
-	ck_assert_int_eq(input_is_safe("-user-name", 16), 0);
-	ck_assert_int_eq(input_is_safe("_user_name", 16), 1);
-	ck_assert_int_eq(input_is_safe("127.0.0.1", 64), 1);
-	ck_assert_int_eq(input_is_safe("192.168.2.23", 64), 1);
-	ck_assert_int_eq(input_is_safe("::1", 64), 1);
-	ck_assert_int_eq(input_is_safe("3fff:fff:ffff:ffff:ffff:ffff:ffff:ffff", 64), 1);
+	ck_assert( input_is_safe("", 0));
+	ck_assert(!input_is_safe("A", 0));
+	ck_assert( input_is_safe("ABC", 8));
+	ck_assert(!input_is_safe("123456789", 8));
+	ck_assert( input_is_safe("AB.C", 8));
+	ck_assert(!input_is_safe("\"ABC\"", 8));
+	ck_assert(!input_is_safe("A\"}BBB", 8));
+	ck_assert(!input_is_safe("1234", 3));
+	ck_assert( input_is_safe("1234", 4));
+	ck_assert( input_is_safe("user-name", 16));
+	ck_assert( input_is_safe("user_name", 16));
+	ck_assert(!input_is_safe("-user-name", 16));
+	ck_assert( input_is_safe("_user_name", 16));
+	ck_assert( input_is_safe("127.0.0.1", 64));
+	ck_assert( input_is_safe("192.168.2.23", 64));
+	ck_assert( input_is_safe("::1", 64));
+	ck_assert( input_is_safe("3fff:fff:ffff:ffff:ffff:ffff:ffff:ffff", 64));
 }
 END_TEST
 
