@@ -79,8 +79,8 @@ char *tty_input(pam_handle_t *pamh, const char *text, int echo_code)
 
 int input_is_safe(const char *input, size_t max_length)
 {
-	size_t length = strlen(input);
-	if (length > max_length)
+	size_t length = strnlen(input, max_length);
+	if (input[length] != '\0')
 	{
 		return 0;
 	}
