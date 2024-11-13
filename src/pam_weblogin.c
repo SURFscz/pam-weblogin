@@ -49,11 +49,21 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		log_message(LOG_ERR, "Error getting user");
 		return PAM_SYSTEM_ERR;
 	}
-	/* Get RHOST. This should always be valid since this PAM module is used with SSH. */
+	if (!username || !input_is_safe(username, MAX_INPUT_LENGTH))
+	{
+		log_message(LOG_ERR, "Invalid user");
+		return PAM_SYSTEM_ERR;
+	}
+	/* Get RHOST. We should always get a valid one in the sshd service context, but maybe not in other contexts. */
 	const char *rhost;
 	if (pam_get_item(pamh, PAM_RHOST, (const void **)(&rhost)) != PAM_SUCCESS || !rhost)
 	{
-		log_message(LOG_ERR, "Error getting rhost");
+		/* Fall back to an empty string. Does not happen in the sshd service context. */
+		rhost = "";
+	}
+	if (!input_is_safe(rhost, MAX_INPUT_LENGTH))
+	{
+		log_message(LOG_ERR, "Invalid rhost");
 		return PAM_SYSTEM_ERR;
 	}
 
@@ -165,6 +175,13 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 		 ++retry)
 	{
 		char *code = tty_input(pamh, PROMPT_CODE, PAM_PROMPT_ECHO_OFF);
+		if (!code || !input_is_safe(code, MAX_INPUT_LENGTH))
+		{
+			tty_output(pamh, "invalid code");
+			log_message(LOG_ERR, "invalid code");
+			free(code);
+			continue;
+		}
 
 		/* Prepare URL... */
 		url = str_printf("%s/%s", cfg->url, API_CHECK_CODE_PATH);

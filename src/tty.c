@@ -77,6 +77,35 @@ char *tty_input(pam_handle_t *pamh, const char *text, int echo_code)
 	return ret;
 }
 
+bool input_is_safe(const char *input, size_t max_length)
+{
+	size_t length = strnlen(input, max_length);
+	if (input[length] != '\0')
+	{
+		return false;
+	}
+	/* Allow strings that are valid usernames according to POSIX.
+	 * Valid characters are a-z A-Z 0-9 '.' '_' '-' ; the first character must not be '-'.
+	 * See POSIX spec:
+	 * https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap03.html#tag_03_437
+	 * https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap03.html#tag_03_282
+         * Additionally allow ':' so that IPv6 addresses are also considered safe. */
+	for (size_t i = 0; i < length; i++)
+	{
+		/* Don't use isalnum() here because it is locale-dependent,
+		 * and don't use isalnum_l() because it is not portable. */
+		if (!(     (input[i] >= 'a' && input[i] <= 'z')
+			|| (input[i] >= 'A' && input[i] <= 'Z')
+			|| (input[i] >= '0' && input[i] <= '9')
+			|| (input[i] == '.' || input[i] == '_' || input[i] == ':')
+			|| (i > 0 && input[i] == '-')))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 void tty_output(pam_handle_t *pamh, const char *text)
 {
 	/* note: on MacOS, pam_message.msg is a non-const char*, so we need to copy it */

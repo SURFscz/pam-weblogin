@@ -8,6 +8,7 @@
 #include <errno.h>
 
 #include "../src/utils.h"
+#include "../src/tty.h"
 
 
 /* helper function to lower RLIMIT_DATA to test out of memory conditions
@@ -273,6 +274,28 @@ START_TEST (test_json_utils_oom)
 }
 END_TEST
 
+START_TEST (test_input_is_safe)
+{
+	ck_assert( input_is_safe("", 0));
+	ck_assert(!input_is_safe("A", 0));
+	ck_assert( input_is_safe("ABC", 8));
+	ck_assert(!input_is_safe("123456789", 8));
+	ck_assert( input_is_safe("AB.C", 8));
+	ck_assert(!input_is_safe("\"ABC\"", 8));
+	ck_assert(!input_is_safe("A\"}BBB", 8));
+	ck_assert(!input_is_safe("1234", 3));
+	ck_assert( input_is_safe("1234", 4));
+	ck_assert( input_is_safe("user-name", 16));
+	ck_assert( input_is_safe("user_name", 16));
+	ck_assert(!input_is_safe("-user-name", 16));
+	ck_assert( input_is_safe("_user_name", 16));
+	ck_assert( input_is_safe("127.0.0.1", 64));
+	ck_assert( input_is_safe("192.168.2.23", 64));
+	ck_assert( input_is_safe("::1", 64));
+	ck_assert( input_is_safe("3fff:fff:ffff:ffff:ffff:ffff:ffff:ffff", 64));
+}
+END_TEST
+
 TCase * test_utils(void)
 {
     TCase *tc =tcase_create("utils");
@@ -290,6 +313,9 @@ TCase * test_utils(void)
 	/* json utils */
     tcase_add_test(tc, test_json_utils);
 	tcase_add_test(tc, test_json_utils_oom);
+
+	/* input_is_safes */
+    tcase_add_test(tc, test_input_is_safe);
 
     return tc;
 }
