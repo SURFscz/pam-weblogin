@@ -232,7 +232,7 @@ jobs:
 
       - name: Fetch source
         id: fetch_source
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: "dist-source"
           path: "."
@@ -423,7 +423,7 @@ jobs:
 
       - name: Fetch artifacts
         id: fetch_artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: "artifacts/"
 
