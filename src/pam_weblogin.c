@@ -36,9 +36,11 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	char *info = NULL;
 	char *authorization = NULL;
 	bool cached = false;
+	bool timeout = false;
 	int pam_result = PAM_AUTH_ERR;
 	char *pam_user = NULL;
 	char *pam_group = NULL;
+	json_value *challenge_json = NULL;
 
 	log_message(LOG_INFO, "Start of pam_weblogin");
 
@@ -135,7 +137,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	}
 
 	/* Parse response */
-	json_value *challenge_json = json_parse(challenge_response, strnlen(challenge_response, BUFSIZE));
+	challenge_json = json_parse(challenge_response, strnlen(challenge_response, BUFSIZE));
 	free(challenge_response);
 
 	cached = getBool(challenge_json, "cached");
@@ -165,8 +167,6 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 
 	/* Show challenge URL... (user has to follow link !) */
 	tty_output(pamh, challenge);
-
-	bool timeout = false;
 
 	/* Now User has to return to the prompted and anter the correct CODE !... */
 	for (unsigned retry = 0; (retry < cfg->retries) &&
