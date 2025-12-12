@@ -89,15 +89,11 @@ jobs:
           - { os: ubuntu-22.04,  compiler: clang, version:  14 }
           - { os: ubuntu-22.04,  compiler: clang, version:  15 }
           - { os: ubuntu-22.04,  compiler: clang, version:  16 }
-          - { os: ubuntu-24.04,  compiler: clang, version:  14 }
-          - { os: ubuntu-24.04,  compiler: clang, version:  15 }
-          - { os: ubuntu-24.04,  compiler: clang, version:  16 }
           - { os: ubuntu-24.04,  compiler: clang, version:  17 }
           - { os: ubuntu-24.04,  compiler: clang, version:  18 }
           - { os: ubuntu-24.04,  compiler: clang, version:  19 }
           - { os: ubuntu-24.04,  compiler: clang, version:  20 }
           - { os: ubuntu-24.04,  compiler: clang, version:  21 }
-          - { os: ubuntu-24.04,  compiler: clang, version:  22 }
 
     # set CC to 'cc' for MacOS and the (e.g.) clang-12 for Linux
     env:
