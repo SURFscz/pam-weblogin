@@ -204,7 +204,7 @@ Config *getConfig(const char *filename)
 					continue;
 				}
 				cfg->cache_duration = (unsigned int)labs(strtol(val, NULL, 10));
-				log_message(LOG_DEBUG, "cache_duration: %d", cfg->cache_duration);
+				log_message(LOG_DEBUG, "cache_duration: %u", cfg->cache_duration);
 			}
 
 			/* Check for retries config */
