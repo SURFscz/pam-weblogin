@@ -211,7 +211,7 @@ Config *getConfig(const char *filename)
 			else if (!strcmp(key, "retries"))
 			{
 				cfg->retries = (unsigned int)labs(strtol(val, NULL, 10));
-				log_message(LOG_DEBUG, "retries: %d", cfg->retries);
+				log_message(LOG_DEBUG, "retries: %u", cfg->retries);
 			}
 
 
