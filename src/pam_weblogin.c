@@ -93,7 +93,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	log_message(LOG_INFO, "cfg->url: '%s'\n", cfg->url);
 	log_message(LOG_INFO, "cfg->token: '%s'\n", cfg->token);
 	log_message(LOG_INFO, "cfg->attribute: '%s'\n", cfg->attribute);
-	log_message(LOG_INFO, "cfg->cache_duration: '%d'\n", cfg->cache_duration);
+	log_message(LOG_INFO, "cfg->cache_duration: '%u'\n", cfg->cache_duration);
 	log_message(LOG_INFO, "cfg->retries: '%d'\n", cfg->retries);
 */
 	log_message(LOG_INFO, "Starting for user %s from %s", username, rhost);
@@ -108,11 +108,11 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	char *data = NULL;
 	if (!cfg->pam_user) // We check local user against remote user based on attribute
 	{
-		data = str_printf("{\"user_id\":\"%s\",\"attribute\":\"%s\",\"rhost\":\"%s\",\"cache_duration\":\"%d\",\"cache_per_rhost\":\"%s\",\"GIT_COMMIT\":\"%s\",\"JSONPARSER_GIT_COMMIT\":\"%s\"}",
+		data = str_printf("{\"user_id\":\"%s\",\"attribute\":\"%s\",\"rhost\":\"%s\",\"cache_duration\":\"%u\",\"cache_per_rhost\":\"%s\",\"GIT_COMMIT\":\"%s\",\"JSONPARSER_GIT_COMMIT\":\"%s\"}",
 				username, cfg->attribute, rhost, cfg->cache_duration, cfg->cache_per_rhost ? "true" : "false", TOSTR(GIT_COMMIT), TOSTR(JSONPARSER_GIT_COMMIT));
 	} else // We get local user from remote user based on attribute
 	{
-		data = str_printf("{\"attribute\":\"%s\",\"rhost\":\"%s\",\"cache_duration\":\"%d\",\"cache_per_rhost\":\"%s\",\"GIT_COMMIT\":\"%s\",\"JSONPARSER_GIT_COMMIT\":\"%s\"}",
+		data = str_printf("{\"attribute\":\"%s\",\"rhost\":\"%s\",\"cache_duration\":\"%u\",\"cache_per_rhost\":\"%s\",\"GIT_COMMIT\":\"%s\",\"JSONPARSER_GIT_COMMIT\":\"%s\"}",
 				cfg->attribute, rhost, cfg->cache_duration, cfg->cache_per_rhost ? "true" : "false", TOSTR(GIT_COMMIT), TOSTR(JSONPARSER_GIT_COMMIT));
 	}
 
