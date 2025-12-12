@@ -255,7 +255,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 							char *name = getString(
 											getIndex(pam_groups, i)
 											, "name");
-							tty_output(pamh, str_printf("  [%d] %s", i+1, name));
+							tty_output(pamh, str_printf("  [%u] %s", i+1, name));
 						}
 						char *group_input = tty_input(pamh, PROMPT_GROUP, PAM_PROMPT_ECHO_ON);
 						if (!group_input)
