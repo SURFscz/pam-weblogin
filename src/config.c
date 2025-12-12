@@ -90,7 +90,7 @@ Config *getConfig(const char *filename)
 	int lineno = 0;
 	FILE *fp = NULL;
 
-	Config *cfg = malloc(sizeof(Config));
+	Config *cfg = (Config *) malloc(sizeof(Config));
 	if (cfg == NULL)
 	{
 		log_message(LOG_ERR, "Can't allocate memory");
