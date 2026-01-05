@@ -367,7 +367,7 @@ jobs:
           Section: custom
           Priority: optional
           Architecture: amd64
-          Depends: libcurl3-gnutls, libpam0g
+          Depends: libcurl4, libpam0g
           Maintainer: SURF <sram-support@surf.nl>
           Description: Pam weblogin module" > ${BUILD_DIR}/DEBIAN/control
           cat ${BUILD_DIR}/DEBIAN/control
