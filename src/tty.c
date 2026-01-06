@@ -22,16 +22,17 @@ void log_message(int priority, const char *fmt, ...)
 }
 
 static int converse(pam_handle_t *pamh, int nargs,
-					const struct pam_message **message,
-					struct pam_response **response)
+	const struct pam_message **message,
+	struct pam_response **response)
 {
-	struct pam_conv *conv;
-	int retval = pam_get_item(pamh, PAM_CONV, (void *)&conv);
+	const void *item;
+	int retval = pam_get_item(pamh, PAM_CONV, &item);
 	if (retval != PAM_SUCCESS)
 	{
 		return retval;
 	}
-	return conv->conv(nargs, message, response, conv->appdata_ptr);
+	const struct pam_conv *conv = (const struct pam_conv *)item;
+	return conv->conv(nargs, message, response, (void *)conv->appdata_ptr);
 }
 
 char *tty_input(pam_handle_t *pamh, const char *text, int echo_code)

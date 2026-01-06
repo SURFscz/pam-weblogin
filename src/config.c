@@ -90,7 +90,7 @@ Config *getConfig(const char *filename)
 	int lineno = 0;
 	FILE *fp = NULL;
 
-	Config *cfg = malloc(sizeof(Config));
+	Config *cfg = (Config *)malloc(sizeof(Config));
 	if (cfg == NULL)
 	{
 		log_message(LOG_ERR, "Can't allocate memory");
@@ -204,14 +204,14 @@ Config *getConfig(const char *filename)
 					continue;
 				}
 				cfg->cache_duration = (unsigned int)labs(strtol(val, NULL, 10));
-				log_message(LOG_DEBUG, "cache_duration: %d", cfg->cache_duration);
+				log_message(LOG_DEBUG, "cache_duration: %u", cfg->cache_duration);
 			}
 
 			/* Check for retries config */
 			else if (!strcmp(key, "retries"))
 			{
 				cfg->retries = (unsigned int)labs(strtol(val, NULL, 10));
-				log_message(LOG_DEBUG, "retries: %d", cfg->retries);
+				log_message(LOG_DEBUG, "retries: %u", cfg->retries);
 			}
 
 

@@ -76,24 +76,20 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-20.04,  compiler: gcc,   version: 4.8 }
-          - { os: ubuntu-20.04,  compiler: gcc,   version:   5 }
-          - { os: ubuntu-20.04,  compiler: gcc,   version:   6 }
-          - { os: ubuntu-20.04,  compiler: gcc,   version:   7 }
-          - { os: ubuntu-20.04,  compiler: gcc,   version:   8 }
           - { os: ubuntu-22.04,  compiler: gcc,   version:   9 }
           - { os: ubuntu-22.04,  compiler: gcc,   version:  10 }
           - { os: ubuntu-22.04,  compiler: gcc,   version:  11 }
           - { os: ubuntu-22.04,  compiler: gcc,   version:  12 }
           - { os: ubuntu-22.04,  compiler: gcc,   version:  13 }
-          - { os: ubuntu-20.04,  compiler: clang, version:   9 }
-          - { os: ubuntu-20.04,  compiler: clang, version:  10 }
-          - { os: ubuntu-20.04,  compiler: clang, version:  11 }
-          - { os: ubuntu-20.04,  compiler: clang, version:  12 }
           - { os: ubuntu-22.04,  compiler: clang, version:  13 }
           - { os: ubuntu-22.04,  compiler: clang, version:  14 }
           - { os: ubuntu-22.04,  compiler: clang, version:  15 }
           - { os: ubuntu-22.04,  compiler: clang, version:  16 }
+          - { os: ubuntu-24.04,  compiler: clang, version:  17 }
+          - { os: ubuntu-24.04,  compiler: clang, version:  18 }
+          - { os: ubuntu-24.04,  compiler: clang, version:  19 }
+          - { os: ubuntu-24.04,  compiler: clang, version:  20 }
+          - { os: ubuntu-24.04,  compiler: clang, version:  21 }
 
     # set CC to 'cc' for MacOS and the (e.g.) clang-12 for Linux
     env:
@@ -308,10 +304,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { name: "debian12",   container: "debian:12"    }
           - { name: "debian11",   container: "debian:11"    }
-          - { name: "debian10",   container: "debian:10"    }
+          - { name: "debian12",   container: "debian:12"    }
           - { name: "ubuntu2204", container: "ubuntu:22.04" }
+          - { name: "ubuntu2404", container: "ubuntu:22.04" }
     runs-on: "ubuntu-latest"
     steps:
       - name: Install dependencies
@@ -371,7 +367,7 @@ jobs:
           Section: custom
           Priority: optional
           Architecture: amd64
-          Depends: libcurl3-gnutls, libpam0g
+          Depends: libcurl4, libpam0g
           Maintainer: SURF <sram-support@surf.nl>
           Description: Pam weblogin module" > ${BUILD_DIR}/DEBIAN/control
           cat ${BUILD_DIR}/DEBIAN/control

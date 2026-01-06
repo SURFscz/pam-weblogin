@@ -36,9 +36,11 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	char *info = NULL;
 	char *authorization = NULL;
 	bool cached = false;
+	bool timeout = false;
 	int pam_result = PAM_AUTH_ERR;
 	char *pam_user = NULL;
 	char *pam_group = NULL;
+	json_value *challenge_json = NULL;
 
 	log_message(LOG_INFO, "Start of pam_weblogin");
 
@@ -93,7 +95,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	log_message(LOG_INFO, "cfg->url: '%s'\n", cfg->url);
 	log_message(LOG_INFO, "cfg->token: '%s'\n", cfg->token);
 	log_message(LOG_INFO, "cfg->attribute: '%s'\n", cfg->attribute);
-	log_message(LOG_INFO, "cfg->cache_duration: '%d'\n", cfg->cache_duration);
+	log_message(LOG_INFO, "cfg->cache_duration: '%u'\n", cfg->cache_duration);
 	log_message(LOG_INFO, "cfg->retries: '%d'\n", cfg->retries);
 */
 	log_message(LOG_INFO, "Starting for user %s from %s", username, rhost);
@@ -108,11 +110,11 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	char *data = NULL;
 	if (!cfg->pam_user) // We check local user against remote user based on attribute
 	{
-		data = str_printf("{\"user_id\":\"%s\",\"attribute\":\"%s\",\"rhost\":\"%s\",\"cache_duration\":\"%d\",\"cache_per_rhost\":\"%s\",\"GIT_COMMIT\":\"%s\",\"JSONPARSER_GIT_COMMIT\":\"%s\"}",
+		data = str_printf("{\"user_id\":\"%s\",\"attribute\":\"%s\",\"rhost\":\"%s\",\"cache_duration\":\"%u\",\"cache_per_rhost\":\"%s\",\"GIT_COMMIT\":\"%s\",\"JSONPARSER_GIT_COMMIT\":\"%s\"}",
 				username, cfg->attribute, rhost, cfg->cache_duration, cfg->cache_per_rhost ? "true" : "false", TOSTR(GIT_COMMIT), TOSTR(JSONPARSER_GIT_COMMIT));
 	} else // We get local user from remote user based on attribute
 	{
-		data = str_printf("{\"attribute\":\"%s\",\"rhost\":\"%s\",\"cache_duration\":\"%d\",\"cache_per_rhost\":\"%s\",\"GIT_COMMIT\":\"%s\",\"JSONPARSER_GIT_COMMIT\":\"%s\"}",
+		data = str_printf("{\"attribute\":\"%s\",\"rhost\":\"%s\",\"cache_duration\":\"%u\",\"cache_per_rhost\":\"%s\",\"GIT_COMMIT\":\"%s\",\"JSONPARSER_GIT_COMMIT\":\"%s\"}",
 				cfg->attribute, rhost, cfg->cache_duration, cfg->cache_per_rhost ? "true" : "false", TOSTR(GIT_COMMIT), TOSTR(JSONPARSER_GIT_COMMIT));
 	}
 
@@ -135,7 +137,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 	}
 
 	/* Parse response */
-	json_value *challenge_json = json_parse(challenge_response, strnlen(challenge_response, BUFSIZE));
+	challenge_json = json_parse(challenge_response, strnlen(challenge_response, BUFSIZE));
 	free(challenge_response);
 
 	cached = getBool(challenge_json, "cached");
@@ -165,8 +167,6 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 
 	/* Show challenge URL... (user has to follow link !) */
 	tty_output(pamh, challenge);
-
-	bool timeout = false;
 
 	/* Now User has to return to the prompted and anter the correct CODE !... */
 	for (unsigned retry = 0; (retry < cfg->retries) &&
@@ -255,7 +255,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, UNUSED int flags, int arg
 							char *name = getString(
 											getIndex(pam_groups, i)
 											, "name");
-							tty_output(pamh, str_printf("  [%d] %s", i+1, name));
+							tty_output(pamh, str_printf("  [%u] %s", i+1, name));
 						}
 						char *group_input = tty_input(pamh, PROMPT_GROUP, PAM_PROMPT_ECHO_ON);
 						if (!group_input)
