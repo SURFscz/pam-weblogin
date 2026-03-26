@@ -1,16 +1,16 @@
-version: "3"
-
 services:
   sandbox:
     build:
       context: .
-      # dockerfile: Dockerfile.ubuntu
-      dockerfile: Dockerfile.centos
+      dockerfile: Dockerfile.ubuntu
+      # dockerfile: Dockerfile.centos
       args:
         UID: ${UID:-1000}
         GID: ${GID:-1000}
     container_name: sandbox
     hostname: sandbox
+    ports:
+      - "2222:22"
     volumes:
       - ../:/home/worker/work
       - ~/.gitconfig:/home/worker/.gitconfig:ro

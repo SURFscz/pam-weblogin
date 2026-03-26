@@ -3,6 +3,10 @@ FROM centos:7
 ARG UID=1000
 ARG GID=1000
 
+# CentOS 7 is EOL; switch default repos to vault.
+RUN sed -i 's/^mirrorlist=/#mirrorlist=/' /etc/yum.repos.d/CentOS-Base.repo \
+    && sed -i 's|^#baseurl=http://mirror.centos.org/centos/\$releasever|baseurl=http://vault.centos.org/7.9.2009|g' /etc/yum.repos.d/CentOS-Base.repo
+
 RUN yum -y update
 RUN yum -y install openssh-server
 RUN echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config
@@ -13,15 +17,15 @@ RUN yum install -y vim ca-certificates git sudo rsyslog
 RUN yum install -y make autoconf pam-devel libcurl curl-devel
 RUN yum install -y epel-release 
 RUN yum -y update
-RUN yum install -y pamtester
+RUN yum install -y pamtester pkgconfig check check-devel
 
 RUN sed -i '/imklog/s/^/#/' /etc/rsyslog.conf
 RUN sed -i 's/^ChallengeResponseAuthentication no$/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config
 
 RUN ssh-keygen -A
 
-RUN groupadd --gid ${GID} workers \
-    && useradd --uid ${UID} --gid workers --shell /bin/bash --create-home worker \
+RUN groupadd --non-unique --gid ${GID} workers \
+    && useradd --non-unique --uid ${UID} --gid workers --shell /bin/bash --create-home worker \
     && usermod -aG wheel worker
 
 RUN echo '%wheel ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
