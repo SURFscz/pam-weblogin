@@ -36,7 +36,7 @@ echo "Starting sandbox..."
 docker compose -f docker-sandbox/docker-compose.yml up -d --build
 
 echo "Building pam-weblogin..."
-docker exec sandbox bash -lc "cd /home/worker/work && make"
+docker exec sandbox bash -lc "cd /home/worker/work && make clean && make"
 
 echo "Writing /etc/security/pam-weblogin.conf (without echoing token)..."
 docker exec \
@@ -63,7 +63,14 @@ echo "Ensuring local user exists: ${USERNAME}"
 docker exec sandbox bash -lc "id -u '${USERNAME}' >/dev/null 2>&1 || sudo useradd --create-home --shell /bin/bash '${USERNAME}'"
 
 echo "Configuring sshd for keyboard-interactive PAM..."
-docker exec sandbox bash -lc "sudo sed -i 's/^KbdInteractiveAuthentication no$/KbdInteractiveAuthentication yes/' /etc/ssh/sshd_config"
+docker exec sandbox bash -lc "sudo bash -lc 'cat > /etc/ssh/sshd_config.d/40-pamweblogin.conf <<EOF
+KbdInteractiveAuthentication yes
+ChallengeResponseAuthentication yes
+UsePAM yes
+PasswordAuthentication no
+EOF
+chmod 644 /etc/ssh/sshd_config.d/40-pamweblogin.conf
+rm -f /etc/ssh/sshd_config.d/90-pamweblogin.conf'"
 docker exec sandbox bash -lc "sudo python3 - <<'PY'
 from pathlib import Path
 p = Path('/etc/pam.d/sshd')
@@ -78,8 +85,17 @@ if 'pam_weblogin.so' not in text:
     p.write_text(text)
 PY"
 
-docker exec sandbox bash -lc "sudo service ssh restart"
+docker exec sandbox bash -lc "pid=''; \
+if [ -r /run/sshd.pid ]; then pid=\$(sudo sed -n '1p' /run/sshd.pid); \
+elif [ -r /var/run/sshd.pid ]; then pid=\$(sudo sed -n '1p' /var/run/sshd.pid); fi; \
+if [ -n \"\$pid\" ]; then sudo kill -HUP \"\$pid\" || true; fi; \
+if command -v service >/dev/null 2>&1; then \
+  sudo service ssh restart || sudo service sshd restart || true; \
+elif command -v systemctl >/dev/null 2>&1 && [ \"\$(cat /proc/1/comm 2>/dev/null)\" = \"systemd\" ]; then \
+  sudo systemctl restart sshd || true; \
+fi; \
+sudo /usr/sbin/sshd -t"
 
 echo
 echo "Done. Test with:"
-echo "ssh -p 2222 -o PreferredAuthentications=keyboard-interactive -o PubkeyAuthentication=no ${USERNAME}@localhost"
+echo "ssh -p 2222 -o PubkeyAuthentication=no ${USERNAME}@localhost"

@@ -59,8 +59,8 @@ USERNAME=<username> TOKEN=<token> ./docker-sandbox/setup-pam-sshd.sh
 
 Quick use:
 ```
-USERNAME=hkodden5 TOKEN=<token> ./docker-sandbox/setup-pam-sshd.sh
-ssh -p 2222 -o PreferredAuthentications=keyboard-interactive -o PubkeyAuthentication=no hkodden5@localhost
+USERNAME=<username> TOKEN=<token> ./docker-sandbox/setup-pam-sshd.sh
+ssh -p 2222 -o PubkeyAuthentication=no <username>@localhost
 ```
 
 Token safety tip (avoids putting secrets in shell history):
@@ -109,7 +109,7 @@ docker exec sandbox bash -lc "sudo service ssh restart"
 
 6. Test from host:
 ```
-ssh -p 2222 -o PreferredAuthentications=keyboard-interactive -o PubkeyAuthentication=no <username>@localhost
+ssh -p 2222 -o PubkeyAuthentication=no <username>@localhost
 ```
 
 When prompted, open the URL shown by `pam_weblogin`, complete WebLogin, then enter the verification code in SSH.

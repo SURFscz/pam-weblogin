@@ -2,8 +2,8 @@ services:
   sandbox:
     build:
       context: .
-      dockerfile: Dockerfile.ubuntu
-      # dockerfile: Dockerfile.centos
+      # dockerfile: Dockerfile.ubuntu
+      dockerfile: Dockerfile.almalinux
       args:
         UID: ${UID:-1000}
         GID: ${GID:-1000}
