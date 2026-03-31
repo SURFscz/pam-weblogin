@@ -21,12 +21,18 @@ json-parser/configure:
 	git -c advice.detachedHead=false -C json-parser/ checkout 531a49062975d6d2cd5d69b75ad5481a8c0e18c5
 
 .PHONY: clean
-clean: clean-src clean-tests rm-json-parser
+clean: clean-src clean-tests rm-json-parser clean-docker
 	rm -f lcov.info
 clean-%:
 	$(MAKE) -C $* clean
 rm-json-parser:
 	rm -rf json-parser-build/
+
+.PHONY: clean-docker
+clean-docker:
+	@if command -v docker >/dev/null 2>&1; then \
+		docker compose -f docker-sandbox/docker-compose.yml down --remove-orphans || true; \
+	fi
 
 .PHONY: install
 install: module

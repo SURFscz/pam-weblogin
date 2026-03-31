@@ -34,8 +34,10 @@ The environment variables that can be provided are:
 ## Start docker environment
 
 ```bash
-docker-compose up
+docker compose up
 ```
+
+By default this uses `Dockerfile.ubuntu`. To use the RHEL-compatible sandbox, edit `docker-sandbox/docker-compose.yml` and switch to `Dockerfile.almalinux`.
 
 Now start bash session in container:
 

@@ -20,7 +20,7 @@ $ make install
 This copies the pam module to /usr/local/lib/security, creates an example configuration file in /etc/security/pam-weblogin.conf and a pam example configuration in ```/etc/pam.d/weblogin```:
 
 ## Unit tests
-To run unit tests, install [check](https://libcheck.github.io/check/) and run
+To run unit tests, install [check](https://libcheck.github.io/check/) and `pkg-config`, then run
 ```
 make unittest
 ```
@@ -47,6 +47,82 @@ Pin:
 Authenticated on attribute username
 pamtester: successfully authenticated
 ```
+
+## Docker sandbox quickstart (SSH + PAM module)
+
+Use the docker sandbox for a repeatable local setup that tests the full SSH + PAM flow.
+
+Fast path (recommended):
+```
+USERNAME=<username> TOKEN=<token> ./docker-sandbox/setup-pam-sshd.sh
+```
+
+Quick use:
+```
+USERNAME=<username> TOKEN=<token> ./docker-sandbox/setup-pam-sshd.sh
+ssh -p 2222 -o PubkeyAuthentication=no <username>@localhost
+```
+
+Token safety tip (avoids putting secrets in shell history):
+```
+printf '%s' '<token>' > /tmp/pamweblogin.token
+chmod 600 /tmp/pamweblogin.token
+USERNAME=<username> TOKEN_FILE=/tmp/pamweblogin.token ./docker-sandbox/setup-pam-sshd.sh
+```
+
+The script will:
+
+- start/rebuild the sandbox container
+- build and install `pam-weblogin`
+- create the local Unix user in the container when missing
+- enable keyboard-interactive PAM auth in sshd
+- insert the `pam_weblogin` line in `/etc/pam.d/sshd`
+- restart sshd
+
+Manual path:
+
+1. Start the sandbox:
+```
+docker compose -f docker-sandbox/docker-compose.yml up -d --build
+```
+
+2. Build and install `pam-weblogin` inside the container:
+```
+docker exec sandbox bash -lc "cd /home/worker/work && make && sudo make install"
+```
+
+3. Ensure `/etc/ssh/sshd_config` has:
+```
+KbdInteractiveAuthentication yes
+UsePAM yes
+```
+
+4. Ensure `/etc/pam.d/sshd` contains this line *above* `@include common-auth`:
+```
+auth [success=done ignore=ignore default=die] /usr/local/lib/security/pam_weblogin.so /etc/security/pam-weblogin.conf
+```
+
+5. Restart SSH in the container:
+```
+docker exec sandbox bash -lc "sudo service ssh restart"
+```
+
+6. Test from host:
+```
+ssh -p 2222 -o PubkeyAuthentication=no <username>@localhost
+```
+
+When prompted, open the URL shown by `pam_weblogin`, complete WebLogin, then enter the verification code in SSH.
+
+### Notes and troubleshooting
+
+- The SSH username must exist as a local Unix user in the container. If needed:
+  - `docker exec sandbox bash -lc "sudo useradd --create-home --shell /bin/bash <username>"`
+- `/etc/security/pam-weblogin.conf` must be readable by the authenticating process and permissions must stay strict (`0600` or `0400`).
+- If `pamtester weblogin <username> authenticate` returns `Error reading conf` as a non-root user, run it with `sudo` for local testing.
+- The `token` setting in `pam-weblogin.conf` accepts either:
+  - a full header value (`Bearer <token>`)
+  - or a raw token value (the module prefixes `Bearer` automatically).
 
 ## Production (example)
 
@@ -88,7 +164,7 @@ UsePAM yes
 
 Mind that in this example the line AuthenticationMethods signifies the option of authenticating either via publickey or keyboard-interactive (pam).
 
-Add the `pam-weblogin.conf` and make it readable only for root (`chmod 600 /etc/seucrity/pam-weblogin.conf, chown root.root /etc/security/pam-weblogin.conf`).
+Add the `pam-weblogin.conf` and make it readable only for root (`chmod 600 /etc/security/pam-weblogin.conf`, `chown root:root /etc/security/pam-weblogin.conf`).
 ### /etc/security/pam-weblogin.conf
 ```
 url = https://sram.surf.nl/pam-weblogin

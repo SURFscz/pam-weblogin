@@ -1,16 +1,18 @@
-version: "3"
-
 services:
   sandbox:
     build:
       context: .
       # dockerfile: Dockerfile.ubuntu
-      dockerfile: Dockerfile.centos
+      dockerfile: Dockerfile.almalinux
       args:
         UID: ${UID:-1000}
         GID: ${GID:-1000}
     container_name: sandbox
     hostname: sandbox
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "2222:22"
     volumes:
       - ../:/home/worker/work
       - ~/.gitconfig:/home/worker/.gitconfig:ro
