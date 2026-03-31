@@ -9,6 +9,8 @@ services:
         GID: ${GID:-1000}
     container_name: sandbox
     hostname: sandbox
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "2222:22"
     volumes:

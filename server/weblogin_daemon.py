@@ -124,7 +124,7 @@ def start():
         return response
     try:
         data = json.loads(request.data)
-    except ValueError as e:
+    except ValueError:
         response = Response(status=400)
         msg = {'error': True, 'message': 'Bad request'}
         response.data = json.dumps(msg)
@@ -187,7 +187,7 @@ def check_pin():
 
     try:
         data = json.loads(request.data)
-    except ValueError as e:
+    except ValueError:
         response = Response(status=400)
         msg = {'error': True, 'message': 'Bad request'}
         response.data = json.dumps(msg)
@@ -329,4 +329,4 @@ def login(session_id):
 
 
 if __name__ == "__main__":
-    app.run(host=config['host'], port=config['port'])
+    app.run(host=config['host'], port=config['port'], debug=True)
