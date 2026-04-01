@@ -61,7 +61,7 @@ jobs:
           tar tvJf /tmp/${SRC_FILE}
 
       - name: Create Artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: "dist-source"
           path: "/tmp/${{env.SRC_FILE}}"
@@ -281,7 +281,7 @@ jobs:
           cp rpmbuild/RPMS/x86_64/*.rpm rpmbuild/SRPMS/*.rpm results/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: rpm_${{matrix.name}}
           path: "results/*"
@@ -389,7 +389,7 @@ jobs:
           cp *.deb results/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: deb_${{matrix.name}}
           path: "results/*"
